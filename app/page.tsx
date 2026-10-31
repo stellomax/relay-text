@@ -220,6 +220,7 @@ export default function Messages() {
             refreshKey={refreshKey}
             readOnly={readOnly}
             ownerLabel={currentInbox?.label}
+            isAdmin={!!inboxes}
           />
         ) : (
           <div className="pane-empty">

@@ -69,3 +69,40 @@ export const Person = ({ size = 24, className }: P) => (
     <path d="M3.8 20.5c.9-4 4.2-6.3 8.2-6.3s7.3 2.3 8.2 6.3" fill="currentColor" />
   </svg>
 );
+export const Ellipsis = ({ size = 24, className }: P) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden className={className}>
+    <circle cx="12" cy="12" r="10.2" fill="none" stroke="currentColor" strokeWidth="1.7" />
+    <circle cx="7.6" cy="12" r="1.45" fill="currentColor" />
+    <circle cx="12" cy="12" r="1.45" fill="currentColor" />
+    <circle cx="16.4" cy="12" r="1.45" fill="currentColor" />
+  </svg>
+);
+export const Info = ({ size = 20, className }: P) => (
+  <svg {...base(size)} strokeWidth={1.8} className={className}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 11v6" />
+    <circle cx="12" cy="7.6" r="0.6" fill="currentColor" />
+  </svg>
+);
+export const Bubble = ({ size = 20, className }: P) => (
+  <svg {...base(size)} strokeWidth={1.8} className={className}>
+    <path d="M4 6.5A3.5 3.5 0 0 1 7.5 3h9A3.5 3.5 0 0 1 20 6.5v6a3.5 3.5 0 0 1-3.5 3.5H10l-5 4 1-4.3A3.5 3.5 0 0 1 4 12.5z" />
+  </svg>
+);
+export const Trash = ({ size = 20, className }: P) => (
+  <svg {...base(size)} strokeWidth={1.8} className={className}>
+    <path d="M4 6.5h16M9.5 6.5V4.5h5v2M6.5 6.5l1 13h9l1-13M10 10.5v6M14 10.5v6" />
+  </svg>
+);
+export const People = ({ size = 20, className }: P) => (
+  <svg {...base(size)} strokeWidth={1.8} className={className}>
+    <circle cx="9" cy="8" r="3.3" />
+    <path d="M2.8 19.5c.7-3.4 3.2-5.2 6.2-5.2s5.5 1.8 6.2 5.2" />
+    <path d="M15.5 4.9a3.2 3.2 0 0 1 0 6.2M17.4 14.6c2 .6 3.4 2.2 3.8 4.9" />
+  </svg>
+);
+export const SignOut = ({ size = 20, className }: P) => (
+  <svg {...base(size)} strokeWidth={1.8} className={className}>
+    <path d="M14 4.5H6.5A1.5 1.5 0 0 0 5 6v12a1.5 1.5 0 0 0 1.5 1.5H14M10 12h10M16.5 8.5 20 12l-3.5 3.5" />
+  </svg>
+);
