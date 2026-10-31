@@ -152,18 +152,18 @@ export default function Messages() {
     <div className={`app ${selectedId ? "show-thread" : ""}`}>
       <aside className="inbox">
         <div className="inbox-bar">
-          {!readOnly && (
-            <button className="icon-btn" onClick={() => setSheet("new")} aria-label="New message" title="New message">
-              <Compose />
-            </button>
-          )}
-          {/* On phones the menu sits here; on wider screens it's at the top right of the conversation side. */}
-          <span className="inbox-bar-menu">
-            <MainMenu me={me} />
+          <img className="inbox-logo" src="/relay-text-logo.png" alt="Relay Text" />
+          <span className="inbox-bar-actions">
+            {!readOnly && (
+              <button className="icon-btn" onClick={() => setSheet("new")} aria-label="New message" title="New message">
+                <Compose />
+              </button>
+            )}
+            {/* On phones the menu sits here; on wider screens it's at the top right of the conversation side. */}
+            <span className="inbox-bar-menu">
+              <MainMenu me={me} />
+            </span>
           </span>
-        </div>
-        <div className="inbox-title">
-          <img src="/relay-text-logo.png" alt="Relay Text" />
         </div>
 
         {inboxes && inboxes.length > 1 && (

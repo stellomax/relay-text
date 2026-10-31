@@ -451,3 +451,8 @@ a { color: var(--tint); text-decoration: none; }
 @media (min-width: 761px) {
   .inbox-bar-menu { display: none; }
 }
+
+/* logo at the top of the conversation list, compose on the right */
+.inbox-bar { justify-content: space-between; align-items: center; padding: 10px 12px 10px 16px; }
+.inbox-logo { height: 30px; width: auto; display: block; }
+.inbox-bar-actions { display: flex; align-items: center; gap: 4px; }
