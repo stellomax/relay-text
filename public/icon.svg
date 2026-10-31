@@ -10,7 +10,7 @@
   </defs>
   <rect width="512" height="512" fill="url(#g)"/>
   <g mask="url(#gap)">
-    <g transform="translate(218,206)"><use href="#b" fill="none" stroke="#fff" stroke-width="22" stroke-linejoin="round"/></g>
+    <g transform="translate(414,206) scale(-1,1)"><use href="#b" fill="none" stroke="#fff" stroke-width="22" stroke-linejoin="round"/></g>
   </g>
   <g transform="translate(98,106)"><use href="#b" fill="#fff" stroke="#fff" stroke-width="22" stroke-linejoin="round"/></g>
 </svg>
