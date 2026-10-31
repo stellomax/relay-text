@@ -22,6 +22,22 @@ create table if not exists public.staff (
   created_at         timestamptz not null default now()
 );
 
+-- Sign-up codes: an admin creates a 5-digit code for each new teacher, who uses it at relaytext.io/signup.
+create table if not exists public.invites (
+  id          uuid primary key default gen_random_uuid(),
+  code        text not null,
+  name        text not null default '',
+  school      text,
+  area_code   text,
+  role        text not null default 'teacher' check (role in ('admin', 'teacher')),
+  created_by  uuid references public.staff(id) on delete set null,
+  used_by     uuid references public.staff(id) on delete set null,
+  used_at     timestamptz,
+  expires_at  timestamptz not null default (now() + interval '30 days'),
+  created_at  timestamptz not null default now()
+);
+create unique index if not exists invites_open_code_idx on public.invites (code) where used_at is null;
+
 -- Families (parents / guardians). Each belongs to one teacher (or to the shared main number when staff_id is empty).
 create table if not exists public.contacts (
   id              uuid primary key default gen_random_uuid(),
@@ -72,5 +88,6 @@ create index if not exists messages_to_number_idx on public.messages (to_number,
 
 -- Locked down: only the app's server (service role key) can read or write.
 alter table public.staff    enable row level security;
+alter table public.invites  enable row level security;
 alter table public.contacts enable row level security;
 alter table public.messages enable row level security;

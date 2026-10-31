@@ -419,3 +419,10 @@ a { color: var(--tint); text-decoration: none; }
 .menu-head { padding: 10px 16px 11px; display: flex; flex-direction: column; border-bottom: 0.5px solid var(--separator); }
 .menu-head-name { font-weight: 600; font-size: 15px; }
 .menu-head-email { font-size: 13px; color: var(--label-3); }
+.login .code-input { text-align: center; font-size: 24px; letter-spacing: 8px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.login .code-input::placeholder { font-size: 17px; letter-spacing: -0.2px; font-weight: 400; }
+.code-ok { color: var(--green); font-size: 15px; font-weight: 600; margin: -8px 4px 14px; color: #1f8a3c; }
+.invite-row { gap: 12px; }
+.invite-code { font-size: 20px; font-weight: 700; letter-spacing: 2px; font-variant-numeric: tabular-nums; color: var(--brand); min-width: 78px; }
+.danger-text { color: var(--red) !important; }
+.big-code { text-align: center; font-size: 44px; font-weight: 700; letter-spacing: 10px; color: var(--brand); padding: 8px 0 14px; font-variant-numeric: tabular-nums; }

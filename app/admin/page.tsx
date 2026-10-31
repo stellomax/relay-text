@@ -25,12 +25,13 @@ type Person = {
   last_seen_at: string | null;
   created_at: string;
 };
-type Data = { staff: Person[]; autoBuy: boolean; unassignedFamilies: number };
-type Notice = { title: string; lines: string[]; copy?: string } | null;
+type Invite = { id: string; code: string; name: string; school: string | null; area_code: string | null; role: string; expires_at: string };
+type Data = { staff: Person[]; autoBuy: boolean; unassignedFamilies: number; invites: Invite[]; signupUrl: string };
+type Notice = { title: string; lines: string[]; copy?: string; big?: string } | null;
 
-const EMPTY_NEW = { name: "", email: "", school: "", area_code: "", admin: false };
+const EMPTY_NEW = { name: "", school: "", area_code: "", admin: false };
 
-// Admin: approve, add and manage teachers and admins, and their texting numbers.
+// Admin: create sign-up codes for new teachers, and manage teachers, admins and their texting numbers.
 export default function AdminPage() {
   const [data, setData] = useState<Data | null>(null);
   const [error, setError] = useState("");
@@ -75,7 +76,11 @@ export default function AdminPage() {
     }
   }
 
-  async function addPerson() {
+  function inviteMessage(code: string) {
+    return `You're invited to Relay Text. Go to ${data?.signupUrl || "relaytext.io/signup"} and enter sign-up code ${code} to create your account. The code works once and expires in 30 days.`;
+  }
+
+  async function createCode() {
     if (!adding) return;
     setBusy("add");
     setError("");
@@ -83,13 +88,11 @@ export default function AdminPage() {
       const r = await api("/api/admin/staff", {
         body: { ...adding, role: adding.admin ? "admin" : "teacher" },
       });
-      const lines = [`${adding.name} can sign in now. Send them these details; they can change the password in Settings.`];
-      if (r.number?.phone) lines.push(`Texting number: ${prettyPhone(r.number.phone)}${r.number.placeholder ? " (demo)" : ""}`);
-      if (r.numberError) lines.push(`Number not assigned yet: ${r.numberError}`);
       setNotice({
-        title: "Account Created",
-        lines,
-        copy: `Sign in to Relay Text at relaytext.io with ${adding.email.trim().toLowerCase()}\nTemporary password: ${r.tempPassword}`,
+        title: "Sign-up Code",
+        big: r.invite.code,
+        lines: [`Give this code to ${adding.name}. They enter it at relaytext.io/signup to create their account and get their own texting number.`],
+        copy: inviteMessage(r.invite.code),
       });
       setAdding(null);
       await load();
@@ -97,6 +100,16 @@ export default function AdminPage() {
       setError(e.message);
     } finally {
       setBusy("");
+    }
+  }
+
+  async function cancelInvite(inv: Invite) {
+    if (!confirm(`Cancel sign-up code ${inv.code} for ${inv.name}?`)) return;
+    try {
+      await api(`/api/admin/staff?invite=${inv.id}`, { method: "DELETE" });
+      await load();
+    } catch (e: any) {
+      setError(e.message);
     }
   }
 
@@ -126,6 +139,34 @@ export default function AdminPage() {
                 ? "Live: approving a teacher buys them a real local number in their area code."
                 : "Demo: approved teachers get demo numbers. After Twilio approval, set TWILIO_AUTO_BUY_NUMBERS=true in Vercel, then tap “Get Real Number” for each teacher."}
             </div>
+
+            {data.invites.length > 0 && (
+              <>
+                <p className="ios-section">Sign-up codes not used yet</p>
+                <div className="ios-group">
+                  {data.invites.map((inv) => (
+                    <div key={inv.id} className="ios-row invite-row">
+                      <span className="invite-code">{inv.code}</span>
+                      <span className="person-main">
+                        <span className="person-name">
+                          {inv.name}
+                          {inv.role === "admin" && <span className="tag-admin">Admin</span>}
+                        </span>
+                        <span className="ios-row-hint">
+                          {inv.school ? `${inv.school} · ` : ""}expires {new Date(inv.expires_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        </span>
+                      </span>
+                      <button className="bar-btn strong" onClick={() => navigator.clipboard?.writeText(inviteMessage(inv.code))}>
+                        Copy
+                      </button>
+                      <button className="bar-btn danger-text" onClick={() => cancelInvite(inv)}>
+                        Cancel
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
 
             {pending.length > 0 && (
               <>
@@ -188,7 +229,7 @@ export default function AdminPage() {
               </p>
             )}
             <p className="ios-footnote">
-              Teachers can request an account at relaytext.io/signup. You can also add someone directly with the + button.
+              To add a teacher, tap + to create a sign-up code. They use it at relaytext.io/signup.
             </p>
           </>
         )}
@@ -209,25 +250,21 @@ export default function AdminPage() {
           title="Add Teacher"
           onCancel={() => setAdding(null)}
           action={{
-            label: "Add",
-            onClick: addPerson,
+            label: "Create Code",
+            onClick: createCode,
             busy: busy === "add",
-            disabled: !adding.name.trim() || !adding.email.trim(),
+            disabled: !adding.name.trim(),
           }}
         >
+          <p className="ios-footnote top">
+            Creates a 5-digit sign-up code. The teacher enters it at relaytext.io/signup with their email and a password, and
+            gets their own texting number right away.
+          </p>
           <div className="ios-group">
-            <input placeholder="Name" value={adding.name} onChange={(e) => setAdding({ ...adding, name: e.target.value })} autoFocus />
+            <input placeholder="Teacher's name" value={adding.name} onChange={(e) => setAdding({ ...adding, name: e.target.value })} autoFocus />
+            <input placeholder="School (optional)" value={adding.school} onChange={(e) => setAdding({ ...adding, school: e.target.value })} />
             <input
-              type="email"
-              placeholder="Email"
-              value={adding.email}
-              onChange={(e) => setAdding({ ...adding, email: e.target.value })}
-            />
-          </div>
-          <div className="ios-group">
-            <input placeholder="School" value={adding.school} onChange={(e) => setAdding({ ...adding, school: e.target.value })} />
-            <input
-              placeholder="Area code for their number (e.g. 303)"
+              placeholder="Area code for their number (optional, e.g. 303)"
               inputMode="numeric"
               maxLength={3}
               value={adding.area_code}
@@ -248,12 +285,12 @@ export default function AdminPage() {
               />
             </label>
           </div>
-          <p className="ios-footnote">They’ll get a temporary password and their own texting number.</p>
         </Sheet>
       )}
 
       {notice && (
         <Sheet title={notice.title} onCancel={() => setNotice(null)}>
+          {notice.big && <div className="big-code">{notice.big}</div>}
           {notice.lines.map((l) => (
             <p key={l} className="ios-footnote top">
               {l}
@@ -267,9 +304,11 @@ export default function AdminPage() {
               <button className="ios-button" onClick={() => navigator.clipboard?.writeText(notice.copy!)}>
                 Copy
               </button>
-              <p className="ios-footnote top" style={{ marginTop: 12 }}>
-                This password is shown only once.
-              </p>
+              {!notice.big && (
+                <p className="ios-footnote top" style={{ marginTop: 12 }}>
+                  This password is shown only once.
+                </p>
+              )}
             </>
           )}
         </Sheet>

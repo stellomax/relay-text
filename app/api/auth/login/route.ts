@@ -58,7 +58,7 @@ export async function POST(req: Request) {
       await assignNumber(me, baseUrlFromRequest(req)).catch((e) => console.error("number", e));
     }
     if (!me) {
-      return json({ error: "There's no Relay Text account for this email. Teachers can sign up at relaytext.io/signup." }, 403);
+      return json({ error: "There's no Relay Text account for this email. Teachers: create your account at relaytext.io/signup with the code from your admin." }, 403);
     }
     if (me.status === "pending") {
       return json({ error: "Your account is waiting for approval. You'll be able to sign in once an admin approves it." }, 403);

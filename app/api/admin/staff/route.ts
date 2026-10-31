@@ -1,21 +1,27 @@
 import { baseUrlFromRequest } from "@/lib/config";
 import { db, Staff } from "@/lib/db";
 import { json, withAdmin, errorMessage } from "@/lib/http";
-import { autoBuyEnabled, assignNumber, unassignNumber, type AssignResult } from "@/lib/numbers";
-import { cleanAreaCode, isBuiltInAdmin, newJoinCode, staffById, staffByEmail, tempPassword } from "@/lib/staff";
+import { autoBuyEnabled, assignNumber, unassignNumber } from "@/lib/numbers";
+import { cleanAreaCode, isBuiltInAdmin, staffById, tempPassword } from "@/lib/staff";
 import { findAuthUserId, setPassword, upsertAuthUser } from "@/lib/supabaseAuth";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-// List everyone, with simple activity numbers.
+// List everyone, with simple activity numbers, plus sign-up codes that haven't been used yet.
 export const GET = withAdmin(async (req) => {
   const supa = db();
   const since = new Date(Date.now() - 30 * 86400000).toISOString();
-  const [{ data: staff, error }, { data: contacts }, { data: msgs }] = await Promise.all([
+  const [{ data: staff, error }, { data: contacts }, { data: msgs }, { data: invites }] = await Promise.all([
     supa.from("staff").select("*").order("created_at", { ascending: true }),
     supa.from("contacts").select("staff_id"),
     supa.from("messages").select("staff_id").gte("created_at", since).limit(20000),
+    supa
+      .from("invites")
+      .select("id, code, name, school, area_code, role, expires_at, created_at")
+      .is("used_at", null)
+      .gt("expires_at", new Date().toISOString())
+      .order("created_at", { ascending: false }),
   ]);
   if (error) throw new Error(error.message);
   const families = new Map<string, number>();
@@ -27,6 +33,8 @@ export const GET = withAdmin(async (req) => {
   return json({
     autoBuy: autoBuyEnabled(),
     unassignedFamilies: unassigned,
+    signupUrl: `${base}/signup`,
+    invites: invites || [],
     staff: ((staff || []) as Staff[]).map((s) => ({
       ...s,
       builtInAdmin: isBuiltInAdmin(s.email),
@@ -37,35 +45,37 @@ export const GET = withAdmin(async (req) => {
   });
 });
 
-// Add a teacher or admin directly. They're active right away; a temporary password is returned once.
-export const POST = withAdmin(async (req) => {
+// Create a 5-digit sign-up code for a new teacher (or admin). Good for 30 days, one use.
+export const POST = withAdmin(async (req, me) => {
   const b = await req.json().catch(() => ({}));
   const name = String(b.name || "").trim().slice(0, 100);
-  const email = String(b.email || "").trim().toLowerCase();
   const school = String(b.school || "").trim().slice(0, 120) || null;
   const area_code = cleanAreaCode(b.area_code);
-  const role = b.role === "admin" || isBuiltInAdmin(email) ? "admin" : "teacher";
-  if (!name) return json({ error: "Enter a name." }, 400);
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Enter a valid email address." }, 400);
+  const role = b.role === "admin" ? "admin" : "teacher";
+  if (!name) return json({ error: "Enter the teacher's name." }, 400);
   if (b.area_code && !area_code) return json({ error: "Enter a 3-digit area code, like 303." }, 400);
-  if (await staffByEmail(email)) return json({ error: "Someone with this email already has an account." }, 400);
 
-  const password = tempPassword();
-  const userId = await upsertAuthUser(email, password);
-  const ins = await db()
-    .from("staff")
-    .insert({ email, name, school, area_code, role, status: "active", user_id: userId, join_code: newJoinCode() })
-    .select("*")
-    .single();
-  if (ins.error) throw new Error(ins.error.message);
-  let number: AssignResult | null = null;
-  let numberError: string | null = null;
-  try {
-    number = await assignNumber(ins.data as Staff, baseUrlFromRequest(req));
-  } catch (e) {
-    numberError = errorMessage(e);
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const n = crypto.getRandomValues(new Uint32Array(1))[0] % 90000;
+    const code = String(10000 + n);
+    const { data, error } = await db()
+      .from("invites")
+      .insert({ code, name, school, area_code, role, created_by: me.id })
+      .select("id, code, name, expires_at")
+      .single();
+    if (!error) return json({ ok: true, invite: data, signupUrl: `${baseUrlFromRequest(req)}/signup` });
+    if (!/duplicate|unique/i.test(error.message)) throw new Error(error.message);
   }
-  return json({ ok: true, tempPassword: password, number, numberError });
+  return json({ error: "Couldn't create a unique code. Try again." }, 500);
+});
+
+// Cancel an unused sign-up code.
+export const DELETE = withAdmin(async (req) => {
+  const id = new URL(req.url).searchParams.get("invite");
+  if (!id) return json({ error: "invite is required" }, 400);
+  const { error } = await db().from("invites").delete().eq("id", id).is("used_at", null);
+  if (error) throw new Error(error.message);
+  return json({ ok: true });
 });
 
 // Actions on one person: approve, disable, enable, update, assign_number, release_number, reset_password.

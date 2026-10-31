@@ -1,14 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-// Teachers request an account here. An admin approves it, and then they get their own texting number.
+// Teachers create their account with the 5-digit sign-up code their Relay Text admin gave them.
 export default function Signup() {
-  const [f, setF] = useState({ name: "", email: "", school: "", area_code: "", password: "" });
+  const [f, setF] = useState({ code: "", name: "", email: "", password: "" });
+  const [check, setCheck] = useState<null | { valid: boolean; name?: string; school?: string | null }>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [done, setDone] = useState<null | "pending" | "active">(null);
-  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF((v) => ({ ...v, [k]: e.target.value }));
+
+  // Check the code once all 5 digits are in, and greet the teacher by name.
+  useEffect(() => {
+    if (!/^\d{5}$/.test(f.code)) {
+      setCheck(null);
+      return;
+    }
+    let live = true;
+    fetch(`/api/signup?code=${f.code}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (!live) return;
+        setCheck(d);
+        if (d.valid && d.name) setF((v) => (v.name ? v : { ...v, name: d.name }));
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [f.code]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -20,29 +39,15 @@ export default function Signup() {
       body: JSON.stringify(f),
     });
     const data = await res.json().catch(() => ({}));
-    if (res.ok) setDone(data.pending ? "pending" : "active");
-    else setError(data.error || `Sign-up failed (error ${res.status}).`);
+    if (res.ok) {
+      window.location.href = "/";
+      return;
+    }
+    setError(data.error || `Sign-up failed (error ${res.status}).`);
     setBusy(false);
   }
 
-  if (done) {
-    return (
-      <div className="login">
-        <img src="/relay-text-logo.png" alt="Relay Text" className="login-logo" />
-        <div className="login-form done-card">
-          <p className="done-title">{done === "pending" ? "Thanks for signing up!" : "You're all set"}</p>
-          <p className="login-tag">
-            {done === "pending"
-              ? "Your account is waiting for approval. Once an admin approves it, you can sign in and you'll get your own Relay Text number."
-              : "Your account is ready. Sign in to get started."}
-          </p>
-          <a className="ios-button link-button" href="/login">
-            Go to Sign In
-          </a>
-        </div>
-      </div>
-    );
-  }
+  const codeOk = check?.valid === true;
 
   return (
     <div className="login">
@@ -50,27 +55,44 @@ export default function Signup() {
       <p className="login-tag">Create your teacher account.</p>
       <form onSubmit={submit} className="login-form">
         <div className="ios-group">
-          <input placeholder="Your name" autoComplete="name" value={f.name} onChange={set("name")} required />
-          <input type="email" placeholder="School email" autoComplete="email" value={f.email} onChange={set("email")} required />
-        </div>
-        <div className="ios-group">
-          <input placeholder="School" value={f.school} onChange={set("school")} required />
           <input
-            placeholder="Area code for your number (e.g. 303)"
+            className="code-input"
+            placeholder="5-digit sign-up code"
             inputMode="numeric"
-            maxLength={3}
-            value={f.area_code}
-            onChange={set("area_code")}
+            autoComplete="one-time-code"
+            maxLength={5}
+            value={f.code}
+            onChange={(e) => setF({ ...f, code: e.target.value.replace(/\D/g, "").slice(0, 5) })}
+            autoFocus
+            required
           />
         </div>
+        {check && !check.valid && <p className="login-error">That code isn’t valid or has already been used.</p>}
+        {codeOk && (
+          <p className="code-ok">
+            Code accepted{check?.name ? ` · Welcome, ${check.name.split(" ")[0]}!` : ""}
+            {check?.school ? ` (${check.school})` : ""}
+          </p>
+        )}
+        {!check && <p className="ios-footnote">Your Relay Text admin gives you this code.</p>}
+
         <div className="ios-group">
+          <input placeholder="Your name" autoComplete="name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} required />
+          <input
+            type="email"
+            placeholder="Email"
+            autoComplete="email"
+            value={f.email}
+            onChange={(e) => setF({ ...f, email: e.target.value })}
+            required
+          />
           <input
             type="password"
             placeholder="Choose a password (8+ characters)"
             autoComplete="new-password"
             minLength={8}
             value={f.password}
-            onChange={set("password")}
+            onChange={(e) => setF({ ...f, password: e.target.value })}
             required
           />
         </div>
@@ -78,7 +100,7 @@ export default function Signup() {
           You’ll get your own Relay Text number for texting families, so your personal cell number is never shared.
         </p>
         {error && <p className="login-error">{error}</p>}
-        <button className="ios-button" disabled={busy}>
+        <button className="ios-button" disabled={busy || !codeOk}>
           {busy ? "Creating Account…" : "Create Account"}
         </button>
       </form>
