@@ -468,3 +468,9 @@ a { color: var(--tint); text-decoration: none; }
 .segmented { display: flex; background: rgba(118, 118, 128, 0.12); border-radius: 9px; padding: 2px; margin-bottom: 14px; }
 .segmented button { flex: 1; appearance: none; border: 0; background: transparent; padding: 7px 8px; font-size: 14px; font-weight: 600; color: var(--label); border-radius: 7px; cursor: pointer; }
 .segmented button.on { background: #fff; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.04); }
+
+/* schools */
+.filter-picker { margin: 0 0 14px; background: var(--bg); }
+.select-row select { appearance: none; -webkit-appearance: none; cursor: pointer; }
+.code-field { font-variant-numeric: tabular-nums; letter-spacing: 3px; font-weight: 600; }
+.invite-code.code-off { color: var(--label-4); }

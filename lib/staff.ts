@@ -8,6 +8,15 @@ export function adminEmails(): string[] {
   return [...BUILT_IN_ADMINS, ...extra].map((e) => e.trim().toLowerCase()).filter(Boolean);
 }
 
+// Super admins can also create and manage schools and their sign-up codes.
+// Built-in admins are super admins; add more with SUPER_ADMIN_EMAILS in Vercel (comma-separated).
+export function isSuperAdmin(email: string): boolean {
+  const list = [...BUILT_IN_ADMINS, ...(process.env.SUPER_ADMIN_EMAILS || "").split(",")]
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  return list.includes(email.trim().toLowerCase());
+}
+
 export function isBuiltInAdmin(email: string): boolean {
   return adminEmails().includes(email.trim().toLowerCase());
 }

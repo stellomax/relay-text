@@ -74,8 +74,9 @@ export default function Signup() {
         {check && !check.valid && <p className="login-error">That code isn’t valid or has already been used.</p>}
         {codeOk && (
           <p className="code-ok">
-            Code accepted{check?.name ? ` · Welcome, ${check.name.split(" ")[0]}!` : ""}
-            {check?.school ? ` (${check.school})` : ""}
+            Code accepted
+            {check?.school ? ` · ${check.school}` : ""}
+            {check?.name ? ` · Welcome, ${check.name.split(" ")[0]}!` : ""}
           </p>
         )}
         {!check && <p className="ios-footnote">Your Relay Text admin gives you this code.</p>}

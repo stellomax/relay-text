@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Avatar from "./Avatar";
-import { Bubble, Gear, Info, Link, People, PersonAdd, SignOut, Trash } from "./icons";
+import { Bubble, Building, Gear, Info, Link, People, PersonAdd, SignOut, Trash } from "./icons";
 import { api } from "@/lib/client";
 
 export type Me = {
@@ -11,6 +11,7 @@ export type Me = {
   email: string;
   school: string | null;
   role: "admin" | "teacher";
+  is_super?: boolean;
   phone_number: string | null;
   phone_placeholder: boolean;
   join_link: string | null;
@@ -90,7 +91,7 @@ export default function MainMenu({ me, conversation }: { me: Me | null; conversa
             <div className="menu-head">
               <span className="menu-head-name">{me.name}</span>
               <span className="menu-head-email">
-                {isAdmin ? "Admin" : me.school || "Teacher"} · {me.email}
+                {me.is_super ? "Super Admin" : isAdmin ? "Admin" : me.school || "Teacher"} · {me.email}
               </span>
             </div>
           )}
@@ -122,6 +123,11 @@ export default function MainMenu({ me, conversation }: { me: Me | null; conversa
                 <a role="menuitem" href="/admin?add=1">
                   Add Teacher <PersonAdd />
                 </a>
+                {me?.is_super && (
+                  <a role="menuitem" href="/admin/schools">
+                    Schools <Building />
+                  </a>
+                )}
               </>
             )}
             {me?.join_link && (

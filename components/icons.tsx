@@ -118,3 +118,8 @@ export const PersonAdd = ({ size = 20, className }: P) => (
     <path d="M3.5 20c.8-3.7 3.4-5.7 6.5-5.7 1.6 0 3 .5 4.2 1.4M18.5 14.5v6M15.5 17.5h6" />
   </svg>
 );
+export const Building = ({ size = 20, className }: P) => (
+  <svg {...base(size)} strokeWidth={1.8} className={className}>
+    <path d="M3 21h18M5 21V10l7-5 7 5v11M9.5 21v-5h5v5M9 11.5h.01M15 11.5h.01" />
+  </svg>
+);

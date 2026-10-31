@@ -22,6 +22,17 @@ create table if not exists public.staff (
   created_at         timestamptz not null default now()
 );
 
+-- Schools. Each has a reusable 5-digit sign-up code: teachers who sign up with it are assigned to the school.
+create table if not exists public.schools (
+  id           uuid primary key default gen_random_uuid(),
+  name         text not null unique,
+  district     text,
+  area_code    text,                     -- area code for teachers' numbers
+  signup_code  text unique,              -- 5 digits; null = no school code
+  active       boolean not null default true,  -- false = the school code stops working
+  created_at   timestamptz not null default now()
+);
+
 -- Sign-up codes: an admin creates a 5-digit code for each new teacher, who uses it at relaytext.io/signup.
 create table if not exists public.invites (
   id          uuid primary key default gen_random_uuid(),
@@ -86,8 +97,28 @@ create index if not exists messages_twilio_sid_idx on public.messages (twilio_si
 create index if not exists messages_staff_idx on public.messages (staff_id, created_at);
 create index if not exists messages_to_number_idx on public.messages (to_number, created_at);
 
+alter table public.staff   add column if not exists school_id uuid references public.schools(id) on delete set null;
+alter table public.invites add column if not exists school_id uuid references public.schools(id) on delete set null;
+create index if not exists staff_school_idx on public.staff (school_id);
+
+-- Sample schools (skipped if a school with the same name already exists)
+insert into public.schools (name, district, area_code, signup_code) values
+  ('Sagewood Middle School',  'Sagewood School District', '303', '12345'),
+  ('Elk Elementary',          'Elk Valley Schools',       '970', '22222'),
+  ('Aspen Ridge High School', 'Aspen Ridge District',     '970', '33333'),
+  ('Cedar Valley Elementary', 'Cedar Valley Unified',     '720', '44444'),
+  ('Pinecrest Middle School', 'Pinecrest Public Schools', '719', '55555'),
+  ('Riverside Academy',       'Riverside School District','303', '66666')
+on conflict (name) do nothing;
+
+-- Link teachers who already have a school name to that school
+update public.staff t set school_id = s.id
+  from public.schools s
+  where t.school_id is null and t.school = s.name;
+
 -- Locked down: only the app's server (service role key) can read or write.
 alter table public.staff    enable row level security;
 alter table public.invites  enable row level security;
+alter table public.schools  enable row level security;
 alter table public.contacts enable row level security;
 alter table public.messages enable row level security;

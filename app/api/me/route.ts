@@ -2,6 +2,7 @@ import { baseUrlFromRequest } from "@/lib/config";
 import { json, withAuth } from "@/lib/http";
 import { authClient, findAuthUserId, setPassword } from "@/lib/supabaseAuth";
 import { db } from "@/lib/db";
+import { isSuperAdmin } from "@/lib/staff";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,7 @@ export const GET = withAuth(async (req, me) => {
       email: me.email,
       school: me.school,
       role: me.role,
+      is_super: me.role === "admin" && isSuperAdmin(me.email),
       phone_number: me.phone_number,
       phone_placeholder: me.phone_placeholder,
       join_link: me.join_code ? `${baseUrlFromRequest(req)}/join?t=${me.join_code}` : null,

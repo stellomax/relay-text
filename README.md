@@ -48,6 +48,7 @@ Sign in at relaytext.io, tap the gear. All three lights should be green (orange 
 Parent phone numbers and student names are student records. Row-level security is on with no public policies, so only the app's server can read the database, and every page requires a staff login. Confirm district FERPA and vendor requirements before a real pilot.
 
 ## Teachers, admins and numbers
+- **Super admins** (hamilton33@gmail.com; add more with `SUPER_ADMIN_EMAILS`) also manage **Schools** (menu → Schools): each school has a reusable 5-digit sign-up code; anyone who signs up with it joins that school and gets the school's area code. Codes can be turned off or regenerated. Sample schools: Sagewood Middle School 12345, Elk Elementary 22222, Aspen Ridge High School 33333, Cedar Valley Elementary 44444, Pinecrest Middle School 55555, Riverside Academy 66666.
 - **Admins:** hamilton33@gmail.com is always an admin (add more with `ADMIN_EMAILS`, comma-separated). An admin account is created the first time they sign in with a Supabase login.
 - **Teachers** sign up at `/signup` with a 5-digit code an admin creates under Manage Teachers → + (optionally with school, area code and admin access). Codes work once and expire after 30 days. The account is active immediately and gets its own number. Admins can also choose **Add Directly** to create the account on the spot with a temporary password (shown once).
 - **Numbers:** each approved teacher gets their own texting number. Until `TWILIO_AUTO_BUY_NUMBERS=true`, these are demo numbers (555-01xx, never real). With it on, approving a teacher buys a local number in their area code, points it at `/api/sms/incoming`, and adds it to `TWILIO_MESSAGING_SERVICE_SID`. Releasing a number in the admin screen stops its monthly charge.
@@ -57,7 +58,6 @@ Parent phone numbers and student names are student records. Row-level security i
 - `TWILIO_AUTO_BUY_NUMBERS`: `true` to buy real numbers for approved teachers (only after the A2P campaign is approved).
 - `DEFAULT_AREA_CODE`: area code used when a teacher didn't give one (default 303).
 - `ADMIN_EMAILS`: extra admin emails, comma-separated.
-- `TEST_SIGNUP_CODE`: a reusable 5-digit sign-up code for testing. Defaults to `12345` while teachers get demo numbers; turns off automatically once `TWILIO_AUTO_BUY_NUMBERS` is on (set it explicitly to keep one, or `off` to disable). Teachers who use it are put in `TEST_SIGNUP_SCHOOL` (default: Sagewood Middle School).
 - `TWILIO_MESSAGING_SERVICE_SID`: send from a Messaging Service instead of a single number.
 - `SESSION_SECRET`: separate secret for staff login sessions (defaults to the service key).
 - Outgoing bubble color: `--bubble-out` in `app/globals.css` (Relay Text purple by default).

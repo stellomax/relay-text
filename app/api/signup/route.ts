@@ -3,7 +3,8 @@ import { db, Staff } from "@/lib/db";
 import { json, errorMessage } from "@/lib/http";
 import { upsertAuthUser } from "@/lib/supabaseAuth";
 import { isBuiltInAdmin, newJoinCode, staffByEmail } from "@/lib/staff";
-import { assignNumber, autoBuyEnabled } from "@/lib/numbers";
+import { assignNumber } from "@/lib/numbers";
+import { schoolByCode, schoolById } from "@/lib/schools";
 import { isPersonalEmail, REQUIRE_SCHOOL_EMAIL } from "@/lib/schoolEmail";
 import { createSessionToken, SESSION_COOKIE, SESSION_DAYS } from "@/lib/session";
 
@@ -15,26 +16,30 @@ type Invite = {
   code: string;
   name: string;
   school: string | null;
+  school_id: string | null;
   area_code: string | null;
   role: "admin" | "teacher";
   used_at: string | null;
   expires_at: string;
 };
 
-// Reusable test code for trying out sign-up. Defaults to 12345 while teachers get demo numbers;
-// once real numbers are being bought it's off unless TEST_SIGNUP_CODE is set in Vercel ("off" disables it).
-function testSignupCode(): string | null {
-  const v = (process.env.TEST_SIGNUP_CODE || "").trim();
-  if (/^off$/i.test(v)) return null;
-  if (/^\d{5}$/.test(v)) return v;
-  return autoBuyEnabled() ? null : "12345";
-}
-
+// A code is either a school's reusable code (anyone using it joins that school)
+// or a one-time code an admin created for one person.
 async function openInvite(code: string): Promise<Invite | null> {
   if (!/^\d{5}$/.test(code)) return null;
-  if (code === testSignupCode()) {
-    const school = (process.env.TEST_SIGNUP_SCHOOL || "Sagewood Middle School").trim() || null;
-    return { id: "test", code, name: "", school, area_code: null, role: "teacher", used_at: null, expires_at: "" };
+  const school = await schoolByCode(code);
+  if (school) {
+    return {
+      id: "school",
+      code,
+      name: "",
+      school: school.name,
+      school_id: school.id,
+      area_code: school.area_code,
+      role: "teacher",
+      used_at: null,
+      expires_at: "",
+    };
   }
   const { data } = await db()
     .from("invites")
@@ -43,7 +48,13 @@ async function openInvite(code: string): Promise<Invite | null> {
     .is("used_at", null)
     .gt("expires_at", new Date().toISOString())
     .maybeSingle();
-  return (data as Invite) || null;
+  if (!data) return null;
+  const inv = data as Invite;
+  if (inv.school_id) {
+    const s = await schoolById(inv.school_id);
+    if (s) return { ...inv, school: s.name, area_code: inv.area_code || s.area_code };
+  }
+  return inv;
 }
 
 // Public: check a sign-up code as it's typed, to greet the teacher by name.
@@ -53,7 +64,7 @@ export async function GET(req: Request) {
   return json(inv ? { valid: true, name: inv.name, school: inv.school } : { valid: false });
 }
 
-// Public: a teacher creates their account with the 5-digit code an admin gave them.
+// Public: a teacher creates their account with a 5-digit code (their school's code, or a one-time code).
 // The account is active right away, gets its own texting number, and is signed in.
 export async function POST(req: Request) {
   try {
@@ -81,6 +92,7 @@ export async function POST(req: Request) {
         email,
         name,
         school: inv.school,
+        school_id: inv.school_id || null,
         area_code: inv.area_code,
         user_id: userId,
         role: inv.role === "admin" || isBuiltInAdmin(email) ? "admin" : "teacher",
@@ -93,7 +105,7 @@ export async function POST(req: Request) {
     if (ins.error) throw new Error(ins.error.message);
     const me = ins.data as Staff;
 
-    if (inv.id !== "test") {
+    if (inv.id !== "school") {
       await db().from("invites").update({ used_at: new Date().toISOString(), used_by: me.id }).eq("id", inv.id);
     }
     await assignNumber(me, baseUrlFromRequest(req)).catch((e) => console.error("number on signup", e));

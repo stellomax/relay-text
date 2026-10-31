@@ -2,17 +2,18 @@ import { baseUrlFromRequest } from "@/lib/config";
 import { db, Staff } from "@/lib/db";
 import { json, withAdmin, errorMessage } from "@/lib/http";
 import { autoBuyEnabled, assignNumber, unassignNumber, type AssignResult } from "@/lib/numbers";
-import { cleanAreaCode, isBuiltInAdmin, newJoinCode, staffByEmail, staffById, tempPassword } from "@/lib/staff";
+import { cleanAreaCode, isBuiltInAdmin, isSuperAdmin, newJoinCode, staffByEmail, staffById, tempPassword } from "@/lib/staff";
+import { newFreeCode, schoolById } from "@/lib/schools";
 import { findAuthUserId, setPassword, upsertAuthUser } from "@/lib/supabaseAuth";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 // List everyone, with simple activity numbers, plus sign-up codes that haven't been used yet.
-export const GET = withAdmin(async (req) => {
+export const GET = withAdmin(async (req, me) => {
   const supa = db();
   const since = new Date(Date.now() - 30 * 86400000).toISOString();
-  const [{ data: staff, error }, { data: contacts }, { data: msgs }, { data: invites }] = await Promise.all([
+  const [{ data: staff, error }, { data: contacts }, { data: msgs }, { data: invites }, { data: schools }] = await Promise.all([
     supa.from("staff").select("*").order("created_at", { ascending: true }),
     supa.from("contacts").select("staff_id"),
     supa.from("messages").select("staff_id").gte("created_at", since).limit(20000),
@@ -22,6 +23,7 @@ export const GET = withAdmin(async (req) => {
       .is("used_at", null)
       .gt("expires_at", new Date().toISOString())
       .order("created_at", { ascending: false }),
+    supa.from("schools").select("id, name, district, area_code, active").order("name"),
   ]);
   if (error) throw new Error(error.message);
   const families = new Map<string, number>();
@@ -34,10 +36,13 @@ export const GET = withAdmin(async (req) => {
     autoBuy: autoBuyEnabled(),
     unassignedFamilies: unassigned,
     signupUrl: `${base}/signup`,
+    schools: schools || [],
+    viewerIsSuper: isSuperAdmin(me.email),
     invites: invites || [],
     staff: ((staff || []) as Staff[]).map((s) => ({
       ...s,
       builtInAdmin: isBuiltInAdmin(s.email),
+      superAdmin: isSuperAdmin(s.email),
       families: families.get(s.id) || 0,
       messages30d: recent.get(s.id) || 0,
       join_link: s.join_code ? `${base}/join?t=${s.join_code}` : null,
@@ -51,19 +56,18 @@ export const POST = withAdmin(async (req, me) => {
   const b = await req.json().catch(() => ({}));
   if (b.mode === "direct") return addDirectly(req, b);
   const name = String(b.name || "").trim().slice(0, 100);
-  const school = String(b.school || "").trim().slice(0, 120) || null;
-  const area_code = cleanAreaCode(b.area_code);
+  const sch = await schoolById(b.school_id ? String(b.school_id) : null);
+  const school = sch?.name || null;
+  const area_code = cleanAreaCode(b.area_code) || sch?.area_code || null;
   const role = b.role === "admin" ? "admin" : "teacher";
   if (!name) return json({ error: "Enter the teacher's name." }, 400);
-  if (b.area_code && !area_code) return json({ error: "Enter a 3-digit area code, like 303." }, 400);
+  if (b.area_code && !cleanAreaCode(b.area_code)) return json({ error: "Enter a 3-digit area code, like 303." }, 400);
 
   for (let attempt = 0; attempt < 8; attempt++) {
-    const n = crypto.getRandomValues(new Uint32Array(1))[0] % 90000;
-    const code = String(10000 + n);
-    if (code === "12345") continue; // reserved for testing
+    const code = await newFreeCode();
     const { data, error } = await db()
       .from("invites")
-      .insert({ code, name, school, area_code, role, created_by: me.id })
+      .insert({ code, name, school, school_id: sch?.id || null, area_code, role, created_by: me.id })
       .select("id, code, name, expires_at")
       .single();
     if (!error) return json({ ok: true, invite: data, signupUrl: `${baseUrlFromRequest(req)}/signup` });
@@ -112,7 +116,12 @@ export const PATCH = withAdmin(async (req, me) => {
     case "update": {
       const update: Record<string, unknown> = {};
       if (typeof b.name === "string" && b.name.trim()) update.name = b.name.trim().slice(0, 100);
-      if (typeof b.school === "string") update.school = b.school.trim().slice(0, 120) || null;
+      if (b.school_id !== undefined) {
+        const sch = await schoolById(b.school_id ? String(b.school_id) : null);
+        update.school_id = sch?.id || null;
+        update.school = sch?.name || null;
+        if (sch?.area_code && b.area_code === undefined && !s.area_code) update.area_code = sch.area_code;
+      }
       if (b.area_code !== undefined) {
         const ac = cleanAreaCode(b.area_code);
         if (b.area_code && !ac) return json({ error: "Enter a 3-digit area code, like 303." }, 400);
@@ -153,19 +162,20 @@ export const PATCH = withAdmin(async (req, me) => {
 async function addDirectly(req: Request, b: Record<string, unknown>) {
   const name = String(b.name || "").trim().slice(0, 100);
   const email = String(b.email || "").trim().toLowerCase();
-  const school = String(b.school || "").trim().slice(0, 120) || null;
-  const area_code = cleanAreaCode(b.area_code);
+  const sch = await schoolById(b.school_id ? String(b.school_id) : null);
+  const school = sch?.name || null;
+  const area_code = cleanAreaCode(b.area_code) || sch?.area_code || null;
   const role = b.role === "admin" || isBuiltInAdmin(email) ? "admin" : "teacher";
   if (!name) return json({ error: "Enter the teacher's name." }, 400);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Enter a valid email address." }, 400);
-  if (b.area_code && !area_code) return json({ error: "Enter a 3-digit area code, like 303." }, 400);
+  if (b.area_code && !cleanAreaCode(b.area_code)) return json({ error: "Enter a 3-digit area code, like 303." }, 400);
   if (await staffByEmail(email)) return json({ error: "Someone with this email already has an account." }, 400);
 
   const password = tempPassword();
   const userId = await upsertAuthUser(email, password);
   const ins = await db()
     .from("staff")
-    .insert({ email, name, school, area_code, role, status: "active", user_id: userId, join_code: newJoinCode() })
+    .insert({ email, name, school, school_id: sch?.id || null, area_code, role, status: "active", user_id: userId, join_code: newJoinCode() })
     .select("*")
     .single();
   if (ins.error) throw new Error(ins.error.message);

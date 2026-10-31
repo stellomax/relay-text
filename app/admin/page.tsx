@@ -13,6 +13,7 @@ type Person = {
   email: string;
   name: string;
   school: string | null;
+  school_id: string | null;
   role: "admin" | "teacher";
   status: "pending" | "active" | "disabled";
   area_code: string | null;
@@ -20,16 +21,26 @@ type Person = {
   phone_placeholder: boolean;
   join_link: string | null;
   builtInAdmin: boolean;
+  superAdmin: boolean;
   families: number;
   messages30d: number;
   last_seen_at: string | null;
   created_at: string;
 };
 type Invite = { id: string; code: string; name: string; school: string | null; area_code: string | null; role: string; expires_at: string };
-type Data = { staff: Person[]; autoBuy: boolean; unassignedFamilies: number; invites: Invite[]; signupUrl: string };
+type SchoolOpt = { id: string; name: string; district: string | null; area_code: string | null; active: boolean };
+type Data = {
+  staff: Person[];
+  autoBuy: boolean;
+  unassignedFamilies: number;
+  invites: Invite[];
+  signupUrl: string;
+  schools: SchoolOpt[];
+  viewerIsSuper: boolean;
+};
 type Notice = { title: string; lines: string[]; copy?: string; big?: string } | null;
 
-const EMPTY_NEW = { mode: "code" as "code" | "direct", name: "", email: "", school: "", area_code: "", admin: false };
+const EMPTY_NEW = { mode: "code" as "code" | "direct", name: "", email: "", school_id: "", area_code: "", admin: false };
 
 // Admin: create sign-up codes for new teachers, and manage teachers, admins and their texting numbers.
 export default function AdminPage() {
@@ -39,6 +50,7 @@ export default function AdminPage() {
   const [adding, setAdding] = useState<typeof EMPTY_NEW | null>(null);
   const [busy, setBusy] = useState("");
   const [notice, setNotice] = useState<Notice>(null);
+  const [schoolFilter, setSchoolFilter] = useState<string>("");
 
   const load = useCallback(async () => {
     try {
@@ -52,8 +64,10 @@ export default function AdminPage() {
   }, []);
   useEffect(() => {
     load();
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("school")) setSchoolFilter(params.get("school")!);
     // "Add Teacher" in the main menu opens straight to the add sheet.
-    if (new URLSearchParams(window.location.search).get("add")) {
+    if (params.get("add")) {
       setAdding({ ...EMPTY_NEW });
       window.history.replaceState({}, "", "/admin");
     }
@@ -132,7 +146,9 @@ export default function AdminPage() {
   }
 
   const pending = data?.staff.filter((s) => s.status === "pending") || [];
-  const people = data?.staff.filter((s) => s.status !== "pending") || [];
+  const people = (data?.staff.filter((s) => s.status !== "pending") || []).filter(
+    (s) => !schoolFilter || (schoolFilter === "none" ? !s.school_id : s.school_id === schoolFilter)
+  );
 
   return (
     <div className="settings">
@@ -141,7 +157,12 @@ export default function AdminPage() {
           <ChevronLeft /> Settings
         </a>
         <div className="settings-title">Teachers</div>
-        <button className="icon-btn add-btn" onClick={() => setAdding({ ...EMPTY_NEW })} aria-label="Add teacher" title="Add teacher">
+        <button
+          className="icon-btn add-btn"
+          onClick={() => setAdding({ ...EMPTY_NEW, school_id: schoolFilter && schoolFilter !== "none" ? schoolFilter : "" })}
+          aria-label="Add teacher"
+          title="Add teacher"
+        >
           <Plus size={20} />
         </button>
       </header>
@@ -215,6 +236,36 @@ export default function AdminPage() {
               </>
             )}
 
+            {data.viewerIsSuper && (
+              <div className="ios-group">
+                <a className="ios-row nav-row" href="/admin/schools">
+                  <span>
+                    Schools
+                    <span className="ios-row-hint">
+                      {data.schools.length} {data.schools.length === 1 ? "school" : "schools"} · create schools and their sign-up codes
+                    </span>
+                  </span>
+                  <ChevronRight size={13} className="row-chev" />
+                </a>
+              </div>
+            )}
+
+            {data.schools.length > 0 && (
+              <label className="inbox-picker filter-picker">
+                <span className="inbox-picker-label">School</span>
+                <select value={schoolFilter} onChange={(e) => setSchoolFilter(e.target.value)}>
+                  <option value="">All schools</option>
+                  {data.schools.map((sc) => (
+                    <option key={sc.id} value={sc.id}>
+                      {sc.name}
+                    </option>
+                  ))}
+                  <option value="none">No school</option>
+                </select>
+                <ChevronRight size={12} className="picker-chev" />
+              </label>
+            )}
+
             <p className="ios-section">Teachers and admins · {people.length}</p>
             <div className="ios-group">
               {people.map((p) => (
@@ -223,7 +274,7 @@ export default function AdminPage() {
                   <span className="person-main">
                     <span className="person-name">
                       {p.name}
-                      {p.role === "admin" && <span className="tag-admin">Admin</span>}
+                      {p.role === "admin" && <span className="tag-admin">{p.superAdmin ? "Super Admin" : "Admin"}</span>}
                       {p.status === "disabled" && <span className="tag-off">Off</span>}
                     </span>
                     <span className="ios-row-hint">
@@ -256,6 +307,7 @@ export default function AdminPage() {
       {open && (
         <PersonSheet
           person={open}
+          schools={data?.schools || []}
           autoBuy={!!data?.autoBuy}
           busy={busy}
           onClose={() => setOpen(null)}
@@ -307,9 +359,20 @@ export default function AdminPage() {
                 onChange={(e) => setAdding({ ...adding, email: e.target.value })}
               />
             )}
-            <input placeholder="School (optional)" value={adding.school} onChange={(e) => setAdding({ ...adding, school: e.target.value })} />
+            <label className="ios-row select-row">
+              <span className="ios-row-label">school</span>
+              <select value={adding.school_id} onChange={(e) => setAdding({ ...adding, school_id: e.target.value })}>
+                <option value="">No school</option>
+                {(data?.schools || []).map((sc) => (
+                  <option key={sc.id} value={sc.id}>
+                    {sc.name}
+                    {sc.district ? ` · ${sc.district}` : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
             <input
-              placeholder="Area code for their number (optional, e.g. 303)"
+              placeholder="Area code (optional; defaults to the school's)"
               inputMode="numeric"
               maxLength={3}
               value={adding.area_code}
@@ -364,20 +427,22 @@ export default function AdminPage() {
 
 function PersonSheet({
   person: p,
+  schools,
   autoBuy,
   busy,
   onClose,
   onAct,
 }: {
   person: Person;
+  schools: SchoolOpt[];
   autoBuy: boolean;
   busy: string;
   onClose: () => void;
   onAct: (action: string, extra?: Record<string, unknown>) => void;
 }) {
-  const [f, setF] = useState({ name: p.name, school: p.school || "", area_code: p.area_code || "", admin: p.role === "admin" });
+  const [f, setF] = useState({ name: p.name, school_id: p.school_id || "", area_code: p.area_code || "", admin: p.role === "admin" });
   const changed =
-    f.name !== p.name || f.school !== (p.school || "") || f.area_code !== (p.area_code || "") || f.admin !== (p.role === "admin");
+    f.name !== p.name || f.school_id !== (p.school_id || "") || f.area_code !== (p.area_code || "") || f.admin !== (p.role === "admin");
 
   return (
     <Sheet
@@ -389,7 +454,7 @@ function PersonSheet({
               label: "Save",
               busy: busy === "update",
               disabled: !f.name.trim(),
-              onClick: () => onAct("update", { name: f.name, school: f.school, area_code: f.area_code, role: f.admin ? "admin" : "teacher" }),
+              onClick: () => onAct("update", { name: f.name, school_id: f.school_id, area_code: f.area_code, role: f.admin ? "admin" : "teacher" }),
             }
           : undefined
       }
@@ -409,7 +474,14 @@ function PersonSheet({
         </label>
         <label className="ios-row">
           <span className="ios-row-label">school</span>
-          <input value={f.school} onChange={(e) => setF({ ...f, school: e.target.value })} />
+          <select value={f.school_id} onChange={(e) => setF({ ...f, school_id: e.target.value })}>
+            <option value="">{p.school && !p.school_id ? `${p.school} (not linked)` : "No school"}</option>
+            {schools.map((sc) => (
+              <option key={sc.id} value={sc.id}>
+                {sc.name}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="ios-row">
           <span className="ios-row-label">area code</span>

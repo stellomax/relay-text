@@ -35,6 +35,7 @@ export type Staff = {
   email: string;
   name: string;
   school: string | null;
+  school_id?: string | null;
   role: "admin" | "teacher";
   status: "pending" | "active" | "disabled";
   area_code: string | null;
