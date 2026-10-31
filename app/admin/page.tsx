@@ -173,6 +173,13 @@ export default function AdminPage() {
 
         {data && (
           <>
+            <button
+              className="ios-button add-teacher-btn"
+              onClick={() => setAdding({ ...EMPTY_NEW, school_id: schoolFilter && schoolFilter !== "none" ? schoolFilter : "" })}
+            >
+              <Plus size={18} /> Add Teacher
+            </button>
+
             <div className={`admin-banner ${data.autoBuy ? "live" : ""}`}>
               {data.autoBuy
                 ? "Live: approving a teacher buys them a real local number in their area code."
@@ -542,7 +549,7 @@ function PersonSheet({
       )}
 
       <div className="ios-group">
-        <a className="ios-row nav-row" href={`/?as=${p.id}`}>
+        <a className="ios-row nav-row" href={`/inbox?as=${p.id}`}>
           View Inbox
           <ChevronRight size={13} className="row-chev" />
         </a>

@@ -1,307 +1,316 @@
-"use client";
+import type { Metadata } from "next";
+import { Bricolage_Grotesque, Figtree } from "next/font/google";
+import { BRAND, COMPANY } from "@/lib/brand";
+import "./landing.css";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import Avatar from "@/components/Avatar";
-import Thread from "@/components/Thread";
-import NewMessage from "@/components/NewMessage";
-import ContactSheet from "@/components/ContactSheet";
-import DemoReply from "@/components/DemoReply";
-import { ChevronRight, Compose, Search } from "@/components/icons";
-import MainMenu, { type Me, type ConversationActions } from "@/components/MainMenu";
-import { api } from "@/lib/client";
-import { listTime } from "@/lib/format";
-import { prettyPhone } from "@/lib/phone";
-import type { Contact, Message } from "@/lib/db";
+const display = Bricolage_Grotesque({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--lp-display" });
+const body = Figtree({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--lp-body" });
 
-type Conversation = { contact: Contact; last: Partial<Message> | null; unread: number };
-type Inbox = { id: string; label: string; sub?: string };
-type SheetKind = "new" | "info" | "demo" | null;
+export const metadata: Metadata = {
+  title: "Relay Text · Text every family in their own language",
+  description:
+    "Teachers write in English. Families get a regular text in their own language and reply the same way. No app to download.",
+};
 
-function readParams() {
-  if (typeof window === "undefined") return { c: null as string | null, as: null as string | null };
-  const p = new URLSearchParams(window.location.search);
-  return { c: p.get("c"), as: p.get("as") };
-}
+const HELLOS = [
+  { t: "Hola", l: "Spanish" },
+  { t: "مرحبا", l: "Arabic", rtl: true },
+  { t: "Xin chào", l: "Vietnamese" },
+  { t: "Salaan", l: "Somali" },
+  { t: "你好", l: "Chinese" },
+  { t: "မင်္ဂလာပါ", l: "Burmese" },
+  { t: "سلام", l: "Dari", rtl: true },
+  { t: "Привіт", l: "Ukrainian" },
+  { t: "Bonjour", l: "French" },
+  { t: "Bonjou", l: "Haitian Creole" },
+  { t: "Olá", l: "Portuguese" },
+  { t: "Jambo", l: "Swahili" },
+  { t: "ሰላም", l: "Amharic" },
+  { t: "नमस्ते", l: "Nepali" },
+  { t: "Nyob zoo", l: "Hmong" },
+];
 
-function url(c: string | null, as: string | null) {
-  const p = new URLSearchParams();
-  if (as) p.set("as", as);
-  if (c) p.set("c", c);
-  const q = p.toString();
-  return q ? `/?${q}` : "/";
-}
-
-export default function Messages() {
-  const [convos, setConvos] = useState<Conversation[]>([]);
-  const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState("");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [as, setAs] = useState<string | null>(null);
-  const [inboxes, setInboxes] = useState<Inbox[] | null>(null);
-  const [readOnly, setReadOnly] = useState(false);
-  const [query, setQuery] = useState("");
-  const [sheet, setSheet] = useState<SheetKind>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const asRef = useRef<string | null>(null);
-  const [me, setMe] = useState<Me | null>(null);
-
-  useEffect(() => {
-    api<{ me: Me }>("/api/me")
-      .then((d) => setMe(d.me))
-      .catch(() => {});
-  }, []);
-
-  const load = useCallback(async () => {
-    try {
-      const a = asRef.current;
-      const d = await api<{ conversations: Conversation[]; inboxes?: Inbox[]; scope: { readOnly: boolean } }>(
-        `/api/conversations${a ? `?as=${encodeURIComponent(a)}` : ""}`
-      );
-      if (a !== asRef.current) return; // the inbox changed while loading
-      setConvos(d.conversations);
-      setInboxes(d.inboxes || null);
-      setReadOnly(!!d.scope?.readOnly);
-      setError("");
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoaded(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    const sync = () => {
-      const p = readParams();
-      asRef.current = p.as;
-      setAs(p.as);
-      setSelectedId(p.c);
-    };
-    sync();
-    const onPop = () => {
-      sync();
-      load();
-    };
-    window.addEventListener("popstate", onPop);
-    load();
-    const t = setInterval(() => document.visibilityState === "visible" && load(), 4000);
-    return () => {
-      clearInterval(t);
-      window.removeEventListener("popstate", onPop);
-    };
-  }, [load]);
-
-  // Opening a conversation pushes a history entry, so the phone's back gesture works.
-  function open(id: string) {
-    if (id !== selectedId) window.history.pushState({}, "", url(id, as));
-    setSelectedId(id);
-    setConvos((cs) => cs.map((c) => (c.contact.id === id && !readOnly ? { ...c, unread: 0 } : c)));
-  }
-  function back() {
-    if (readParams().c) window.history.pushState({}, "", url(null, as));
-    setSelectedId(null);
-    load();
-  }
-  function switchInbox(id: string) {
-    const next = !inboxes || id === inboxes[0]?.id ? null : id;
-    asRef.current = next;
-    setAs(next);
-    setSelectedId(null);
-    setConvos([]);
-    setLoaded(false);
-    window.history.pushState({}, "", url(null, next));
-    load();
-  }
-
-  const selected = convos.find((c) => c.contact.id === selectedId)?.contact || null;
-
-  async function deleteConversation(c: Contact) {
-    if (!confirm(`Delete the conversation with ${c.parent_name}? This removes the family and all messages, and can't be undone.`)) return;
-    try {
-      await api(`/api/contacts?id=${c.id}`, { method: "DELETE" });
-      back();
-    } catch (e: any) {
-      setError(e.message);
-    }
-  }
-
-  const conversationActions: ConversationActions | null = selected
-    ? {
-        name: selected.parent_name,
-        readOnly,
-        onInfo: () => setSheet("info"),
-        onDemo: () => setSheet("demo"),
-        onDelete: () => deleteConversation(selected),
-      }
-    : null;
-  const otherUnread = convos.filter((c) => c.contact.id !== selectedId && c.unread > 0).length;
-  const currentInbox = inboxes?.find((i) => i.id === (as || inboxes[0]?.id));
-  const asQuery = as ? `?as=${encodeURIComponent(as)}` : "";
-
-  const q = query.trim().toLowerCase();
-  const rows = convos.filter(
-    (c) =>
-      (c.last || c.contact.id === selectedId) &&
-      (!q ||
-        [c.contact.parent_name, c.contact.child_name || "", c.contact.phone, c.last?.body_en || ""]
-          .join(" ")
-          .toLowerCase()
-          .includes(q))
-  );
-
+function TeacherPhone() {
   return (
-    <div className={`app ${selectedId ? "show-thread" : ""}`}>
-      <aside className="inbox">
-        <div className="inbox-bar">
-          <img className="inbox-logo" src="/relay-text-logo.png" alt="Relay Text" />
-          <span className="inbox-bar-actions">
-            {!readOnly && (
-              <button className="icon-btn" onClick={() => setSheet("new")} aria-label="New message" title="New message">
-                <Compose />
-              </button>
-            )}
-            {/* On phones the menu sits here; on wider screens it's at the top right of the conversation side. */}
-            <span className="inbox-bar-menu">
-              <MainMenu me={me} />
-            </span>
-          </span>
+    <div className="lp-phone lp-phone-teacher" aria-label="The teacher's view in Relay Text, in English">
+      <div className="lp-screen">
+        <div className="lp-statusbar">
+          <span>9:41</span>
         </div>
-
-        {inboxes && inboxes.length > 1 && (
-          <label className="inbox-picker">
-            <span className="inbox-picker-label">Inbox</span>
-            <select value={as || inboxes[0].id} onChange={(e) => switchInbox(e.target.value)}>
-              {inboxes.map((i) => (
-                <option key={i.id} value={i.id}>
-                  {i.label}
-                  {i.sub ? ` · ${i.sub}` : ""}
-                </option>
-              ))}
-            </select>
-            <ChevronRight size={12} className="picker-chev" />
-          </label>
-        )}
-        {readOnly && currentInbox && (
-          <p className="viewing-note">Viewing {currentInbox.label}’s conversations. Only they can reply.</p>
-        )}
-
-        <div className="searchbar">
-          <Search />
-          <input placeholder="Search" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <div className="lp-threadhead">
+          <span className="lp-avatar">MH</span>
+          <span className="lp-who">Maria Hernández</span>
+          <span className="lp-lang">Spanish</span>
         </div>
-
-        {error && <p className="inbox-error">{error}</p>}
-
-        {loaded && rows.length === 0 && !error && (
-          <div className="inbox-empty">
-            {q ? (
-              <p>No results</p>
-            ) : readOnly ? (
-              <p>No conversations yet.</p>
-            ) : (
-              <>
-                <p className="inbox-empty-title">No Messages</p>
-                <p>Tap the compose button to text a family in their own language.</p>
-                <button className="ios-button small" onClick={() => setSheet("new")}>
-                  New Message
-                </button>
-              </>
-            )}
+        <div className="lp-msgs">
+          <div className="lp-stamp">Today 3:12 PM</div>
+          <div className="lp-b out lp-seq1">
+            Hi Mrs. Hernández, this is Ms. Rivera from Sagewood Middle School. Conferences are Thursday, 4 to 7 pm. Can you come?
+            <span className="lp-tr">Sent in Spanish</span>
           </div>
-        )}
+          <div className="lp-receipt lp-seq1">Delivered</div>
+          <div className="lp-b in lp-seq4">
+            Yes! We’ll be there at 5. Thank you.
+            <span className="lp-tr" lang="es">Original: ¡Sí! Estaremos allí a las 5. Gracias.</span>
+          </div>
+          <div className="lp-b out lp-seq5">
+            Wonderful, see you then!
+            <span className="lp-tr">Sent in Spanish</span>
+          </div>
+        </div>
+        <div className="lp-compose">
+          <span>Text Message · Spanish</span>
+        </div>
+      </div>
+      <p className="lp-caption">Ms. Rivera writes and reads in English</p>
+    </div>
+  );
+}
 
-        <ul className="convos">
-          {rows.map(({ contact, last, unread }) => {
-            const name = contact.parent_name.startsWith("Unknown ") ? prettyPhone(contact.phone) : contact.parent_name;
-            return (
-              <li key={contact.id}>
-                <button
-                  className={`convo ${unread ? "unread" : ""} ${contact.id === selectedId ? "selected" : ""}`}
-                  onClick={() => open(contact.id)}
-                >
-                  <span className="dot" aria-label={unread ? "Unread" : undefined} />
-                  <Avatar name={contact.parent_name} size={44} />
-                  <span className="convo-main">
-                    <span className="convo-top">
-                      <span className="convo-name">{name}</span>
-                      <span className="convo-time">
-                        {last?.created_at ? listTime(last.created_at) : ""}
-                        <ChevronRight size={12} />
-                      </span>
-                    </span>
-                    <span className="convo-preview">{last?.body_en || "No messages yet"}</span>
-                  </span>
-                </button>
+function ParentPhone() {
+  return (
+    <div className="lp-phone lp-phone-parent" aria-label="The parent's regular Messages app, in Spanish">
+      <div className="lp-screen">
+        <div className="lp-statusbar">
+          <span>9:41</span>
+        </div>
+        <div className="lp-threadhead plain">
+          <span className="lp-avatar gray">MR</span>
+          <span className="lp-who">Ms. Rivera</span>
+        </div>
+        <div className="lp-msgs" lang="es">
+          <div className="lp-stamp">Text Message · Today 3:12 PM</div>
+          <div className="lp-b in lp-seq2">
+            Hola Sra. Hernández, soy la Sra. Rivera de la Escuela Secundaria Sagewood. Las conferencias son el jueves, de 4 a 7
+            pm. ¿Puede venir?
+          </div>
+          <div className="lp-b sms lp-seq3">¡Sí! Estaremos allí a las 5. Gracias.</div>
+          <div className="lp-b in lp-seq6">¡Maravilloso, nos vemos entonces!</div>
+        </div>
+        <div className="lp-compose plain">
+          <span>Text Message</span>
+        </div>
+      </div>
+      <p className="lp-caption">Mrs. Hernández gets a normal text in Spanish</p>
+    </div>
+  );
+}
+
+export default function Landing() {
+  return (
+    <div className={`lp ${display.variable} ${body.variable}`}>
+      <header className="lp-nav">
+        <a href="/" className="lp-logo" aria-label={BRAND}>
+          <img src="/relay-text-logo.png" alt={BRAND} />
+        </a>
+        <nav className="lp-nav-actions" aria-label="Account">
+          <a className="lp-link" href="/login">
+            Log in
+          </a>
+          <a className="lp-btn small" href="/signup">
+            Sign up
+          </a>
+        </nav>
+      </header>
+
+      <main>
+        <section className="lp-hero">
+          <div className="lp-hero-copy">
+            <h1>Text every family in their own language.</h1>
+            <p className="lp-lede">
+              Teachers write in English. Parents get a regular text in Spanish, Arabic, Somali or one of 30 languages, and
+              reply the same way. Nobody downloads an app.
+            </p>
+            <div className="lp-ctas">
+              <a className="lp-btn" href="/signup">
+                Create a teacher account
+              </a>
+              <a className="lp-btn ghost" href="/login">
+                Log in
+              </a>
+            </div>
+            <p className="lp-fine">Teachers sign up with the code from their school.</p>
+          </div>
+
+          <div className="lp-pair">
+            <TeacherPhone />
+            <div className="lp-bridge" aria-hidden>
+              <span>English</span>
+              <svg viewBox="0 0 64 24" width="64" height="24">
+                <path d="M2 8h54l-6-6M62 16H8l6 6" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>Español</span>
+            </div>
+            <ParentPhone />
+          </div>
+        </section>
+
+        <section className="lp-noapp">
+          <div className="lp-lock" aria-label="A parent's phone lock screen showing a text in Arabic">
+            <div className="lp-lock-screen">
+              <div className="lp-lock-time">7:48</div>
+              <div className="lp-lock-date">Tuesday, November 4</div>
+              <div className="lp-notif">
+                <div className="lp-notif-top">
+                  <span className="lp-notif-app">Messages</span>
+                  <span>now</span>
+                </div>
+                <div className="lp-notif-from">Mr. Okafor</div>
+                <div className="lp-notif-body" dir="rtl" lang="ar">
+                  صباح الخير! تذكير: يوم الصور هو يوم الجمعة. يرجى إرسال النموذج الموقع.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="lp-noapp-copy">
+            <h2>Parents don’t install anything.</h2>
+            <p>
+              Messages arrive in the texting app already on their phone, from a regular phone number. There’s no account to
+              create, no password to forget and no app to keep updated.
+            </p>
+            <ul className="lp-checks">
+              <li>Works on any phone that can text, including older phones and flip phones</li>
+              <li>No data plan or Wi‑Fi needed</li>
+              <li>Parents reply in their own words, in their own language</li>
+              <li>Reply STOP anytime to opt out</li>
+            </ul>
+          </div>
+        </section>
+
+        <section className="lp-steps" aria-labelledby="how">
+          <h2 id="how">How it works</h2>
+          <ol>
+            <li>
+              <h3>Write in English</h3>
+              <p>Pick a family and type your message, the same way you’d text anyone.</p>
+            </li>
+            <li>
+              <h3>Relay Text translates and sends it</h3>
+              <p>It goes out as a normal text in the family’s language, from your own Relay Text number.</p>
+            </li>
+            <li>
+              <h3>Read the reply in English</h3>
+              <p>The parent answers in their language. You see it in English, with the original right underneath.</p>
+            </li>
+          </ol>
+        </section>
+
+        <section className="lp-hellos" aria-labelledby="langs">
+          <h2 id="langs">Speak to every family at your school.</h2>
+          <p>
+            Relay Text supports the home languages most common in U.S. schools, including ones many tools skip, like Somali,
+            Burmese, Dari, Kinyarwanda and Hmong.
+          </p>
+          <ul className="lp-hello-grid">
+            {HELLOS.map((h) => (
+              <li key={h.l}>
+                <span className="lp-hello" dir={h.rtl ? "rtl" : undefined}>
+                  {h.t}
+                </span>
+                <span className="lp-hello-lang">{h.l}</span>
               </li>
-            );
-          })}
-        </ul>
-      </aside>
+            ))}
+          </ul>
+        </section>
 
-      <main className="pane">
-        {selected ? (
-          <Thread
-            contact={selected}
-            backBadge={otherUnread}
-            onBack={back}
-            onChanged={load}
-            onOpenInfo={() => setSheet("info")}
-            onOpenDemo={() => setSheet("demo")}
-            refreshKey={refreshKey}
-            readOnly={readOnly}
-            ownerLabel={currentInbox?.label}
-            headerRight={<MainMenu me={me} conversation={conversationActions} />}
-          />
-        ) : (
-          <div className="pane-blank">
-            <div className="pane-bar">
-              <MainMenu me={me} />
+        <section className="lp-schools" aria-labelledby="schools">
+          <div className="lp-schools-copy">
+            <h2 id="schools">Built for schools.</h2>
+            <dl>
+              <div>
+                <dt>A number for every teacher</dt>
+                <dd>Each teacher texts from their own Relay Text number. Their personal cell stays private.</dd>
+              </div>
+              <div>
+                <dt>Familiar from day one</dt>
+                <dd>It looks and works like the Messages app teachers already use. There’s nothing to learn.</dd>
+              </div>
+              <div>
+                <dt>Admins see the whole school</dt>
+                <dd>Add teachers with a school sign-up code, view any conversation and manage numbers in one place.</dd>
+              </div>
+              <div>
+                <dt>Consent and opt-outs handled</dt>
+                <dd>Families sign up with a simple form, and STOP replies are honored automatically.</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div className="lp-window" aria-label="The Relay Text inbox">
+            <div className="lp-window-bar">
+              <i />
+              <i />
+              <i />
             </div>
-            <div className="pane-empty">
-              <img src="/icon-192.png" alt="" width={72} height={72} />
-              <p>{readOnly ? "Choose a conversation to view." : "Choose a conversation, or start a new one."}</p>
+            <div className="lp-window-body">
+              <aside className="lp-wl">
+                <img src="/relay-text-logo.png" alt="" className="lp-wl-logo" />
+                {[
+                  ["OK", "Olena Kovalenko", "Yes, buses run on the normal schedule Monday.", "3:20 PM", false, true],
+                  ["MH", "Maria Hernández", "Yes! We’ll be there at 5. Thank you.", "3:14 PM", true, false],
+                  ["AA", "Amina Abdi", "Thank you, Ayaan will bring the form tomorrow.", "2:02 PM", true, false],
+                  ["TN", "Thanh Nguyen", "Reminder: picture day is Friday.", "Yesterday", false, false],
+                ].map(([i, n, m, t, u, sel]) => (
+                  <div className={`lp-wl-row ${sel ? "sel" : ""}`} key={n as string}>
+                    <span className={`lp-dot ${u ? "on" : ""}`} />
+                    <span className="lp-avatar gray sm">{i}</span>
+                    <span className="lp-wl-text">
+                      <span className="lp-wl-top">
+                        <b>{n}</b>
+                        <em>{t}</em>
+                      </span>
+                      <span className="lp-wl-msg">{m}</span>
+                    </span>
+                  </div>
+                ))}
+              </aside>
+              <div className="lp-wr">
+                <div className="lp-wr-head">
+                  <span className="lp-avatar sm">OK</span>
+                  <span className="lp-who">Olena Kovalenko</span>
+                  <span className="lp-lang">Ukrainian</span>
+                </div>
+                <div className="lp-wr-msgs">
+                <div className="lp-b in">
+                  Is there a bus on Monday?
+                  <span className="lp-tr" lang="uk">
+                    Original: Чи буде автобус у понеділок?
+                  </span>
+                </div>
+                <div className="lp-b out">
+                  Yes, buses run on the normal schedule Monday.
+                  <span className="lp-tr">Sent in Ukrainian</span>
+                </div>
+                </div>
+              </div>
             </div>
           </div>
-        )}
+        </section>
+
+        <section className="lp-final">
+          <h2>Start texting families today.</h2>
+          <p>Get your school’s sign-up code from your Relay Text admin, then create your account in a minute.</p>
+          <div className="lp-ctas center">
+            <a className="lp-btn light" href="/signup">
+              Sign up
+            </a>
+            <a className="lp-btn outline-light" href="/login">
+              Log in
+            </a>
+          </div>
+        </section>
       </main>
 
-      {sheet === "new" && !readOnly && (
-        <NewMessage
-          contacts={convos.map((c) => c.contact)}
-          createUrl={`/api/contacts${asQuery}`}
-          onCancel={() => setSheet(null)}
-          onPick={async (id) => {
-            setSheet(null);
-            await load();
-            open(id);
-          }}
-        />
-      )}
-      {sheet === "info" && selected && (
-        <ContactSheet
-          contact={selected}
-          readOnly={readOnly}
-          onClose={() => setSheet(null)}
-          onSaved={() => {
-            setSheet(null);
-            load();
-          }}
-          onDeleted={() => {
-            setSheet(null);
-            back();
-          }}
-        />
-      )}
-      {sheet === "demo" && selected && !readOnly && (
-        <DemoReply
-          contact={selected}
-          onClose={() => setSheet(null)}
-          onSent={() => {
-            setSheet(null);
-            setRefreshKey((k) => k + 1);
-            load();
-          }}
-        />
-      )}
+      <footer className="lp-foot">
+        <span>
+          {BRAND} is a service of {COMPANY}.
+        </span>
+        <nav aria-label="Footer">
+          <a href="/join">Parents: sign up for texts</a>
+          <a href="/privacy">Privacy Policy</a>
+          <a href="/terms">Terms &amp; Conditions</a>
+        </nav>
+      </footer>
     </div>
   );
 }

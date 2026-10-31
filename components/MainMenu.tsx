@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Avatar from "./Avatar";
-import { Bubble, Building, Gear, Info, Link, People, PersonAdd, SignOut, Trash } from "./icons";
+import { Bubble, Building, Gear, Info, Link, People, SignOut, Trash } from "./icons";
 import { api } from "@/lib/client";
 
 export type Me = {
@@ -119,9 +119,6 @@ export default function MainMenu({ me, conversation }: { me: Me | null; conversa
               <>
                 <a role="menuitem" href="/admin">
                   Manage Teachers <People />
-                </a>
-                <a role="menuitem" href="/admin?add=1">
-                  Add Teacher <PersonAdd />
                 </a>
                 {me?.is_super && (
                   <a role="menuitem" href="/admin/schools">

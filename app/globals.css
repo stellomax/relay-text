@@ -474,3 +474,5 @@ a { color: var(--tint); text-decoration: none; }
 .select-row select { appearance: none; -webkit-appearance: none; cursor: pointer; }
 .code-field { font-variant-numeric: tabular-nums; letter-spacing: 3px; font-weight: 600; }
 .invite-code.code-off { color: var(--label-4); }
+.add-teacher-btn { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px; }
+.add-teacher-btn svg { color: #fff; }

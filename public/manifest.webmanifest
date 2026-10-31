@@ -1,7 +1,7 @@
 {
   "name": "Relay Text",
   "short_name": "Relay Text",
-  "start_url": "/",
+  "start_url": "/inbox",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",

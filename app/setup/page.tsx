@@ -91,7 +91,7 @@ export default function SetupPage() {
   return (
     <div className="settings">
       <header className="settings-bar">
-        <a className="back-btn text" href="/">
+        <a className="back-btn text" href="/inbox">
           <ChevronLeft /> Messages
         </a>
         <div className="settings-title">Settings</div>

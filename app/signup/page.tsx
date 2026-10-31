@@ -41,7 +41,7 @@ export default function Signup() {
     });
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
-      window.location.href = "/";
+      window.location.href = "/inbox";
       return;
     }
     setError(data.error || `Sign-up failed (error ${res.status}).`);
