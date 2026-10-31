@@ -258,11 +258,12 @@ a { color: var(--tint); text-decoration: none; }
 /* ---------------- login ---------------- */
 .login {
   min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 24px 20px calc(24px + var(--safe-b)); background: var(--grouped-bg);
+  padding: 24px 20px calc(24px + var(--safe-b)); background: var(--bg);
 }
 .login-logo { width: min(300px, 80vw); height: auto; }
 .login-tag { color: var(--label-3); margin: 14px 0 28px; text-align: center; }
 .login-form { width: 100%; max-width: 360px; }
+.login .ios-group { border: 1px solid #d1d1d6; }
 .login-error { color: var(--red); font-size: 15px; margin: -8px 4px 14px; }
 
 /* ---------------- settings ---------------- */

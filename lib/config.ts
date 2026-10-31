@@ -1,13 +1,25 @@
 // Central place to read settings from environment variables (set in Vercel).
+// Values are cleaned up, so stray spaces, quotes or a pasted "/rest/v1" don't break anything.
+function clean(v: string | undefined): string {
+  return (v || "").trim().replace(/^["']+|["']+$/g, "").trim();
+}
+
+function supabaseUrl(v: string): string {
+  let u = clean(v);
+  if (!u) return "";
+  if (!/^https?:\/\//i.test(u)) u = `https://${u}`;
+  return u.replace(/\/(rest|auth)\/v1.*$/i, "").replace(/\/+$/, "");
+}
+
 export const env = {
-  supabaseUrl: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
-  googleKey: process.env.GOOGLE_TRANSLATE_API_KEY || "",
-  twilioSid: process.env.TWILIO_ACCOUNT_SID || "",
-  twilioToken: process.env.TWILIO_AUTH_TOKEN || "",
-  twilioFrom: process.env.TWILIO_PHONE_NUMBER || "",
-  twilioMessagingService: process.env.TWILIO_MESSAGING_SERVICE_SID || "",
-  appUrl: (process.env.APP_URL || "").replace(/\/+$/, ""),
+  supabaseUrl: supabaseUrl(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || ""),
+  supabaseServiceKey: clean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+  googleKey: clean(process.env.GOOGLE_TRANSLATE_API_KEY),
+  twilioSid: clean(process.env.TWILIO_ACCOUNT_SID),
+  twilioToken: clean(process.env.TWILIO_AUTH_TOKEN),
+  twilioFrom: clean(process.env.TWILIO_PHONE_NUMBER).replace(/[\s().-]/g, ""),
+  twilioMessagingService: clean(process.env.TWILIO_MESSAGING_SERVICE_SID),
+  appUrl: clean(process.env.APP_URL).replace(/\/+$/, ""),
 };
 
 export function twilioConfigured(): boolean {
