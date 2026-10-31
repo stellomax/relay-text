@@ -1,8 +1,8 @@
 import { baseUrlFromRequest } from "@/lib/config";
 import { db, Staff } from "@/lib/db";
 import { json, withAdmin, errorMessage } from "@/lib/http";
-import { autoBuyEnabled, assignNumber, unassignNumber } from "@/lib/numbers";
-import { cleanAreaCode, isBuiltInAdmin, staffById, tempPassword } from "@/lib/staff";
+import { autoBuyEnabled, assignNumber, unassignNumber, type AssignResult } from "@/lib/numbers";
+import { cleanAreaCode, isBuiltInAdmin, newJoinCode, staffByEmail, staffById, tempPassword } from "@/lib/staff";
 import { findAuthUserId, setPassword, upsertAuthUser } from "@/lib/supabaseAuth";
 
 export const dynamic = "force-dynamic";
@@ -45,9 +45,11 @@ export const GET = withAdmin(async (req) => {
   });
 });
 
-// Create a 5-digit sign-up code for a new teacher (or admin). Good for 30 days, one use.
+// Add someone. mode "direct": create the account now with a temporary password (shown once).
+// Otherwise: create a 5-digit sign-up code for them to use at /signup (good for 30 days, one use).
 export const POST = withAdmin(async (req, me) => {
   const b = await req.json().catch(() => ({}));
+  if (b.mode === "direct") return addDirectly(req, b);
   const name = String(b.name || "").trim().slice(0, 100);
   const school = String(b.school || "").trim().slice(0, 120) || null;
   const area_code = cleanAreaCode(b.area_code);
@@ -147,3 +149,32 @@ export const PATCH = withAdmin(async (req, me) => {
       return json({ error: "Unknown action." }, 400);
   }
 });
+
+async function addDirectly(req: Request, b: Record<string, unknown>) {
+  const name = String(b.name || "").trim().slice(0, 100);
+  const email = String(b.email || "").trim().toLowerCase();
+  const school = String(b.school || "").trim().slice(0, 120) || null;
+  const area_code = cleanAreaCode(b.area_code);
+  const role = b.role === "admin" || isBuiltInAdmin(email) ? "admin" : "teacher";
+  if (!name) return json({ error: "Enter the teacher's name." }, 400);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Enter a valid email address." }, 400);
+  if (b.area_code && !area_code) return json({ error: "Enter a 3-digit area code, like 303." }, 400);
+  if (await staffByEmail(email)) return json({ error: "Someone with this email already has an account." }, 400);
+
+  const password = tempPassword();
+  const userId = await upsertAuthUser(email, password);
+  const ins = await db()
+    .from("staff")
+    .insert({ email, name, school, area_code, role, status: "active", user_id: userId, join_code: newJoinCode() })
+    .select("*")
+    .single();
+  if (ins.error) throw new Error(ins.error.message);
+  let number: AssignResult | null = null;
+  let numberError: string | null = null;
+  try {
+    number = await assignNumber(ins.data as Staff, baseUrlFromRequest(req));
+  } catch (e) {
+    numberError = errorMessage(e);
+  }
+  return json({ ok: true, tempPassword: password, email, number, numberError });
+}

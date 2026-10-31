@@ -49,7 +49,7 @@ Parent phone numbers and student names are student records. Row-level security i
 
 ## Teachers, admins and numbers
 - **Admins:** hamilton33@gmail.com is always an admin (add more with `ADMIN_EMAILS`, comma-separated). An admin account is created the first time they sign in with a Supabase login.
-- **Teachers** sign up at `/signup` with a 5-digit code an admin creates under Manage Teachers → + (optionally with school, area code and admin access). Codes work once and expire after 30 days. The account is active immediately and gets its own number.
+- **Teachers** sign up at `/signup` with a 5-digit code an admin creates under Manage Teachers → + (optionally with school, area code and admin access). Codes work once and expire after 30 days. The account is active immediately and gets its own number. Admins can also choose **Add Directly** to create the account on the spot with a temporary password (shown once).
 - **Numbers:** each approved teacher gets their own texting number. Until `TWILIO_AUTO_BUY_NUMBERS=true`, these are demo numbers (555-01xx, never real). With it on, approving a teacher buys a local number in their area code, points it at `/api/sms/incoming`, and adds it to `TWILIO_MESSAGING_SERVICE_SID`. Releasing a number in the admin screen stops its monthly charge.
 - **Routing:** replies are matched to a teacher by the number they were sent to. Each teacher has a parent sign-up link (`/join?t=CODE`) that puts families in their inbox.
 

@@ -29,7 +29,7 @@ type Invite = { id: string; code: string; name: string; school: string | null; a
 type Data = { staff: Person[]; autoBuy: boolean; unassignedFamilies: number; invites: Invite[]; signupUrl: string };
 type Notice = { title: string; lines: string[]; copy?: string; big?: string } | null;
 
-const EMPTY_NEW = { name: "", school: "", area_code: "", admin: false };
+const EMPTY_NEW = { mode: "code" as "code" | "direct", name: "", email: "", school: "", area_code: "", admin: false };
 
 // Admin: create sign-up codes for new teachers, and manage teachers, admins and their texting numbers.
 export default function AdminPage() {
@@ -93,6 +93,19 @@ export default function AdminPage() {
       const r = await api("/api/admin/staff", {
         body: { ...adding, role: adding.admin ? "admin" : "teacher" },
       });
+      if (adding.mode === "direct") {
+        const lines = [`${adding.name}'s account is ready. Send them these sign-in details; they can change the password in Settings.`];
+        if (r.number?.phone) lines.push(`Texting number: ${prettyPhone(r.number.phone)}${r.number.placeholder ? " (demo)" : ""}`);
+        if (r.numberError) lines.push(`Number not assigned yet: ${r.numberError}`);
+        setNotice({
+          title: "Teacher Added",
+          lines,
+          copy: `Your Relay Text account is ready. Sign in at relaytext.io with ${r.email}\nTemporary password: ${r.tempPassword}\nYou can change your password in Settings.`,
+        });
+        setAdding(null);
+        await load();
+        return;
+      }
       setNotice({
         title: "Sign-up Code",
         big: r.invite.code,
@@ -255,18 +268,45 @@ export default function AdminPage() {
           title="Add Teacher"
           onCancel={() => setAdding(null)}
           action={{
-            label: "Create Code",
+            label: adding.mode === "direct" ? "Add" : "Create Code",
             onClick: createCode,
             busy: busy === "add",
-            disabled: !adding.name.trim(),
+            disabled: !adding.name.trim() || (adding.mode === "direct" && !adding.email.trim()),
           }}
         >
+          <div className="segmented" role="tablist">
+            <button
+              role="tab"
+              aria-selected={adding.mode === "code"}
+              className={adding.mode === "code" ? "on" : ""}
+              onClick={() => setAdding({ ...adding, mode: "code" })}
+            >
+              Sign-up Code
+            </button>
+            <button
+              role="tab"
+              aria-selected={adding.mode === "direct"}
+              className={adding.mode === "direct" ? "on" : ""}
+              onClick={() => setAdding({ ...adding, mode: "direct" })}
+            >
+              Add Directly
+            </button>
+          </div>
           <p className="ios-footnote top">
-            Creates a 5-digit sign-up code. The teacher enters it at relaytext.io/signup with their email and a password, and
-            gets their own texting number right away.
+            {adding.mode === "code"
+              ? "Creates a 5-digit sign-up code. The teacher enters it at relaytext.io/signup with their school email and a password, and gets their own texting number right away."
+              : "Creates the account now with a temporary password you send them. They get their own texting number right away."}
           </p>
           <div className="ios-group">
             <input placeholder="Teacher's name" value={adding.name} onChange={(e) => setAdding({ ...adding, name: e.target.value })} autoFocus />
+            {adding.mode === "direct" && (
+              <input
+                type="email"
+                placeholder="School email"
+                value={adding.email}
+                onChange={(e) => setAdding({ ...adding, email: e.target.value })}
+              />
+            )}
             <input placeholder="School (optional)" value={adding.school} onChange={(e) => setAdding({ ...adding, school: e.target.value })} />
             <input
               placeholder="Area code for their number (optional, e.g. 303)"
@@ -311,7 +351,7 @@ export default function AdminPage() {
               </button>
               {!notice.big && (
                 <p className="ios-footnote top" style={{ marginTop: 12 }}>
-                  This password is shown only once.
+                  This password is shown only once. If it’s lost, use Reset Password on their page.
                 </p>
               )}
             </>

@@ -463,3 +463,8 @@ a { color: var(--tint); text-decoration: none; }
 .ios-group > * + .ios-row,
 .ios-group > .ios-row + *,
 .ios-group > * + * { border-top: 1px solid #e3e3e8; }
+
+/* iOS segmented control */
+.segmented { display: flex; background: rgba(118, 118, 128, 0.12); border-radius: 9px; padding: 2px; margin-bottom: 14px; }
+.segmented button { flex: 1; appearance: none; border: 0; background: transparent; padding: 7px 8px; font-size: 14px; font-weight: 600; color: var(--label); border-radius: 7px; cursor: pointer; }
+.segmented button.on { background: #fff; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.04); }
