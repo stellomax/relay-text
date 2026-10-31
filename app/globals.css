@@ -406,3 +406,9 @@ a { color: var(--tint); text-decoration: none; }
 }
 .translate-toggle.on { background: rgba(106, 2, 160, 0.09); border-color: transparent; color: var(--brand); }
 .translate-toggle:hover { filter: brightness(0.97); }
+
+/* inbox: ⋯ menu and compose together at the top right */
+.inbox-bar { justify-content: flex-end; gap: 2px; }
+.inbox-menu { margin-top: 0; }
+.inbox-menu .menu { min-width: 230px; }
+.menu > a + button { border-top: 0.5px solid var(--separator); }
