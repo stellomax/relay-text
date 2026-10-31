@@ -2,7 +2,7 @@
 
 import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Avatar from "./Avatar";
-import { ArrowUp, Alert, Bubble, ChevronLeft, ChevronRight, Ellipsis, Gear, Globe, Info, People, Plus, SignOut, Trash } from "./icons";
+import { ArrowUp, Alert, ChevronLeft, ChevronRight, Globe, Plus } from "./icons";
 import { api } from "@/lib/client";
 import { threadTime } from "@/lib/format";
 import { languageName } from "@/lib/languages";
@@ -25,7 +25,7 @@ export default function Thread({
   refreshKey,
   readOnly = false,
   ownerLabel,
-  isAdmin = false,
+  headerRight,
 }: {
   contact: Contact;
   backBadge: number;
@@ -36,7 +36,7 @@ export default function Thread({
   refreshKey: number;
   readOnly?: boolean;
   ownerLabel?: string;
-  isAdmin?: boolean;
+  headerRight?: React.ReactNode;
 }) {
   const [messages, setMessages] = useState<Pending[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -44,44 +44,9 @@ export default function Thread({
   const [showTranslations, setShowTranslations] = useState(true);
   const [openError, setOpenError] = useState<string | null>(null);
   const [sendError, setSendError] = useState("");
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
   const lastId = useRef<string>("");
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const onDown = (e: MouseEvent | TouchEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMenuOpen(false);
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("touchstart", onDown);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("touchstart", onDown);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [menuOpen]);
-
-  async function deleteConversation() {
-    setMenuOpen(false);
-    if (!confirm(`Delete the conversation with ${contact.parent_name}? This removes the family and all messages, and can't be undone.`)) return;
-    try {
-      await api(`/api/contacts?id=${contact.id}`, { method: "DELETE" });
-      onChanged();
-      onBack();
-    } catch (e: any) {
-      setSendError(e.message);
-    }
-  }
-
-  async function signOut() {
-    await api("/api/auth/logout", { method: "POST" }).catch(() => {});
-    window.location.href = "/login";
-  }
 
   const load = useCallback(async () => {
     const d = await api<{ messages: Message[] }>(`/api/messages?contactId=${contact.id}`);
@@ -184,46 +149,7 @@ export default function Thread({
           </span>
           <span className="thread-lang">{lang}</span>
         </button>
-        <div className="menu-wrap" ref={menuRef}>
-          <button
-            className="icon-btn menu-btn"
-            onClick={() => setMenuOpen((v) => !v)}
-            aria-label="More"
-            aria-haspopup="menu"
-            aria-expanded={menuOpen}
-          >
-            <Ellipsis />
-          </button>
-          {menuOpen && (
-            <div className="menu" role="menu">
-              <button role="menuitem" onClick={() => (setMenuOpen(false), onOpenInfo())}>
-                Family Info <Info />
-              </button>
-              {!readOnly && (
-                <button role="menuitem" onClick={() => (setMenuOpen(false), onOpenDemo())}>
-                  Simulate Parent Reply <Bubble />
-                </button>
-              )}
-              {!readOnly && (
-                <button role="menuitem" className="danger" onClick={deleteConversation}>
-                  Delete Conversation <Trash />
-                </button>
-              )}
-              <div className="menu-sep" />
-              <a role="menuitem" href="/setup">
-                Settings <Gear size={20} />
-              </a>
-              {isAdmin && (
-                <a role="menuitem" href="/admin">
-                  Manage Teachers <People />
-                </a>
-              )}
-              <button role="menuitem" onClick={signOut}>
-                Sign Out <SignOut />
-              </button>
-            </div>
-          )}
-        </div>
+        <div className="thread-bar-right">{headerRight}</div>
       </header>
 
       {contact.language !== "en" && (

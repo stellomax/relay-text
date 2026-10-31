@@ -106,3 +106,15 @@ export const SignOut = ({ size = 20, className }: P) => (
     <path d="M14 4.5H6.5A1.5 1.5 0 0 0 5 6v12a1.5 1.5 0 0 0 1.5 1.5H14M10 12h10M16.5 8.5 20 12l-3.5 3.5" />
   </svg>
 );
+export const Link = ({ size = 20, className }: P) => (
+  <svg {...base(size)} strokeWidth={1.8} className={className}>
+    <path d="M10 14a4.5 4.5 0 0 0 6.4.2l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2" />
+    <path d="M14 10a4.5 4.5 0 0 0-6.4-.2l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2" />
+  </svg>
+);
+export const PersonAdd = ({ size = 20, className }: P) => (
+  <svg {...base(size)} strokeWidth={1.8} className={className}>
+    <circle cx="10" cy="8" r="3.6" />
+    <path d="M3.5 20c.8-3.7 3.4-5.7 6.5-5.7 1.6 0 3 .5 4.2 1.4M18.5 14.5v6M15.5 17.5h6" />
+  </svg>
+);

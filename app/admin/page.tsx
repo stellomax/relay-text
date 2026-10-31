@@ -52,6 +52,11 @@ export default function AdminPage() {
   }, []);
   useEffect(() => {
     load();
+    // "Add Teacher" in the main menu opens straight to the add sheet.
+    if (new URLSearchParams(window.location.search).get("add")) {
+      setAdding({ ...EMPTY_NEW });
+      window.history.replaceState({}, "", "/admin");
+    }
   }, [load]);
 
   async function act(p: Person, action: string, extra: Record<string, unknown> = {}) {

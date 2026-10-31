@@ -7,7 +7,7 @@ import NewMessage from "@/components/NewMessage";
 import ContactSheet from "@/components/ContactSheet";
 import DemoReply from "@/components/DemoReply";
 import { ChevronRight, Compose, Search } from "@/components/icons";
-import AppMenu from "@/components/AppMenu";
+import MainMenu, { type Me, type ConversationActions } from "@/components/MainMenu";
 import { api } from "@/lib/client";
 import { listTime } from "@/lib/format";
 import { prettyPhone } from "@/lib/phone";
@@ -43,6 +43,13 @@ export default function Messages() {
   const [sheet, setSheet] = useState<SheetKind>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const asRef = useRef<string | null>(null);
+  const [me, setMe] = useState<Me | null>(null);
+
+  useEffect(() => {
+    api<{ me: Me }>("/api/me")
+      .then((d) => setMe(d.me))
+      .catch(() => {});
+  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -106,6 +113,26 @@ export default function Messages() {
   }
 
   const selected = convos.find((c) => c.contact.id === selectedId)?.contact || null;
+
+  async function deleteConversation(c: Contact) {
+    if (!confirm(`Delete the conversation with ${c.parent_name}? This removes the family and all messages, and can't be undone.`)) return;
+    try {
+      await api(`/api/contacts?id=${c.id}`, { method: "DELETE" });
+      back();
+    } catch (e: any) {
+      setError(e.message);
+    }
+  }
+
+  const conversationActions: ConversationActions | null = selected
+    ? {
+        name: selected.parent_name,
+        readOnly,
+        onInfo: () => setSheet("info"),
+        onDemo: () => setSheet("demo"),
+        onDelete: () => deleteConversation(selected),
+      }
+    : null;
   const otherUnread = convos.filter((c) => c.contact.id !== selectedId && c.unread > 0).length;
   const currentInbox = inboxes?.find((i) => i.id === (as || inboxes[0]?.id));
   const asQuery = as ? `?as=${encodeURIComponent(as)}` : "";
@@ -125,12 +152,15 @@ export default function Messages() {
     <div className={`app ${selectedId ? "show-thread" : ""}`}>
       <aside className="inbox">
         <div className="inbox-bar">
-          <AppMenu isAdmin={!!inboxes} />
           {!readOnly && (
             <button className="icon-btn" onClick={() => setSheet("new")} aria-label="New message" title="New message">
               <Compose />
             </button>
           )}
+          {/* On phones the menu sits here; on wider screens it's at the top right of the conversation side. */}
+          <span className="inbox-bar-menu">
+            <MainMenu me={me} />
+          </span>
         </div>
         <div className="inbox-title">
           <img src="/relay-text-logo.png" alt="Relay Text" />
@@ -219,12 +249,17 @@ export default function Messages() {
             refreshKey={refreshKey}
             readOnly={readOnly}
             ownerLabel={currentInbox?.label}
-            isAdmin={!!inboxes}
+            headerRight={<MainMenu me={me} conversation={conversationActions} />}
           />
         ) : (
-          <div className="pane-empty">
-            <img src="/icon-192.png" alt="" width={72} height={72} />
-            <p>{readOnly ? "Choose a conversation to view." : "Choose a conversation, or start a new one."}</p>
+          <div className="pane-blank">
+            <div className="pane-bar">
+              <MainMenu me={me} />
+            </div>
+            <div className="pane-empty">
+              <img src="/icon-192.png" alt="" width={72} height={72} />
+              <p>{readOnly ? "Choose a conversation to view." : "Choose a conversation, or start a new one."}</p>
+            </div>
           </div>
         )}
       </main>
