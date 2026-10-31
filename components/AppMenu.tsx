@@ -1,13 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Ellipsis, Gear, People, SignOut } from "./icons";
+import { Gear, People, SignOut } from "./icons";
+import Avatar from "./Avatar";
 import { api } from "@/lib/client";
 
-// The ⋯ menu at the top of the inbox: Settings, Manage Teachers (admins), Sign Out.
+// Your avatar at the top of the inbox opens a menu: Settings, Manage Teachers (admins), Sign Out.
 export default function AppMenu({ isAdmin }: { isAdmin: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const [me, setMe] = useState<{ name: string; email: string } | null>(null);
+
+  useEffect(() => {
+    api<{ me: { name: string; email: string } }>("/api/me")
+      .then((d) => setMe(d.me))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -33,16 +41,23 @@ export default function AppMenu({ isAdmin }: { isAdmin: boolean }) {
   return (
     <div className="menu-wrap inbox-menu" ref={ref}>
       <button
-        className="icon-btn menu-btn"
+        className="avatar-btn"
         onClick={() => setOpen((v) => !v)}
-        aria-label="More"
+        aria-label="Account menu"
         aria-haspopup="menu"
         aria-expanded={open}
+        title={me?.name || "Account"}
       >
-        <Ellipsis />
+        <Avatar name={me?.name || ""} size={34} />
       </button>
       {open && (
         <div className="menu" role="menu">
+          {me && (
+            <div className="menu-head">
+              <span className="menu-head-name">{me.name}</span>
+              <span className="menu-head-email">{me.email}</span>
+            </div>
+          )}
           <a role="menuitem" href="/setup">
             Settings <Gear size={20} />
           </a>
