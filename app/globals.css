@@ -305,3 +305,27 @@ a { color: var(--tint); text-decoration: none; }
 @media (min-width: 761px) {
   .thread-bar .back-btn { visibility: hidden; }
 }
+
+/* ---------------- public pages: sign-up, Privacy Policy, Terms ---------------- */
+.login-links { margin-top: 28px; font-size: 13px; color: var(--label-3); text-align: center; }
+.legal { min-height: 100vh; background: var(--bg); display: flex; flex-direction: column; }
+.legal-head { padding: calc(18px + var(--safe-t)) 20px 14px; border-bottom: 0.5px solid var(--separator); }
+.legal-head img { height: 32px; width: auto; display: block; margin: 0 auto; }
+.legal-body { width: 100%; max-width: 680px; margin: 0 auto; padding: 28px 20px 40px; flex: 1; font-size: 16px; line-height: 1.55; letter-spacing: -0.2px; }
+.legal-body h1 { font-size: 30px; line-height: 1.15; letter-spacing: -0.6px; margin: 0 0 6px; }
+.legal-body h2 { font-size: 19px; margin: 28px 0 8px; letter-spacing: -0.3px; }
+.legal-body p, .legal-body li { color: var(--label-2); }
+.legal-body ul, .legal-body ol { padding-left: 22px; }
+.legal-body li { margin-bottom: 6px; }
+.legal-body a { text-decoration: underline; }
+.legal-updated, .legal-small { font-size: 13px; color: var(--label-3); }
+.legal-foot { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; padding: 18px 20px calc(18px + var(--safe-b)); border-top: 0.5px solid var(--separator); font-size: 14px; }
+.join-form { display: flex; flex-direction: column; gap: 16px; margin-top: 22px; }
+.join-form label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; color: var(--label); }
+.join-form input:not([type="checkbox"]), .join-form select {
+  border: 1px solid #c6c6c8; border-radius: 10px; padding: 11px 12px; font-size: 17px; background: var(--bg); outline: none; width: 100%;
+}
+.join-form input:focus, .join-form select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(106, 2, 160, 0.15); }
+.join-form .consent { flex-direction: row; align-items: flex-start; gap: 12px; font-weight: 400; font-size: 14px; line-height: 1.45; color: var(--label-2); background: var(--grouped-bg); padding: 14px; border-radius: 12px; }
+.join-form .consent input { width: 22px; height: 22px; flex: 0 0 22px; margin: 1px 0 0; accent-color: var(--brand); }
+.join-error { color: var(--red); font-size: 15px; margin: 0; }

@@ -53,6 +53,9 @@ export default function LoginPage() {
           {busy ? "Signing In…" : "Sign In"}
         </button>
       </form>
+      <p className="login-links">
+        <a href="/join">Parents: sign up for texts</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a>
+      </p>
     </div>
   );
 }

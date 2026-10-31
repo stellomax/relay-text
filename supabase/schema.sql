@@ -32,6 +32,10 @@ create table if not exists public.messages (
   created_at       timestamptz not null default now()
 );
 
+-- Record of SMS consent (added Oct 31, 2026; safe to run on an existing database)
+alter table public.contacts add column if not exists consent_at timestamptz;
+alter table public.contacts add column if not exists consent_source text;
+
 create index if not exists messages_contact_created_idx on public.messages (contact_id, created_at);
 create index if not exists messages_twilio_sid_idx on public.messages (twilio_sid);
 
