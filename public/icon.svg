@@ -1,20 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7a05b4"/><stop offset="1" stop-color="#55017d"/></linearGradient>
-    <g id="front">
-      <rect x="92" y="108" width="236" height="186" rx="62"/>
-      <path d="M150,284 L102,352 L206,284 Z"/>
-    </g>
-    <!-- hides the back bubble's outline where the front bubble sits, leaving a clean gap -->
+    <!-- one bubble shape, used for both -->
+    <path id="b" d="M52,0 H144 A52,52 0 0 1 196,52 V98 A52,52 0 0 1 144,150 H82 L12,200 L30,145.1 A52,52 0 0 1 0,98 V52 A52,52 0 0 1 52,0 Z"/>
     <mask id="gap" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
       <rect width="512" height="512" fill="#fff"/>
-      <use href="#front" fill="#000" stroke="#000" stroke-width="44" stroke-linejoin="round"/>
+      <g transform="translate(98,106)"><use href="#b" fill="#000" stroke="#000" stroke-width="60" stroke-linejoin="round"/></g>
     </mask>
   </defs>
   <rect width="512" height="512" fill="url(#g)"/>
-  <g transform="translate(-8,-12)">
-    <path mask="url(#gap)" d="M252,214 H358 A62,62 0 0 1 420,276 V352 L424,448 L342,400 H252 A62,62 0 0 1 190,338 V276 A62,62 0 0 1 252,214 Z"
-          fill="none" stroke="#fff" stroke-width="24" stroke-linejoin="round"/>
-    <use href="#front" fill="#fff" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+  <g mask="url(#gap)">
+    <g transform="translate(218,206)"><use href="#b" fill="none" stroke="#fff" stroke-width="22" stroke-linejoin="round"/></g>
   </g>
+  <g transform="translate(98,106)"><use href="#b" fill="#fff" stroke="#fff" stroke-width="22" stroke-linejoin="round"/></g>
 </svg>
