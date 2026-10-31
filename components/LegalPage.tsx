@@ -1,4 +1,4 @@
-import { BRAND, LAST_UPDATED } from "@/lib/brand";
+import { BRAND, COMPANY, LAST_UPDATED } from "@/lib/brand";
 
 // Simple, readable layout for the public Privacy Policy, Terms and sign-up pages.
 export default function LegalPage({ title, children, updated = true }: { title: string; children: React.ReactNode; updated?: boolean }) {
@@ -18,6 +18,9 @@ export default function LegalPage({ title, children, updated = true }: { title: 
         <a href="/join">Sign up for texts</a>
         <a href="/privacy">Privacy Policy</a>
         <a href="/terms">Terms &amp; Conditions</a>
+        <span className="legal-copy">
+          {BRAND} is a service of {COMPANY}
+        </span>
       </footer>
     </div>
   );

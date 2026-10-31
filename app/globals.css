@@ -330,3 +330,4 @@ a { color: var(--tint); text-decoration: none; }
 .join-form .consent { flex-direction: row; align-items: flex-start; gap: 12px; font-weight: 400; font-size: 14px; line-height: 1.45; color: var(--label-2); background: var(--grouped-bg); padding: 14px; border-radius: 12px; }
 .join-form .consent input { width: 22px; height: 22px; flex: 0 0 22px; margin: 1px 0 0; accent-color: var(--brand); }
 .join-error { color: var(--red); font-size: 15px; margin: 0; }
+.legal-copy { flex-basis: 100%; text-align: center; color: var(--label-3); font-size: 12px; }

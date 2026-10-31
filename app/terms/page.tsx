@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import LegalPage from "@/components/LegalPage";
-import { BRAND, CONTACT_EMAIL, SITE } from "@/lib/brand";
+import { BRAND, COMPANY, CONTACT_EMAIL, SITE } from "@/lib/brand";
 
 export const metadata: Metadata = { title: `Terms & Conditions · ${BRAND}` };
 
@@ -8,9 +8,9 @@ export default function Terms() {
   return (
     <LegalPage title="Terms & Conditions">
       <p>
-        These Terms &amp; Conditions apply to {BRAND} (“{BRAND},” “we,” “us”), a service that lets schools text parents
-        and guardians in their own language, and to the website {SITE}. By signing up for or using {BRAND}, you agree to
-        these terms.
+        These Terms &amp; Conditions apply to {BRAND}, a service of {COMPANY} (“{BRAND},” “we,” “us”), and to the
+        website {SITE}. {BRAND} lets schools text parents and guardians in their own language. By signing up for or
+        using {BRAND}, you agree to these terms.
       </p>
 
       <h2>SMS Terms</h2>
@@ -74,7 +74,7 @@ export default function Terms() {
 
       <h2>Contact</h2>
       <p>
-        <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+        {COMPANY}, operator of {BRAND}: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
       </p>
     </LegalPage>
   );

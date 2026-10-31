@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import LegalPage from "@/components/LegalPage";
-import { BRAND, CONTACT_EMAIL, SITE } from "@/lib/brand";
+import { BRAND, COMPANY, CONTACT_EMAIL, SITE } from "@/lib/brand";
 
 export const metadata: Metadata = { title: `Privacy Policy · ${BRAND}` };
 
@@ -8,7 +8,7 @@ export default function Privacy() {
   return (
     <LegalPage title="Privacy Policy">
       <p>
-        This Privacy Policy explains how {BRAND} (“{BRAND},” “we,” “us”) collects, uses and protects information when
+        This Privacy Policy explains how {BRAND}, a service of {COMPANY} (“{BRAND},” “we,” “us”), collects, uses and protects information when
         schools use {BRAND} to send text messages to parents and guardians, and when parents and guardians sign up at{" "}
         {SITE}.
       </p>
@@ -96,7 +96,7 @@ export default function Privacy() {
 
       <h2>Contact</h2>
       <p>
-        Questions about this policy: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+        {COMPANY}, operator of {BRAND}. Questions about this policy: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
       </p>
     </LegalPage>
   );
