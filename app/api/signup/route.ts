@@ -4,7 +4,7 @@ import { json, errorMessage } from "@/lib/http";
 import { upsertAuthUser } from "@/lib/supabaseAuth";
 import { isBuiltInAdmin, newJoinCode, staffByEmail } from "@/lib/staff";
 import { assignNumber, autoBuyEnabled } from "@/lib/numbers";
-import { isPersonalEmail } from "@/lib/schoolEmail";
+import { isPersonalEmail, REQUIRE_SCHOOL_EMAIL } from "@/lib/schoolEmail";
 import { createSessionToken, SESSION_COOKIE, SESSION_DAYS } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
     if (!inv) return json({ error: "That sign-up code isn't valid or has already been used. Check it with your Relay Text admin." }, 400);
     if (!name) return json({ error: "Enter your name." }, 400);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Enter a valid email address." }, 400);
-    if (isPersonalEmail(email)) return json({ error: "Please use your school email address, not a personal one." }, 400);
+    if (REQUIRE_SCHOOL_EMAIL && isPersonalEmail(email)) return json({ error: "Please use your school email address, not a personal one." }, 400);
     if (password.length < 8) return json({ error: "Choose a password of at least 8 characters." }, 400);
     if (b.confirmPassword !== undefined && String(b.confirmPassword) !== password) {
       return json({ error: "The passwords don't match." }, 400);

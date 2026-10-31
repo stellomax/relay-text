@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { isPersonalEmail } from "@/lib/schoolEmail";
+import { isPersonalEmail, REQUIRE_SCHOOL_EMAIL } from "@/lib/schoolEmail";
 
 // Teachers create their account with the 5-digit sign-up code their Relay Text admin gave them.
 export default function Signup() {
@@ -49,7 +49,7 @@ export default function Signup() {
   }
 
   const codeOk = check?.valid === true;
-  const personal = /@.+\./.test(f.email) && isPersonalEmail(f.email);
+  const personal = REQUIRE_SCHOOL_EMAIL && /@.+\./.test(f.email) && isPersonalEmail(f.email);
   const mismatch = f.confirmPassword.length > 0 && f.confirmPassword !== f.password;
   const ready = codeOk && !personal && f.password.length >= 8 && f.password === f.confirmPassword;
 
@@ -84,7 +84,7 @@ export default function Signup() {
           <input placeholder="Your name" autoComplete="name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} required />
           <input
             type="email"
-            placeholder="School email"
+            placeholder={REQUIRE_SCHOOL_EMAIL ? "School email" : "Email"}
             autoComplete="email"
             value={f.email}
             onChange={(e) => setF({ ...f, email: e.target.value })}
