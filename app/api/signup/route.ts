@@ -33,7 +33,8 @@ function testSignupCode(): string | null {
 async function openInvite(code: string): Promise<Invite | null> {
   if (!/^\d{5}$/.test(code)) return null;
   if (code === testSignupCode()) {
-    return { id: "test", code, name: "", school: null, area_code: null, role: "teacher", used_at: null, expires_at: "" };
+    const school = (process.env.TEST_SIGNUP_SCHOOL || "Sagewood Middle School").trim() || null;
+    return { id: "test", code, name: "", school, area_code: null, role: "teacher", used_at: null, expires_at: "" };
   }
   const { data } = await db()
     .from("invites")
