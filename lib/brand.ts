@@ -2,7 +2,7 @@
 // BRAND must match the Brand name registered with Twilio (A2P 10DLC) exactly.
 export const BRAND = "Relay Text";
 export const SITE = "relaytext.io";
-export const CONTACT_EMAIL = "support@relaytext.io";
+export const CONTACT_EMAIL = "relay@stellomark.com";
 export const LAST_UPDATED = "October 31, 2026";
 
 // Sent once, right after a parent signs up on relaytext.io/join.
