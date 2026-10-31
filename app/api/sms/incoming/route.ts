@@ -4,8 +4,7 @@ import { twiml, validTwilioSignature } from "@/lib/twilio";
 
 export const dynamic = "force-dynamic";
 
-// Twilio calls this when a parent texts the school number.
-// In Twilio: Phone Numbers → your number → Messaging → "A message comes in" → Webhook → this URL (HTTP POST).
+// Twilio calls this when a parent texts any Relay Text number. The "To" number tells us which teacher it's for.
 export async function POST(req: Request) {
   const form = await req.formData();
   const params: Record<string, string> = {};
@@ -18,10 +17,10 @@ export async function POST(req: Request) {
   }
 
   try {
-    await receiveInbound({ from: params.From, body: params.Body || "", twilioSid: params.MessageSid });
+    await receiveInbound({ from: params.From, to: params.To || null, body: params.Body || "", twilioSid: params.MessageSid });
   } catch (e) {
     console.error("Failed to store incoming SMS", e);
-    return new Response("Error", { status: 500 }); // Twilio will log the failure
+    return new Response("Error", { status: 500 });
   }
   return twiml();
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LegalPage from "@/components/LegalPage";
 import { LANGUAGES } from "@/lib/languages";
 import { BRAND, COMPANY } from "@/lib/brand";
@@ -12,6 +12,19 @@ export default function Join() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+  const [code, setCode] = useState("");
+  const [teacher, setTeacher] = useState<{ name: string; school: string | null } | null>(null);
+
+  // A teacher's personal link (relaytext.io/join?t=CODE) signs the family up with that teacher.
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get("t") || "";
+    setCode(t);
+    if (t)
+      fetch(`/api/join-info?t=${encodeURIComponent(t)}`)
+        .then((r) => r.json())
+        .then((d) => setTeacher(d.teacher || null))
+        .catch(() => {});
+  }, []);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -23,7 +36,7 @@ export default function Join() {
     const res = await fetch("/api/optin", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ...form, consent }),
+      body: JSON.stringify({ ...form, consent, t: code }),
     });
     const data = await res.json().catch(() => ({}));
     if (res.ok) setDone(true);
@@ -45,6 +58,12 @@ export default function Join() {
 
   return (
     <LegalPage title="Get school texts in your language" updated={false}>
+      {teacher && (
+        <p className="join-teacher">
+          Sign up to get texts from <strong>{teacher.name}</strong>
+          {teacher.school ? ` at ${teacher.school}` : ""}.
+        </p>
+      )}
       <p>
         {BRAND} lets your child’s teachers and school staff text you in your own language. You get a regular text message,
         with no app to download, and you can reply in your language.

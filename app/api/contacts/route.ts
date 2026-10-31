@@ -1,6 +1,7 @@
-import { db } from "@/lib/db";
+import { db, Contact } from "@/lib/db";
 import { json, withAuth } from "@/lib/http";
 import { toE164 } from "@/lib/phone";
+import { canWrite, resolveScope, scoped } from "@/lib/staff";
 
 export const dynamic = "force-dynamic";
 
@@ -15,40 +16,57 @@ function clean(body: Record<string, unknown>) {
   return { row: { parent_name, child_name, language, phone } };
 }
 
-function friendly(msg: string) {
-  return msg.includes("duplicate") ? "A contact with that phone number already exists." : msg;
+async function duplicate(staffId: string | null, phone: string, exceptId?: string) {
+  let q = db().from("contacts").select("id").eq("phone", phone);
+  q = staffId ? q.eq("staff_id", staffId) : q.is("staff_id", null);
+  const { data } = await q;
+  return (data || []).some((r) => r.id !== exceptId);
 }
 
-export const GET = withAuth(async () => {
-  const { data, error } = await db().from("contacts").select("*").order("parent_name");
+async function load(id: string): Promise<Contact | null> {
+  const { data } = await db().from("contacts").select("*").eq("id", id).maybeSingle();
+  return (data as Contact) || null;
+}
+
+export const GET = withAuth(async (req, me) => {
+  const { data, error } = await scoped(db().from("contacts").select("*"), resolveScope(req, me)).order("parent_name");
   if (error) throw new Error(error.message);
   return json({ contacts: data || [] });
 });
 
-export const POST = withAuth(async (req) => {
+// New families go into the inbox being viewed: your own, or (admins) the shared main number.
+export const POST = withAuth(async (req, me) => {
+  const scope = resolveScope(req, me);
+  if (scope.readOnly) return json({ error: "You can only add families to your own inbox." }, 403);
   const c = clean(await req.json().catch(() => ({})));
   if ("error" in c) return json({ error: c.error }, 400);
-  const { data, error } = await db().from("contacts").insert(c.row).select("*").single();
-  if (error) return json({ error: friendly(error.message) }, 400);
+  if (await duplicate(scope.staffId, c.row.phone)) return json({ error: "A family with that phone number is already in this inbox." }, 400);
+  const { data, error } = await db().from("contacts").insert({ ...c.row, staff_id: scope.staffId }).select("*").single();
+  if (error) return json({ error: error.message }, 400);
   return json({ contact: data });
 });
 
-export const PATCH = withAuth(async (req) => {
+export const PATCH = withAuth(async (req, me) => {
   const body = await req.json().catch(() => ({}));
-  if (!body.id) return json({ error: "id is required" }, 400);
+  const existing = body.id ? await load(String(body.id)) : null;
+  if (!existing || !canWrite(me, existing)) return json({ error: "Family not found." }, 404);
   const c = clean(body);
   if ("error" in c) return json({ error: c.error }, 400);
+  if (await duplicate(existing.staff_id, c.row.phone, existing.id)) {
+    return json({ error: "A family with that phone number is already in this inbox." }, 400);
+  }
   const update: Record<string, unknown> = { ...c.row };
   if (typeof body.opted_out === "boolean") update.opted_out = body.opted_out;
-  const { data, error } = await db().from("contacts").update(update).eq("id", body.id).select("*").single();
-  if (error) return json({ error: friendly(error.message) }, 400);
+  const { data, error } = await db().from("contacts").update(update).eq("id", existing.id).select("*").single();
+  if (error) return json({ error: error.message }, 400);
   return json({ contact: data });
 });
 
-export const DELETE = withAuth(async (req) => {
+export const DELETE = withAuth(async (req, me) => {
   const id = new URL(req.url).searchParams.get("id");
-  if (!id) return json({ error: "id is required" }, 400);
-  const { error } = await db().from("contacts").delete().eq("id", id);
+  const existing = id ? await load(id) : null;
+  if (!existing || !canWrite(me, existing)) return json({ error: "Family not found." }, 404);
+  const { error } = await db().from("contacts").delete().eq("id", existing.id);
   if (error) throw new Error(error.message);
   return json({ ok: true });
 });

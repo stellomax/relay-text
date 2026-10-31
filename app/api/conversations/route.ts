@@ -1,18 +1,24 @@
-import { db, Contact, Message } from "@/lib/db";
+import { db, Contact, Message, Staff } from "@/lib/db";
 import { json, withAuth } from "@/lib/http";
+import { resolveScope, scoped } from "@/lib/staff";
 
 export const dynamic = "force-dynamic";
 
-// Inbox: every contact with their latest message and unread count. Unread threads first.
-export const GET = withAuth(async () => {
+// Inbox: every family in this inbox with their latest message and unread count. Unread threads first.
+// Admins can look at another teacher's inbox (?as=<staff id>) or the shared main number (?as=unassigned).
+export const GET = withAuth(async (req, me) => {
   const supa = db();
+  const scope = resolveScope(req, me);
   const [{ data: contacts, error: e1 }, { data: messages, error: e2 }] = await Promise.all([
-    supa.from("contacts").select("*"),
-    supa
-      .from("messages")
-      .select("id, contact_id, direction, body_en, is_read, created_at, status")
-      .order("created_at", { ascending: false })
-      .limit(5000),
+    scoped(supa.from("contacts").select("*"), scope),
+    scoped(
+      supa
+        .from("messages")
+        .select("id, contact_id, direction, body_en, is_read, created_at, status")
+        .order("created_at", { ascending: false })
+        .limit(5000),
+      scope
+    ),
   ]);
   if (e1 || e2) throw new Error((e1 || e2)!.message);
 
@@ -35,5 +41,23 @@ export const GET = withAuth(async () => {
     if (ta !== tb) return tb.localeCompare(ta);
     return a.contact.parent_name.localeCompare(b.contact.parent_name);
   });
-  return json({ conversations: rows });
+
+  // For the admin inbox picker.
+  let inboxes: { id: string; label: string; sub?: string }[] | undefined;
+  if (me.role === "admin") {
+    const { data: staff } = await supa.from("staff").select("id, name, school, status").order("name");
+    inboxes = [
+      { id: me.id, label: "My Messages" },
+      ...((staff || []) as Pick<Staff, "id" | "name" | "school" | "status">[])
+        .filter((s) => s.id !== me.id && s.status !== "pending")
+        .map((s) => ({ id: s.id, label: s.name, sub: s.school || undefined })),
+      { id: "unassigned", label: "Main number (no teacher)" },
+    ];
+  }
+
+  return json({
+    conversations: rows,
+    scope: { staffId: scope.staffId, readOnly: scope.readOnly },
+    inboxes,
+  });
 });

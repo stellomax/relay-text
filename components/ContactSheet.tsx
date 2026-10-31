@@ -10,11 +10,13 @@ import type { Contact } from "@/lib/db";
 // Tap the name at the top of a conversation: view and edit the family's details.
 export default function ContactSheet({
   contact,
+  readOnly = false,
   onClose,
   onSaved,
   onDeleted,
 }: {
   contact: Contact;
+  readOnly?: boolean;
   onClose: () => void;
   onSaved: () => void;
   onDeleted: () => void;
@@ -55,12 +57,14 @@ export default function ContactSheet({
     <Sheet
       title="Family Info"
       onCancel={onClose}
-      action={{ label: "Done", onClick: save, busy, disabled: !form.parent_name.trim() || !form.phone.trim() }}
+      action={readOnly ? undefined : { label: "Done", onClick: save, busy, disabled: !form.parent_name.trim() || !form.phone.trim() }}
     >
       <div className="info-head">
         <Avatar name={form.parent_name || contact.parent_name} size={76} />
       </div>
-      <ContactFields value={form} onChange={setForm} />
+      <fieldset className="plain-fieldset" disabled={readOnly}>
+        <ContactFields value={form} onChange={setForm} />
+      </fieldset>
       {optedOut && (
         <div className="ios-group">
           <label className="ios-row switch-row">
@@ -72,11 +76,13 @@ export default function ContactSheet({
           </label>
         </div>
       )}
-      <div className="ios-group">
-        <button className="ios-row danger" onClick={remove}>
-          Delete Conversation
-        </button>
-      </div>
+      {!readOnly && (
+        <div className="ios-group">
+          <button className="ios-row danger" onClick={remove}>
+            Delete Conversation
+          </button>
+        </div>
+      )}
       {error && <p className="sheet-error">{error}</p>}
     </Sheet>
   );

@@ -5,10 +5,13 @@ import { toE164 } from "@/lib/phone";
 import { LANGUAGES } from "@/lib/languages";
 import { OPT_IN_CONFIRMATION } from "@/lib/brand";
 import { sendSms } from "@/lib/twilio";
+import type { Staff } from "@/lib/db";
+import { senderNumber } from "@/lib/numbers";
 
 export const dynamic = "force-dynamic";
 
-// Public: a parent signs up for texts at /join. Records consent, then sends one confirmation text.
+// Public: a parent signs up for texts at /join (or a teacher's link, /join?t=CODE).
+// Records consent, then sends one confirmation text from that teacher's number.
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const parent_name = String(body.parent_name || "").trim().slice(0, 120);
@@ -22,8 +25,21 @@ export async function POST(req: Request) {
 
   try {
     const supa = db();
-    const consent = { opted_out: false, consent_at: new Date().toISOString(), consent_source: "web form: /join" };
-    const { data: existing } = await supa.from("contacts").select("id").eq("phone", phone).maybeSingle();
+    const consent: Record<string, unknown> = { opted_out: false, consent_at: new Date().toISOString(), consent_source: "web form: /join" };
+    // Which teacher's link was used (if any).
+    let teacher: Staff | null = null;
+    const code = String(body.t || "").trim().toLowerCase();
+    if (code) {
+      const { data: t } = await supa.from("staff").select("*").eq("join_code", code).eq("status", "active").maybeSingle();
+      teacher = (t as Staff) || null;
+    }
+    const staffId = teacher?.id || null;
+    const source = teacher ? `web form: /join?t=${code}` : "web form: /join";
+    consent.consent_source = source;
+
+    let lookup = supa.from("contacts").select("id").eq("phone", phone);
+    lookup = staffId ? lookup.eq("staff_id", staffId) : lookup.is("staff_id", null);
+    const { data: existing } = await lookup.maybeSingle();
     let contactId: string;
     if (existing) {
       const { error } = await supa
@@ -35,7 +51,7 @@ export async function POST(req: Request) {
     } else {
       const { data, error } = await supa
         .from("contacts")
-        .insert({ parent_name, child_name, phone, language, ...consent })
+        .insert({ parent_name, child_name, phone, language, staff_id: staffId, ...consent })
         .select("id")
         .single();
       if (error) throw new Error(error.message);
@@ -45,6 +61,9 @@ export async function POST(req: Request) {
     // Confirmation text with the required disclosures (in English, so STOP/HELP are unambiguous).
     const row: Record<string, unknown> = {
       contact_id: contactId,
+      staff_id: staffId,
+      to_number: phone,
+      from_number: senderNumber(teacher) || teacher?.phone_number || null,
       direction: "outbound",
       body_en: OPT_IN_CONFIRMATION,
       body_translated: OPT_IN_CONFIRMATION,
@@ -53,7 +72,8 @@ export async function POST(req: Request) {
     };
     if (twilioConfigured()) {
       try {
-        const r = await sendSms(phone, OPT_IN_CONFIRMATION, `${baseUrlFromRequest(req)}/api/sms/status`);
+        const r = await sendSms(phone, OPT_IN_CONFIRMATION, `${baseUrlFromRequest(req)}/api/sms/status`, senderNumber(teacher));
+        row.from_number = r.from || row.from_number;
         row.twilio_sid = r.sid;
         row.status = r.status;
       } catch (e) {

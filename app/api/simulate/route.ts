@@ -1,16 +1,24 @@
-import { db } from "@/lib/db";
+import { db, Contact, Staff } from "@/lib/db";
+import { env } from "@/lib/config";
 import { json, withAuth } from "@/lib/http";
 import { receiveInbound } from "@/lib/messaging";
+import { canWrite } from "@/lib/staff";
 
 export const dynamic = "force-dynamic";
 
 // Demo helper: pretend the parent texted back. Runs the same translation path as a real reply.
-export const POST = withAuth(async (req) => {
+export const POST = withAuth(async (req, me) => {
   const body = await req.json().catch(() => ({}));
   const text = String(body.text || "").trim();
   if (!body.contactId || !text) return json({ error: "Type the parent's reply first." }, 400);
-  const { data: contact, error } = await db().from("contacts").select("phone").eq("id", body.contactId).single();
-  if (error || !contact) return json({ error: "Contact not found." }, 404);
-  await receiveInbound({ from: contact.phone, body: text, simulated: true });
+  const { data } = await db().from("contacts").select("*").eq("id", body.contactId).maybeSingle();
+  const contact = data as Contact | null;
+  if (!contact || !canWrite(me, contact)) return json({ error: "Family not found." }, 404);
+  let to = env.twilioFrom || null;
+  if (contact.staff_id) {
+    const { data: s } = await db().from("staff").select("phone_number").eq("id", contact.staff_id).maybeSingle();
+    to = (s as Pick<Staff, "phone_number"> | null)?.phone_number || to;
+  }
+  await receiveInbound({ from: contact.phone, to, body: text, simulated: true, contact });
   return json({ ok: true });
 });

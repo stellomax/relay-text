@@ -54,6 +54,8 @@ export default function LoginPage() {
         </button>
       </form>
       <p className="login-links">
+        Teachers: <a href="/signup">create an account</a>
+        <br />
         <a href="/join">Parents: sign up for texts</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a>
       </p>
     </div>

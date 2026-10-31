@@ -13,10 +13,12 @@ import type { Contact } from "@/lib/db";
 // "New Message": pick an existing family from the To: field, or add a new one.
 export default function NewMessage({
   contacts,
+  createUrl = "/api/contacts",
   onCancel,
   onPick,
 }: {
   contacts: Contact[];
+  createUrl?: string;
   onCancel: () => void;
   onPick: (contactId: string) => void;
 }) {
@@ -58,7 +60,7 @@ export default function NewMessage({
     setBusy(true);
     setError("");
     try {
-      const d = await api<{ contact: Contact }>("/api/contacts", { body: adding });
+      const d = await api<{ contact: Contact }>(createUrl, { body: adding });
       onPick(d.contact.id);
     } catch (e: any) {
       setError(e.message);

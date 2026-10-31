@@ -23,6 +23,8 @@ export default function Thread({
   onOpenInfo,
   onOpenDemo,
   refreshKey,
+  readOnly = false,
+  ownerLabel,
 }: {
   contact: Contact;
   backBadge: number;
@@ -31,6 +33,8 @@ export default function Thread({
   onOpenInfo: () => void;
   onOpenDemo: () => void;
   refreshKey: number;
+  readOnly?: boolean;
+  ownerLabel?: string;
 }) {
   const [messages, setMessages] = useState<Pending[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -230,6 +234,11 @@ export default function Thread({
         </div>
       )}
 
+      {readOnly ? (
+        <footer className="composer readonly-bar">
+          Viewing {ownerLabel ? `${ownerLabel}’s` : "this"} conversation. Only {ownerLabel || "they"} can reply.
+        </footer>
+      ) : (
       <footer className="composer">
         <button className="plus-btn" onClick={onOpenDemo} aria-label="Demo: simulate a reply" title="Demo: simulate a reply from this parent">
           <Plus />
@@ -256,6 +265,7 @@ export default function Thread({
           )}
         </div>
       </footer>
+      )}
     </section>
   );
 }

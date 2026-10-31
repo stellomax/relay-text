@@ -331,3 +331,49 @@ a { color: var(--tint); text-decoration: none; }
 .join-form .consent input { width: 22px; height: 22px; flex: 0 0 22px; margin: 1px 0 0; accent-color: var(--brand); }
 .join-error { color: var(--red); font-size: 15px; margin: 0; }
 .legal-copy { flex-basis: 100%; text-align: center; color: var(--label-3); font-size: 12px; }
+
+/* teacher sign-up */
+.done-card { text-align: center; }
+.done-title { font-size: 22px; font-weight: 700; margin: 8px 0 0; }
+.link-button { display: grid; place-items: center; text-decoration: none; }
+.login-links br + a { display: inline-block; margin-top: 6px; }
+.join-teacher { background: rgba(106, 2, 160, 0.08); color: var(--brand) !important; padding: 12px 14px; border-radius: 12px; }
+.plain-fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.plain-fieldset:disabled input, .plain-fieldset:disabled select { color: var(--label-2); }
+
+/* admin: inbox picker and read-only views */
+.inbox-picker { position: relative; display: flex; align-items: center; gap: 8px; margin: 0 16px 10px; padding: 0 12px; height: 38px; border-radius: 10px; background: rgba(106, 2, 160, 0.08); cursor: pointer; }
+.inbox-picker-label { font-size: 13px; font-weight: 600; color: var(--brand); text-transform: uppercase; letter-spacing: 0.3px; }
+.inbox-picker select { flex: 1; appearance: none; -webkit-appearance: none; border: 0; background: transparent; font-size: 16px; font-weight: 600; color: var(--label); outline: none; cursor: pointer; min-width: 0; padding-right: 18px; }
+.picker-chev { position: absolute; right: 12px; transform: rotate(90deg); color: var(--brand); pointer-events: none; }
+.viewing-note { margin: -4px 16px 10px; font-size: 13px; color: var(--label-3); }
+.readonly-bar { justify-content: center; font-size: 13px; color: var(--label-3); padding-top: 12px; padding-bottom: calc(12px + var(--safe-b)); border-top: 0.5px solid var(--separator); text-align: center; }
+
+/* settings & admin */
+.number-row { justify-content: space-between; }
+.big-number { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
+.tag-demo, .tag-admin, .tag-off { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; margin-left: 8px; letter-spacing: 0.2px; vertical-align: 2px; }
+.tag-demo { background: #fff4e0; color: #9a5b00; }
+.tag-admin { background: rgba(106, 2, 160, 0.1); color: var(--brand); }
+.tag-off { background: var(--fill); color: var(--label-3); }
+.nav-row { justify-content: space-between; color: var(--label); cursor: pointer; appearance: none; }
+.nav-row:hover, .action-row:hover, .person-row:hover { background: #fafafa; }
+.row-chev { color: var(--label-4); flex: 0 0 auto; }
+.action-row { color: var(--tint); cursor: pointer; justify-content: center; appearance: none; }
+.ios-row:disabled { opacity: 0.5; cursor: default; }
+.person-row { gap: 12px; cursor: pointer; appearance: none; align-items: center; }
+.person-row.pending { cursor: default; }
+.person-row.off { opacity: 0.55; }
+.person-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.person-name { font-weight: 600; }
+.pill-btn { appearance: none; border: 0; background: var(--brand); color: #fff; font-size: 14px; font-weight: 600; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+.pill-btn.ghost { background: var(--fill); color: var(--label-2); }
+.pill-btn:disabled { opacity: 0.5; }
+.admin-banner { background: #fff4e0; color: #6b4000; border-radius: 12px; padding: 12px 14px; font-size: 14px; line-height: 1.4; margin-bottom: 18px; }
+.admin-banner.live { background: #e3f7e8; color: #135c2a; }
+.add-btn { justify-self: end; }
+.settings-bar .icon-btn svg { opacity: 1; }
+.center-text { text-align: center; }
+.copy-block { margin: 0; padding: 12px 16px; font-size: 14px; white-space: pre-wrap; word-break: break-all; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.person-row.pending { flex-wrap: wrap; row-gap: 10px; }
+.pending-actions { display: flex; gap: 8px; flex-basis: 100%; padding-left: 50px; }

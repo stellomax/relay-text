@@ -23,6 +23,26 @@ export type Contact = {
   phone: string;
   language: string;
   opted_out: boolean;
+  staff_id: string | null;
+  consent_at?: string | null;
+  consent_source?: string | null;
+  created_at: string;
+};
+
+export type Staff = {
+  id: string;
+  user_id: string | null;
+  email: string;
+  name: string;
+  school: string | null;
+  role: "admin" | "teacher";
+  status: "pending" | "active" | "disabled";
+  area_code: string | null;
+  phone_number: string | null;
+  phone_sid: string | null;
+  phone_placeholder: boolean;
+  join_code: string | null;
+  last_seen_at: string | null;
   created_at: string;
 };
 
@@ -39,5 +59,8 @@ export type Message = {
   is_read: boolean;
   simulated: boolean;
   sent_by: string | null;
+  staff_id?: string | null;
+  from_number?: string | null;
+  to_number?: string | null;
   created_at: string;
 };

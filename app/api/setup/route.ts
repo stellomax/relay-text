@@ -1,12 +1,13 @@
 import { baseUrlFromRequest, env, supabaseConfigured, translateConfigured, twilioConfigured } from "@/lib/config";
 import { db } from "@/lib/db";
-import { json, withAuth, errorMessage } from "@/lib/http";
+import { json, withAdmin, errorMessage } from "@/lib/http";
+import { autoBuyEnabled } from "@/lib/numbers";
 import { translate } from "@/lib/translate";
 
 export const dynamic = "force-dynamic";
 
 // Health check for the Setup page. Never returns secret values.
-export const GET = withAuth(async (req, session) => {
+export const GET = withAdmin(async (req, me) => {
   const base = baseUrlFromRequest(req);
 
   let database = { ok: false, detail: "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY" };
@@ -35,7 +36,8 @@ export const GET = withAuth(async (req, session) => {
     : { ok: false, detail: "Demo mode: texts are simulated. Add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN and TWILIO_PHONE_NUMBER to go live." };
 
   return json({
-    user: session.email,
+    user: me.email,
+    autoBuy: autoBuyEnabled(),
     database,
     translation,
     sms,
