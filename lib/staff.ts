@@ -1,7 +1,7 @@
 import { db, Staff, Contact } from "./db";
 
 // These emails are always admins. More can be added with the ADMIN_EMAILS variable in Vercel (comma-separated).
-const BUILT_IN_ADMINS = ["hamilton33@gmail.com", "dave@84roots.com"];
+const BUILT_IN_ADMINS = ["hamilton33@gmail.com"];
 
 export function adminEmails(): string[] {
   const extra = (process.env.ADMIN_EMAILS || "").split(",");
