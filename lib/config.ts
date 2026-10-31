@@ -4,9 +4,17 @@ function clean(v: string | undefined): string {
   return (v || "").trim().replace(/^["']+|["']+$/g, "").trim();
 }
 
+// Accepts the API URL, or the things commonly pasted by mistake: the dashboard address,
+// a Postgres connection string, or just the project ID.
 function supabaseUrl(v: string): string {
   let u = clean(v);
   if (!u) return "";
+  const ref =
+    /supabase\.com\/dashboard\/project\/([a-z0-9]{15,30})/i.exec(u)?.[1] ||
+    /^postgres(?:ql)?:\/\/postgres\.([a-z0-9]{15,30})[:@]/i.exec(u)?.[1] ||
+    /@db\.([a-z0-9]{15,30})\.supabase\.co/i.exec(u)?.[1] ||
+    (/^[a-z0-9]{15,30}$/.test(u) ? u : "");
+  if (ref) return `https://${ref.toLowerCase()}.supabase.co`;
   if (!/^https?:\/\//i.test(u)) u = `https://${u}`;
   return u.replace(/\/(rest|auth)\/v1.*$/i, "").replace(/\/+$/, "");
 }
