@@ -1,5 +1,5 @@
 // Signed login session cookie. Uses Web Crypto so it works in middleware and API routes.
-export const SESSION_COOKIE = "tc_session";
+export const SESSION_COOKIE = "rt_session";
 export const SESSION_DAYS = 7;
 
 export type Session = { email: string; exp: number };

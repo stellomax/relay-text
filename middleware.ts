@@ -16,5 +16,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/|favicon|icon|login|api/auth/|api/sms/).*)"],
+  matcher: ["/((?!_next/|favicon|icon-|apple-touch-icon|relay-text-logo|manifest|login|api/auth/|api/sms/).*)"],
 };

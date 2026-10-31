@@ -26,39 +26,33 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="login-wrap">
-      <div className="login-card">
-        <div className="login-hello" aria-hidden>
-          <span>Hello</span>
-          <span>Hola</span>
-          <span>مرحبا</span>
-          <span>Xin chào</span>
-          <span>Salaan</span>
-          <span>你好</span>
+    <div className="login">
+      <img src="/relay-text-logo.png" alt="Relay Text" className="login-logo" />
+      <p className="login-tag">Text families in their own language.</p>
+      <form onSubmit={submit} className="login-form">
+        <div className="ios-group">
+          <input
+            type="email"
+            placeholder="Email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
         </div>
-        <h1>Text Connect</h1>
-        <p className="muted">Text families in their own language. No app required.</p>
-        <form onSubmit={submit} className="stack">
-          <label>
-            Email
-            <input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          </label>
-          <label>
-            Password
-            <input
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </label>
-          {error && <div className="alert error">{error}</div>}
-          <button className="btn primary" disabled={busy}>
-            {busy ? "Signing in…" : "Sign in"}
-          </button>
-        </form>
-      </div>
+        {error && <p className="login-error">{error}</p>}
+        <button className="ios-button" disabled={busy}>
+          {busy ? "Signing In…" : "Sign In"}
+        </button>
+      </form>
     </div>
   );
 }

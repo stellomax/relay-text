@@ -16,13 +16,3 @@ export async function api<T = any>(path: string, opts: { method?: string; body?:
   if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
   return data as T;
 }
-
-export function timeLabel(iso: string): string {
-  const d = new Date(iso);
-  const now = new Date();
-  const sameDay = d.toDateString() === now.toDateString();
-  if (sameDay) return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-  const diffDays = (now.getTime() - d.getTime()) / 86400000;
-  if (diffDays < 6) return d.toLocaleDateString([], { weekday: "short" });
-  return d.toLocaleDateString([], { month: "short", day: "numeric" });
-}

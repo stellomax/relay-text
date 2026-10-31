@@ -1,49 +1,53 @@
-# Text Connect
+# Relay Text
 
 Text families in their own language. No app required on their phone.
 
-Staff write in English. Each family gets a normal SMS in their home language, and their replies come back translated into English. Broadcasts fan out into separate private one-to-one texts, never a group chat.
+Staff write in English. Each family gets a normal text message in their home language, and their replies come back translated into English. The screens are modeled on the iPhone Messages app.
+
+**Phase 1:** one-to-one conversations, adding and editing families, live translation both ways, and a demo reply button.
 
 **Stack:** Next.js on Vercel · Supabase (database + staff logins) · Twilio (SMS) · Google Cloud Translation
 
-## Go live
+## Setup
 
 ### 1. Supabase
-1. SQL Editor → New query → paste `supabase/schema.sql` → **Run**.
-2. Authentication → Users → **Add user** → create a login (email + password) for each staff member. Tick "Auto confirm".
-3. Project Settings → API: copy the **Project URL** and the **service_role** key.
+1. **SQL Editor → New query** → paste all of `supabase/schema.sql` → **Run**.
+2. **Authentication → Users → Add user → Create new user**: an email and password for each staff member. Tick **Auto Confirm User**.
+3. **Project Settings → API**: copy the **Project URL** and the **service_role** secret key.
 
 ### 2. Vercel
-1. Add New → Project → import this GitHub repo → Deploy (framework is detected automatically).
-2. Settings → Environment Variables, add:
+1. **Add New → Project** → import the `relay-text` GitHub repo → **Deploy**.
+2. **Settings → Environment Variables**:
 
 | Name | Value |
 |---|---|
 | `SUPABASE_URL` | Supabase Project URL |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service_role key |
-| `GOOGLE_TRANSLATE_API_KEY` | Google Cloud API key with Cloud Translation API enabled |
+| `GOOGLE_TRANSLATE_API_KEY` | Google Cloud API key (Cloud Translation API enabled) |
 | `TWILIO_ACCOUNT_SID` | Twilio Account SID |
 | `TWILIO_AUTH_TOKEN` | Twilio Auth Token |
-| `TWILIO_PHONE_NUMBER` | Your Twilio number, e.g. `+13035551234` |
+| `TWILIO_PHONE_NUMBER` | Twilio number, e.g. `+13035551234` |
+| `APP_URL` | `https://relaytext.io` |
 
-3. Deployments → ⋯ → **Redeploy** so the variables take effect.
+3. **Settings → Domains → Add** `relaytext.io` (and `www.relaytext.io`, redirected to it). Add the DNS records Vercel shows at your domain registrar.
+4. **Deployments → ⋯ → Redeploy** so the variables take effect.
 
-Leave the three Twilio variables out to run in **demo mode**: texts are simulated, translation is real, and you can use "Simulate a reply from this parent" in any thread.
+Every push to the `main` branch on GitHub deploys to relaytext.io automatically.
+
+Leave the three Twilio variables out to run in **demo mode**: translation is real, texts are simulated, and the **+** button in a conversation lets you play the parent's reply.
 
 ### 3. Twilio
-1. Phone Numbers → Manage → Active numbers → your number → Messaging configuration.
-2. "A message comes in" → **Webhook**, **HTTP POST**, URL: `https://YOUR-APP.vercel.app/api/sms/incoming` (also shown on the app's Setup page).
-3. Save. Text the number from your phone to test.
-
-US carriers require **toll-free verification** or **A2P 10DLC registration** before texting real families at scale. A trial account can text only verified numbers.
+1. **Phone Numbers → Manage → Active numbers** → your number → **Messaging configuration**.
+2. **A message comes in** → **Webhook**, **HTTP POST**: `https://relaytext.io/api/sms/incoming`
+3. Save. US carriers require **toll-free verification** (toll-free number) or **A2P 10DLC registration** (local number) before texting families. A trial account can text only verified numbers.
 
 ### 4. Check
-Sign in, open **Setup**. All three lights should be green (amber for Twilio means demo mode).
+Sign in at relaytext.io, tap the gear. All three lights should be green (orange for Twilio means demo mode).
 
 ## Privacy
-Parent phone numbers and student names are student records. The database has row-level security on with no public policies, so only the app's server can read it, and every page and API requires a staff login. Confirm district FERPA and vendor requirements before a real pilot.
+Parent phone numbers and student names are student records. Row-level security is on with no public policies, so only the app's server can read the database, and every page requires a staff login. Confirm district FERPA and vendor requirements before a real pilot.
 
 ## Optional settings
-- `APP_URL`: set to your public address if you add a custom domain (keeps Twilio signature checks working).
 - `TWILIO_MESSAGING_SERVICE_SID`: send from a Messaging Service instead of a single number.
 - `SESSION_SECRET`: separate secret for staff login sessions (defaults to the service key).
+- Outgoing bubble color: `--bubble-out` in `app/globals.css` (Relay Text purple by default).

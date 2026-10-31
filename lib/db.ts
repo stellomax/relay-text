@@ -38,7 +38,6 @@ export type Message = {
   twilio_sid: string | null;
   is_read: boolean;
   simulated: boolean;
-  broadcast_list_id: string | null;
   sent_by: string | null;
   created_at: string;
 };

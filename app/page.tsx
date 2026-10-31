@@ -1,45 +1,35 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import Shell from "@/components/Shell";
-import { api, timeLabel } from "@/lib/client";
-import { languageName } from "@/lib/languages";
+import { useCallback, useEffect, useState } from "react";
+import Avatar from "@/components/Avatar";
+import Thread from "@/components/Thread";
+import NewMessage from "@/components/NewMessage";
+import ContactSheet from "@/components/ContactSheet";
+import DemoReply from "@/components/DemoReply";
+import { ChevronRight, Compose, Gear, Search } from "@/components/icons";
+import { api } from "@/lib/client";
+import { listTime } from "@/lib/format";
 import { prettyPhone } from "@/lib/phone";
 import type { Contact, Message } from "@/lib/db";
 
 type Conversation = { contact: Contact; last: Partial<Message> | null; unread: number };
+type SheetKind = "new" | "info" | "demo" | null;
 
-const STATUS_LABEL: Record<string, string> = {
-  queued: "Sending…",
-  accepted: "Sending…",
-  sending: "Sending…",
-  sent: "Sent",
-  delivered: "Delivered",
-  undelivered: "Not delivered",
-  failed: "Failed",
-  simulated: "Demo",
-  received: "",
-};
+function readSelected(): string | null {
+  if (typeof window === "undefined") return null;
+  return new URLSearchParams(window.location.search).get("c");
+}
 
-export default function Inbox() {
+export default function Messages() {
   const [convos, setConvos] = useState<Conversation[]>([]);
   const [loaded, setLoaded] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [draft, setDraft] = useState("");
-  const [preview, setPreview] = useState<string | null>(null);
-  const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [simOpen, setSimOpen] = useState(false);
-  const [simText, setSimText] = useState("");
-  const [simBusy, setSimBusy] = useState(false);
-  const threadEnd = useRef<HTMLDivElement>(null);
-  const lastCount = useRef(0);
+  const [sheet, setSheet] = useState<SheetKind>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const selected = convos.find((c) => c.contact.id === selectedId)?.contact || null;
-
-  const loadConvos = useCallback(async () => {
+  const load = useCallback(async () => {
     try {
       const d = await api<{ conversations: Conversation[] }>("/api/conversations");
       setConvos(d.conversations);
@@ -51,250 +41,164 @@ export default function Inbox() {
     }
   }, []);
 
-  const loadThread = useCallback(async (id: string) => {
-    const d = await api<{ messages: Message[] }>(`/api/messages?contactId=${id}`);
-    setMessages(d.messages);
-  }, []);
-
   useEffect(() => {
-    loadConvos();
-    const t = setInterval(loadConvos, 5000);
-    return () => clearInterval(t);
-  }, [loadConvos]);
+    setSelectedId(readSelected());
+    const onPop = () => setSelectedId(readSelected());
+    window.addEventListener("popstate", onPop);
+    load();
+    const t = setInterval(() => document.visibilityState === "visible" && load(), 4000);
+    return () => {
+      clearInterval(t);
+      window.removeEventListener("popstate", onPop);
+    };
+  }, [load]);
 
-  useEffect(() => {
-    if (!selectedId) return;
-    setMessages([]);
-    lastCount.current = 0;
-    loadThread(selectedId).catch(() => {});
-    const t = setInterval(() => loadThread(selectedId).catch(() => {}), 4000);
-    return () => clearInterval(t);
-  }, [selectedId, loadThread]);
-
-  useEffect(() => {
-    if (messages.length !== lastCount.current) {
-      lastCount.current = messages.length;
-      threadEnd.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages]);
-
-  useEffect(() => setPreview(null), [draft, selectedId]);
-
-  async function send() {
-    if (!selected || !draft.trim()) return;
-    setSending(true);
-    setError("");
-    try {
-      const d = await api("/api/send", { body: { text: draft, contactIds: [selected.id] } });
-      if (d.summary.failed) setError(d.summary.errors[0]?.error || "Message failed.");
-      if (d.summary.skipped) setError("This family has opted out (they replied STOP).");
-      setDraft("");
-      await Promise.all([loadThread(selected.id), loadConvos()]);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setSending(false);
-    }
+  // Opening a conversation pushes a history entry, so the phone's back gesture works.
+  function open(id: string) {
+    if (id !== selectedId) window.history.pushState({}, "", `/?c=${id}`);
+    setSelectedId(id);
+    setConvos((cs) => cs.map((c) => (c.contact.id === id ? { ...c, unread: 0 } : c)));
+  }
+  function back() {
+    if (readSelected()) window.history.pushState({}, "", "/");
+    setSelectedId(null);
+    load();
   }
 
-  async function showPreview() {
-    if (!selected || !draft.trim()) return;
-    try {
-      const d = await api("/api/translate", { body: { text: draft, languages: [selected.language] } });
-      setPreview(d.previews[selected.language]);
-    } catch (e: any) {
-      setError(e.message);
-    }
-  }
+  const selected = convos.find((c) => c.contact.id === selectedId)?.contact || null;
+  const otherUnread = convos.filter((c) => c.contact.id !== selectedId && c.unread > 0).length;
 
-  async function simulate() {
-    if (!selected || !simText.trim()) return;
-    setSimBusy(true);
-    try {
-      await api("/api/simulate", { body: { contactId: selected.id, text: simText } });
-      setSimText("");
-      setSimOpen(false);
-      await Promise.all([loadThread(selected.id), loadConvos()]);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setSimBusy(false);
-    }
-  }
-
-  const filtered = convos.filter((c) => {
-    const q = query.trim().toLowerCase();
-    if (!q) return true;
-    return [c.contact.parent_name, c.contact.child_name || "", c.contact.phone].join(" ").toLowerCase().includes(q);
-  });
+  const q = query.trim().toLowerCase();
+  const rows = convos.filter(
+    (c) =>
+      (c.last || c.contact.id === selectedId) &&
+      (!q ||
+        [c.contact.parent_name, c.contact.child_name || "", c.contact.phone, c.last?.body_en || ""]
+          .join(" ")
+          .toLowerCase()
+          .includes(q))
+  );
 
   return (
-    <Shell wide>
-      <div className={`inbox ${selectedId ? "has-thread" : ""}`}>
-        <aside className="convo-list">
-          <div className="convo-head">
-            <input
-              className="search"
-              placeholder="Search families"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
+    <div className={`app ${selectedId ? "show-thread" : ""}`}>
+      <aside className="inbox">
+        <div className="inbox-bar">
+          <a className="icon-btn" href="/setup" aria-label="Settings" title="Settings">
+            <Gear />
+          </a>
+          <button className="icon-btn" onClick={() => setSheet("new")} aria-label="New message" title="New message">
+            <Compose />
+          </button>
+        </div>
+        <div className="inbox-title">
+          <img src="/relay-text-logo.png" alt="Relay Text" />
+        </div>
+        <div className="searchbar">
+          <Search />
+          <input placeholder="Search" value={query} onChange={(e) => setQuery(e.target.value)} />
+        </div>
+
+        {error && <p className="inbox-error">{error}</p>}
+
+        {loaded && rows.length === 0 && !error && (
+          <div className="inbox-empty">
+            {q ? (
+              <p>No results</p>
+            ) : (
+              <>
+                <p className="inbox-empty-title">No Messages</p>
+                <p>Tap the compose button to text a family in their own language.</p>
+                <button className="ios-button small" onClick={() => setSheet("new")}>
+                  New Message
+                </button>
+              </>
+            )}
           </div>
-          {loaded && convos.length === 0 && (
-            <div className="empty small">
-              <p>No families yet.</p>
-              <a className="btn primary" href="/contacts">
-                Add a family
-              </a>
-            </div>
-          )}
-          <ul>
-            {filtered.map(({ contact, last, unread }) => (
+        )}
+
+        <ul className="convos">
+          {rows.map(({ contact, last, unread }) => {
+            const name = contact.parent_name.startsWith("Unknown ") ? prettyPhone(contact.phone) : contact.parent_name;
+            return (
               <li key={contact.id}>
                 <button
-                  className={`convo ${selectedId === contact.id ? "selected" : ""} ${unread ? "unread" : ""}`}
-                  onClick={() => setSelectedId(contact.id)}
+                  className={`convo ${unread ? "unread" : ""} ${contact.id === selectedId ? "selected" : ""}`}
+                  onClick={() => open(contact.id)}
                 >
-                  <span className="avatar" aria-hidden>
-                    {contact.parent_name.slice(0, 1).toUpperCase()}
-                  </span>
-                  <span className="convo-body">
+                  <span className="dot" aria-label={unread ? "Unread" : undefined} />
+                  <Avatar name={contact.parent_name} size={44} />
+                  <span className="convo-main">
                     <span className="convo-top">
-                      <span className="convo-name">{contact.parent_name}</span>
-                      <span className="convo-time">{last?.created_at ? timeLabel(last.created_at) : ""}</span>
+                      <span className="convo-name">{name}</span>
+                      <span className="convo-time">
+                        {last?.created_at ? listTime(last.created_at) : ""}
+                        <ChevronRight size={12} />
+                      </span>
                     </span>
-                    <span className="convo-child">
-                      {contact.child_name ? `${contact.child_name} · ` : ""}
-                      {languageName(contact.language)}
-                      {contact.opted_out ? " · opted out" : ""}
-                    </span>
-                    <span className="convo-snippet">
-                      {last ? `${last.direction === "outbound" ? "You: " : ""}${last.body_en}` : "No messages yet"}
-                    </span>
+                    <span className="convo-preview">{last?.body_en || "No messages yet"}</span>
                   </span>
-                  {unread > 0 && <span className="badge">{unread}</span>}
                 </button>
               </li>
-            ))}
-          </ul>
-        </aside>
+            );
+          })}
+        </ul>
+      </aside>
 
-        <section className="thread">
-          {!selected ? (
-            <div className="empty">
-              <h2>Pick a family to start</h2>
-              <p className="muted">
-                You write in English. They get a normal text in their language, and their replies come back in English.
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="thread-head">
-                <button className="back link-btn" onClick={() => setSelectedId(null)}>
-                  ← Inbox
-                </button>
-                <div>
-                  <div className="thread-name">{selected.parent_name}</div>
-                  <div className="muted small-text">
-                    {selected.child_name ? `Parent of ${selected.child_name} · ` : ""}
-                    {prettyPhone(selected.phone)} · texts in <strong>{languageName(selected.language)}</strong>
-                  </div>
-                </div>
-              </div>
+      <main className="pane">
+        {selected ? (
+          <Thread
+            contact={selected}
+            backBadge={otherUnread}
+            onBack={back}
+            onChanged={load}
+            onOpenInfo={() => setSheet("info")}
+            onOpenDemo={() => setSheet("demo")}
+            refreshKey={refreshKey}
+          />
+        ) : (
+          <div className="pane-empty">
+            <img src="/icon-192.png" alt="" width={72} height={72} />
+            <p>Choose a conversation, or start a new one.</p>
+          </div>
+        )}
+      </main>
 
-              <div className="messages">
-                {messages.length === 0 && <p className="muted center">No messages yet. Say hello below.</p>}
-                {messages.map((m) => {
-                  const out = m.direction === "outbound";
-                  const showOriginal = m.body_translated && m.body_translated !== m.body_en;
-                  return (
-                    <div key={m.id} className={`bubble-row ${out ? "out" : "in"}`}>
-                      <div className={`bubble ${out ? "out" : "in"}`}>
-                        <div className="bubble-main">{m.body_en}</div>
-                        {showOriginal && (
-                          <div className="bubble-alt">
-                            <span className="alt-label">
-                              {out ? "They received" : "They wrote"} · {languageName(m.language)}
-                            </span>
-                            <span dir="auto">{m.body_translated}</span>
-                          </div>
-                        )}
-                        {m.error && m.status === "failed" && <div className="bubble-error">{m.error}</div>}
-                      </div>
-                      <div className="bubble-meta">
-                        {timeLabel(m.created_at)}
-                        {out && m.status && STATUS_LABEL[m.status] !== "" ? ` · ${STATUS_LABEL[m.status] || m.status}` : ""}
-                        {!out && m.simulated ? " · Demo reply" : ""}
-                      </div>
-                    </div>
-                  );
-                })}
-                <div ref={threadEnd} />
-              </div>
-
-              {error && <div className="alert error inline">{error}</div>}
-
-              {simOpen && (
-                <div className="sim-box">
-                  <div className="sim-title">
-                    Demo: type a reply as if you were {selected.parent_name} (any language)
-                  </div>
-                  <div className="composer">
-                    <textarea
-                      rows={2}
-                      dir="auto"
-                      placeholder="e.g. Gracias, estaremos allí el jueves."
-                      value={simText}
-                      onChange={(e) => setSimText(e.target.value)}
-                    />
-                    <button className="btn" disabled={simBusy || !simText.trim()} onClick={simulate}>
-                      {simBusy ? "…" : "Receive"}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {preview && (
-                <div className="preview">
-                  <span className="alt-label">Preview in {languageName(selected.language)}</span>
-                  <span dir="auto">{preview}</span>
-                </div>
-              )}
-
-              <div className="composer">
-                <textarea
-                  rows={2}
-                  placeholder={
-                    selected.opted_out ? "This family opted out of texts." : `Write in English. Sent in ${languageName(selected.language)}.`
-                  }
-                  value={draft}
-                  disabled={selected.opted_out}
-                  onChange={(e) => setDraft(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      send();
-                    }
-                  }}
-                />
-                <div className="composer-actions">
-                  <button className="btn ghost" onClick={showPreview} disabled={!draft.trim()}>
-                    Preview
-                  </button>
-                  <button className="btn primary" onClick={send} disabled={sending || !draft.trim() || selected.opted_out}>
-                    {sending ? "Sending…" : "Send"}
-                  </button>
-                </div>
-              </div>
-              <div className="composer-foot">
-                <button className="link-btn small-text" onClick={() => setSimOpen((v) => !v)}>
-                  {simOpen ? "Hide demo reply" : "Simulate a reply from this parent"}
-                </button>
-              </div>
-            </>
-          )}
-        </section>
-      </div>
-    </Shell>
+      {sheet === "new" && (
+        <NewMessage
+          contacts={convos.map((c) => c.contact)}
+          onCancel={() => setSheet(null)}
+          onPick={async (id) => {
+            setSheet(null);
+            await load();
+            open(id);
+          }}
+        />
+      )}
+      {sheet === "info" && selected && (
+        <ContactSheet
+          contact={selected}
+          onClose={() => setSheet(null)}
+          onSaved={() => {
+            setSheet(null);
+            load();
+          }}
+          onDeleted={() => {
+            setSheet(null);
+            back();
+          }}
+        />
+      )}
+      {sheet === "demo" && selected && (
+        <DemoReply
+          contact={selected}
+          onClose={() => setSheet(null)}
+          onSent={() => {
+            setSheet(null);
+            setRefreshKey((k) => k + 1);
+            load();
+          }}
+        />
+      )}
+    </div>
   );
 }

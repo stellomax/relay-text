@@ -19,7 +19,7 @@ export type SendSummary = {
 export async function sendToContacts(
   contacts: Contact[],
   textEn: string,
-  opts: { statusCallback?: string; listId?: string | null; sentBy?: string }
+  opts: { statusCallback?: string; sentBy?: string }
 ): Promise<SendSummary> {
   const summary: SendSummary = { sent: 0, simulated: 0, failed: 0, skipped: 0, errors: [] };
   const live = twilioConfigured();
@@ -35,7 +35,6 @@ export async function sendToContacts(
       direction: "outbound",
       body_en: textEn,
       language: c.language,
-      broadcast_list_id: opts.listId || null,
       sent_by: opts.sentBy || null,
       is_read: true,
     };
