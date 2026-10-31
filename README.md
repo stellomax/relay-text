@@ -57,6 +57,7 @@ Parent phone numbers and student names are student records. Row-level security i
 - `TWILIO_AUTO_BUY_NUMBERS`: `true` to buy real numbers for approved teachers (only after the A2P campaign is approved).
 - `DEFAULT_AREA_CODE`: area code used when a teacher didn't give one (default 303).
 - `ADMIN_EMAILS`: extra admin emails, comma-separated.
+- `TEST_SIGNUP_CODE`: a reusable 5-digit sign-up code for testing. Defaults to `12345` while teachers get demo numbers; turns off automatically once `TWILIO_AUTO_BUY_NUMBERS` is on (set it explicitly to keep one, or `off` to disable).
 - `TWILIO_MESSAGING_SERVICE_SID`: send from a Messaging Service instead of a single number.
 - `SESSION_SECRET`: separate secret for staff login sessions (defaults to the service key).
 - Outgoing bubble color: `--bubble-out` in `app/globals.css` (Relay Text purple by default).

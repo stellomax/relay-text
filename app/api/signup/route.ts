@@ -3,7 +3,7 @@ import { db, Staff } from "@/lib/db";
 import { json, errorMessage } from "@/lib/http";
 import { upsertAuthUser } from "@/lib/supabaseAuth";
 import { isBuiltInAdmin, newJoinCode, staffByEmail } from "@/lib/staff";
-import { assignNumber } from "@/lib/numbers";
+import { assignNumber, autoBuyEnabled } from "@/lib/numbers";
 import { isPersonalEmail } from "@/lib/schoolEmail";
 import { createSessionToken, SESSION_COOKIE, SESSION_DAYS } from "@/lib/session";
 
@@ -21,8 +21,20 @@ type Invite = {
   expires_at: string;
 };
 
+// Reusable test code for trying out sign-up. Defaults to 12345 while teachers get demo numbers;
+// once real numbers are being bought it's off unless TEST_SIGNUP_CODE is set in Vercel ("off" disables it).
+function testSignupCode(): string | null {
+  const v = (process.env.TEST_SIGNUP_CODE || "").trim();
+  if (/^off$/i.test(v)) return null;
+  if (/^\d{5}$/.test(v)) return v;
+  return autoBuyEnabled() ? null : "12345";
+}
+
 async function openInvite(code: string): Promise<Invite | null> {
   if (!/^\d{5}$/.test(code)) return null;
+  if (code === testSignupCode()) {
+    return { id: "test", code, name: "", school: null, area_code: null, role: "teacher", used_at: null, expires_at: "" };
+  }
   const { data } = await db()
     .from("invites")
     .select("*")
@@ -80,7 +92,9 @@ export async function POST(req: Request) {
     if (ins.error) throw new Error(ins.error.message);
     const me = ins.data as Staff;
 
-    await db().from("invites").update({ used_at: new Date().toISOString(), used_by: me.id }).eq("id", inv.id);
+    if (inv.id !== "test") {
+      await db().from("invites").update({ used_at: new Date().toISOString(), used_by: me.id }).eq("id", inv.id);
+    }
     await assignNumber(me, baseUrlFromRequest(req)).catch((e) => console.error("number on signup", e));
 
     const token = await createSessionToken(email);

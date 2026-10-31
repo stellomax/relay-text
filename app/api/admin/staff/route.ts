@@ -58,6 +58,7 @@ export const POST = withAdmin(async (req, me) => {
   for (let attempt = 0; attempt < 8; attempt++) {
     const n = crypto.getRandomValues(new Uint32Array(1))[0] % 90000;
     const code = String(10000 + n);
+    if (code === "12345") continue; // reserved for testing
     const { data, error } = await db()
       .from("invites")
       .insert({ code, name, school, area_code, role, created_by: me.id })
