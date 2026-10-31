@@ -456,3 +456,10 @@ a { color: var(--tint); text-decoration: none; }
 .inbox-bar { justify-content: space-between; align-items: center; padding: 10px 12px 10px 16px; }
 .inbox-logo { height: 30px; width: auto; display: block; }
 .inbox-bar-actions { display: flex; align-items: center; gap: 4px; }
+
+/* thin dividers between stacked fields in grouped boxes */
+.ios-group > input + input,
+.ios-group > input + textarea,
+.ios-group > * + .ios-row,
+.ios-group > .ios-row + *,
+.ios-group > * + * { border-top: 1px solid #e3e3e8; }
