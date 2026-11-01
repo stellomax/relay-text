@@ -294,3 +294,17 @@
 @media (max-width: 560px) {
   .lp-photo-notif .lp-notif-from, .lp-photo-notif .lp-notif-body { font-size: 16px; }
 }
+
+/* "Built for schools": the inbox window matches the height of the text beside it. */
+@media (min-width: 981px) {
+  .lp-schools { align-items: stretch; }
+  /* height: 0 + min-height: 100% → the window takes the text column's height instead of setting it */
+  .lp-window { display: flex; flex-direction: column; align-self: stretch; height: 0; min-height: 100%; }
+  .lp-window-body { flex: 1; min-height: 0; }
+  .lp-wl { overflow: hidden; }
+  .lp-wr { min-height: 0; }
+  .lp-wr-msgs { overflow: hidden; min-height: 0; }
+}
+.lp-wl-row:not(.sel) + .lp-wl-row:not(.sel) { border-top: 1px solid #f1eff4; }
+.lp-wr-compose { padding: 10px 14px 12px; border-top: 1px solid var(--line); }
+.lp-wr-compose span { display: block; border: 1px solid #d8d4de; border-radius: 16px; padding: 6px 12px; font-size: 12px; color: #a3a0a8; }

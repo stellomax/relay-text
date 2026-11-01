@@ -238,10 +238,13 @@ export default function Landing() {
               <aside className="lp-wl">
                 <img src="/relay-text-logo.png" alt="" className="lp-wl-logo" />
                 {[
-                  ["OK", "Olena Kovalenko", "Yes, buses run on the normal schedule Monday.", "3:20 PM", false, true],
+                  ["OK", "Olena Kovalenko", "Perfect, thank you so much.", "3:24 PM", false, true],
                   ["MH", "Maria Hernández", "Yes! We’ll be there at 5. Thank you.", "3:14 PM", true, false],
                   ["AA", "Amina Abdi", "Thank you, Ayaan will bring the form tomorrow.", "2:02 PM", true, false],
+                  ["SA", "Samir Al-Masri", "Can we meet after school on Thursday?", "1:47 PM", false, false],
                   ["TN", "Thanh Nguyen", "Reminder: picture day is Friday.", "Yesterday", false, false],
+                  ["JL", "Jean-Pierre Louis", "Thanks for letting us know about the field trip.", "Yesterday", false, false],
+                  ["LC", "Li Chen", "Early release Wednesday at 1:00 PM.", "Monday", false, false],
                 ].map(([i, n, m, t, u, sel]) => (
                   <div className={`lp-wl-row ${sel ? "sel" : ""}`} key={n as string}>
                     <span className={`lp-dot ${u ? "on" : ""}`} />
@@ -273,6 +276,25 @@ export default function Landing() {
                   Yes, buses run on the normal schedule Monday.
                   <span className="lp-tr">Sent in Ukrainian</span>
                 </div>
+                <div className="lp-b in">
+                  Thank you! Is the field trip form due Friday?
+                  <span className="lp-tr" lang="uk">
+                    Original: Дякую! Дозвіл на екскурсію треба здати до п’ятниці?
+                  </span>
+                </div>
+                <div className="lp-b out">
+                  Yes, by Friday. I’ll send a copy home with Sofia tomorrow.
+                  <span className="lp-tr">Sent in Ukrainian</span>
+                </div>
+                <div className="lp-b in">
+                  Perfect, thank you so much.
+                  <span className="lp-tr" lang="uk">
+                    Original: Чудово, дуже дякую.
+                  </span>
+                </div>
+                </div>
+                <div className="lp-wr-compose" aria-hidden>
+                  <span>Text Message</span>
                 </div>
               </div>
             </div>
