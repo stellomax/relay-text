@@ -4,7 +4,7 @@ import { json, withAdmin, errorMessage } from "@/lib/http";
 import { autoBuyEnabled, assignNumber, unassignNumber, type AssignResult } from "@/lib/numbers";
 import { cleanAreaCode, isBuiltInAdmin, isSuperAdmin, newJoinCode, staffByEmail, staffById, tempPassword } from "@/lib/staff";
 import { newFreeCode, schoolById } from "@/lib/schools";
-import { findAuthUserId, setPassword, upsertAuthUser } from "@/lib/supabaseAuth";
+import { authClient, findAuthUserId, setPassword, upsertAuthUser } from "@/lib/supabaseAuth";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -127,6 +127,20 @@ export const PATCH = withAdmin(async (req, me) => {
         if (b.area_code && !ac) return json({ error: "Enter a 3-digit area code, like 303." }, 400);
         update.area_code = ac;
       }
+      if (typeof b.email === "string" && b.email.trim().toLowerCase() !== s.email) {
+        if (!isSuperAdmin(me.email)) return json({ error: "Only super admins can change a teacher's email." }, 403);
+        const email = b.email.trim().toLowerCase();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Enter a valid email address." }, 400);
+        if (isBuiltInAdmin(s.email)) return json({ error: "Built-in admin emails can't be changed here." }, 400);
+        if (await staffByEmail(email)) return json({ error: "Someone already has a Relay Text account with that email." }, 400);
+        // Move their login to the new email too, so they sign in with it.
+        const uid = s.user_id || (await findAuthUserId(s.email));
+        if (uid) {
+          const { error: authErr } = await authClient().auth.admin.updateUserById(uid, { email, email_confirm: true });
+          if (authErr) return json({ error: `Couldn't change the login email: ${authErr.message}` }, 400);
+        }
+        update.email = email;
+      }
       if (b.role === "admin" || b.role === "teacher") {
         if (b.role === "teacher" && isBuiltInAdmin(s.email)) return json({ error: "Built-in admins stay admins." }, 400);
         if (b.role === "teacher" && s.id === me.id) return json({ error: "You can't remove your own admin access." }, 400);
@@ -134,6 +148,18 @@ export const PATCH = withAdmin(async (req, me) => {
       }
       const { error } = await supa.from("staff").update(update).eq("id", s.id);
       if (error) throw new Error(error.message);
+      return json({ ok: true });
+    }
+    case "delete": {
+      if (!isSuperAdmin(me.email)) return json({ error: "Only super admins can delete teachers." }, 403);
+      if (s.id === me.id) return json({ error: "You can't delete your own account." }, 400);
+      if (isBuiltInAdmin(s.email)) return json({ error: "Built-in admins can't be deleted." }, 400);
+      // Their families and conversations move to the main number (admins can see them under "Main number").
+      await unassignNumber(s).catch((e) => console.error("release number", e));
+      const { error } = await supa.from("staff").delete().eq("id", s.id);
+      if (error) throw new Error(error.message);
+      const uid = s.user_id || (await findAuthUserId(s.email).catch(() => null));
+      if (uid) await authClient().auth.admin.deleteUser(uid).catch((e: unknown) => console.error("delete login", e));
       return json({ ok: true });
     }
     case "assign_number": {

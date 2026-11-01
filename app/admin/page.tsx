@@ -122,9 +122,11 @@ export default function AdminPage() {
       } else if (r.number?.note || r.numberError) {
         setNotice({ title: "Number", lines: [r.numberError ? `Couldn't assign a number: ${r.numberError}` : r.number.note] });
       }
+      if (action === "update" || action === "delete") setOpen(null);
       await load();
     } catch (e: any) {
       setError(e.message);
+      if (open) alert(e.message);
     } finally {
       setBusy("");
     }
@@ -335,6 +337,7 @@ export default function AdminPage() {
                         </button>
                       </th>
                     ))}
+                    <th aria-label="Edit" />
                   </tr>
                 </thead>
                 <tbody>
@@ -369,18 +372,29 @@ export default function AdminPage() {
                       <td>
                         <span className={`status-pill ${p.status}`}>{p.status === "active" ? "Active" : "Off"}</span>
                       </td>
+                      <td className="cell-edit">
+                        <button
+                          className="pill-btn ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpen(p);
+                          }}
+                        >
+                          Edit
+                        </button>
+                      </td>
                     </tr>
                   ))}
                   {people.length === 0 && (
                     <tr className="empty-row">
-                      <td colSpan={COLUMNS.length}>{q || schoolFilter ? "No teachers match." : "No teachers yet. Use Add Teacher to invite one."}</td>
+                      <td colSpan={COLUMNS.length + 1}>{q || schoolFilter ? "No teachers match." : "No teachers yet. Use Add Teacher to invite one."}</td>
                     </tr>
                   )}
                 </tbody>
               </table>
             </div>
             <p className="ios-footnote table-foot">
-              {people.length} {people.length === 1 ? "person" : "people"} · Click a row to edit, manage their number or reset their password.
+              {people.length} {people.length === 1 ? "person" : "people"} · Click Edit (or a row) to change details, manage their number or reset their password.
             </p>
             {data.unassignedFamilies > 0 && (
               <p className="ios-footnote">
@@ -401,6 +415,7 @@ export default function AdminPage() {
           schools={data?.schools || []}
           autoBuy={!!data?.autoBuy}
           busy={busy}
+          viewerIsSuper={!!data?.viewerIsSuper}
           onClose={() => setOpen(null)}
           onAct={(action, extra) => act(open, action, extra)}
         />
@@ -521,9 +536,11 @@ function PersonSheet({
   schools,
   autoBuy,
   busy,
+  viewerIsSuper,
   onClose,
   onAct,
 }: {
+  viewerIsSuper: boolean;
   person: Person;
   schools: SchoolOpt[];
   autoBuy: boolean;
@@ -531,9 +548,21 @@ function PersonSheet({
   onClose: () => void;
   onAct: (action: string, extra?: Record<string, unknown>) => void;
 }) {
-  const [f, setF] = useState({ name: p.name, school_id: p.school_id || "", area_code: p.area_code || "", admin: p.role === "admin" });
+  const [f, setF] = useState({
+    name: p.name,
+    email: p.email,
+    school_id: p.school_id || "",
+    area_code: p.area_code || "",
+    admin: p.role === "admin",
+  });
+  const emailChanged = f.email.trim().toLowerCase() !== p.email;
   const changed =
-    f.name !== p.name || f.school_id !== (p.school_id || "") || f.area_code !== (p.area_code || "") || f.admin !== (p.role === "admin");
+    f.name !== p.name ||
+    emailChanged ||
+    f.school_id !== (p.school_id || "") ||
+    f.area_code !== (p.area_code || "") ||
+    f.admin !== (p.role === "admin");
+  const canEditEmail = viewerIsSuper && !p.builtInAdmin;
 
   return (
     <Sheet
@@ -545,7 +574,16 @@ function PersonSheet({
               label: "Save",
               busy: busy === "update",
               disabled: !f.name.trim(),
-              onClick: () => onAct("update", { name: f.name, school_id: f.school_id, area_code: f.area_code, role: f.admin ? "admin" : "teacher" }),
+              onClick: () => {
+                if (emailChanged && !confirm(`Change ${p.name}'s email to ${f.email.trim()}? They'll sign in with the new email from now on.`)) return;
+                onAct("update", {
+                  name: f.name,
+                  school_id: f.school_id,
+                  area_code: f.area_code,
+                  role: f.admin ? "admin" : "teacher",
+                  ...(emailChanged ? { email: f.email } : {}),
+                });
+              },
             }
           : undefined
       }
@@ -554,8 +592,8 @@ function PersonSheet({
         <Avatar name={f.name || p.name} size={64} />
       </div>
       <p className="ios-footnote top center-text">
-        {p.email}
-        {p.status === "disabled" ? " · turned off" : ""}
+        {canEditEmail ? "" : p.email}
+        {p.status === "disabled" ? `${canEditEmail ? "" : " · "}Turned off` : ""}
       </p>
 
       <div className="ios-group">
@@ -563,6 +601,12 @@ function PersonSheet({
           <span className="ios-row-label">name</span>
           <input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
         </label>
+        {canEditEmail && (
+          <label className="ios-row">
+            <span className="ios-row-label">email</span>
+            <input type="email" autoComplete="off" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} />
+          </label>
+        )}
         <label className="ios-row">
           <span className="ios-row-label">school</span>
           <select value={f.school_id} onChange={(e) => setF({ ...f, school_id: e.target.value })}>
@@ -656,6 +700,25 @@ function PersonSheet({
           )
         )}
       </div>
+
+      {viewerIsSuper && !p.builtInAdmin && (
+        <>
+          <div className="ios-group">
+            <button
+              className="ios-row danger"
+              disabled={!!busy}
+              onClick={() =>
+                confirm(
+                  `Delete ${p.name}? Their login is removed and their texting number is released. Their families and conversations move to the main number, where admins can still see them. This can't be undone.`
+                ) && onAct("delete")
+              }
+            >
+              {busy === "delete" ? "Deleting…" : "Delete Teacher"}
+            </button>
+          </div>
+          <p className="ios-footnote">Super admins only. To pause someone instead, use Turn Off Account.</p>
+        </>
+      )}
     </Sheet>
   );
 }
