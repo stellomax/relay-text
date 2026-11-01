@@ -205,24 +205,6 @@ export default function Landing() {
           </ol>
         </section>
 
-        <section className="lp-hellos" aria-labelledby="langs">
-          <h2 id="langs">Speak to every family at your school.</h2>
-          <p>
-            Relay Text supports the home languages most common in U.S. schools, including ones many tools skip, like Somali,
-            Burmese, Dari, Kinyarwanda and Hmong.
-          </p>
-          <ul className="lp-hello-grid">
-            {HELLOS.map((h) => (
-              <li key={h.l}>
-                <span className="lp-hello" dir={h.rtl ? "rtl" : undefined}>
-                  {h.t}
-                </span>
-                <span className="lp-hello-lang">{h.l}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
         <section className="lp-schools" aria-labelledby="schools">
           <div className="lp-schools-copy">
             <h2 id="schools">Built for schools.</h2>
@@ -295,6 +277,24 @@ export default function Landing() {
               </div>
             </div>
           </div>
+        </section>
+
+        <section className="lp-hellos" aria-labelledby="langs">
+          <h2 id="langs">Speak to every family at your school.</h2>
+          <p>
+            Relay Text supports the home languages most common in U.S. schools, including ones many tools skip, like Somali,
+            Burmese, Dari, Kinyarwanda and Hmong.
+          </p>
+          <ul className="lp-hello-grid">
+            {HELLOS.map((h) => (
+              <li key={h.l}>
+                <span className="lp-hello" dir={h.rtl ? "rtl" : undefined}>
+                  {h.t}
+                </span>
+                <span className="lp-hello-lang">{h.l}</span>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section className="lp-final">

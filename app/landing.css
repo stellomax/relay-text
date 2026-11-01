@@ -189,7 +189,7 @@
 /* for schools */
 .lp-schools {
   display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(32px, 5vw, 80px); align-items: center;
-  max-width: 1240px; margin: 0 auto; padding: clamp(40px, 6vw, 80px) clamp(16px, 4vw, 48px) clamp(64px, 8vw, 112px);
+  max-width: 1240px; margin: 0 auto; padding: clamp(56px, 8vw, 104px) clamp(16px, 4vw, 48px) clamp(24px, 4vw, 48px);
 }
 .lp-schools dl { margin: 28px 0 0; display: grid; gap: 22px; }
 .lp-schools dt { font-weight: 700; font-size: 19px; }
