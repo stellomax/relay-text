@@ -146,22 +146,32 @@ export default function Landing() {
         </section>
 
         <section className="lp-noapp">
-          <div className="lp-lock" aria-label="A parent's phone lock screen showing a text in Arabic">
-            <div className="lp-lock-screen">
-              <div className="lp-lock-time">7:48</div>
-              <div className="lp-lock-date">Tuesday, November 4</div>
-              <div className="lp-notif">
-                <div className="lp-notif-top">
-                  <span className="lp-notif-app">Messages</span>
-                  <span>now</span>
-                </div>
-                <div className="lp-notif-from">Mr. Okafor</div>
-                <div className="lp-notif-body" dir="rtl" lang="ar">
-                  صباح الخير! تذكير: يوم الصور هو يوم الجمعة. يرجى إرسال النموذج الموقع.
-                </div>
+          <figure className="lp-photo">
+            <img
+              src="https://images.unsplash.com/photo-1562147113-610c96ae71ae?w=1000&q=80&auto=format&fit=crop"
+              alt="Two parents reading a text message together on one phone"
+              loading="lazy"
+              width={1000}
+              height={1250}
+            />
+            <div className="lp-notif lp-photo-notif" aria-hidden>
+              <div className="lp-notif-top">
+                <span className="lp-notif-app">Messages</span>
+                <span>now</span>
+              </div>
+              <div className="lp-notif-from">Mr. Okafor</div>
+              <div className="lp-notif-body" lang="fr">
+                Bonjour ! Rappel : la journée photo est vendredi. Merci de renvoyer le formulaire signé.
               </div>
             </div>
-          </div>
+            <figcaption>
+              Photo:{" "}
+              <a href="https://unsplash.com/photos/man-and-a-woman-looking-at-a-smartphone-TubEi7uf170" rel="noopener" target="_blank">
+                David Rotimi
+              </a>{" "}
+              on Unsplash
+            </figcaption>
+          </figure>
           <div className="lp-noapp-copy">
             <h2>Parents don’t install anything.</h2>
             <p>
