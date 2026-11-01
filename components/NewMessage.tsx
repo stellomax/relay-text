@@ -55,7 +55,11 @@ export default function NewMessage({
   async function save() {
     if (!adding) return;
     const phone = toE164(adding.phone);
-    const existing = phone && contacts.find((c) => c.phone === phone);
+    if (!phone) {
+      setError("That phone number doesn't look right. Enter a 10-digit U.S. mobile number, like (303) 555-1234.");
+      return;
+    }
+    const existing = contacts.find((c) => c.phone === phone);
     if (existing) return onPick(existing.id);
     setBusy(true);
     setError("");
@@ -75,8 +79,16 @@ export default function NewMessage({
         onCancel={() => setAdding(null)}
         action={{ label: "Done", onClick: save, busy, disabled: !adding.parent_name.trim() || !adding.phone.trim() }}
       >
-        <ContactFields value={adding} onChange={setAdding} autoFocus />
         {error && <p className="sheet-error">{error}</p>}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!busy && adding.parent_name.trim() && adding.phone.trim()) save();
+          }}
+        >
+          <ContactFields value={adding} onChange={setAdding} autoFocus />
+          <button type="submit" hidden aria-hidden="true" />
+        </form>
       </Sheet>
     );
   }

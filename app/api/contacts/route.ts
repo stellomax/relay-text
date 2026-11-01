@@ -42,7 +42,14 @@ export const POST = withAuth(async (req, me) => {
   if ("error" in c) return json({ error: c.error }, 400);
   if (await duplicate(scope.staffId, c.row.phone)) return json({ error: "A family with that phone number is already in this inbox." }, 400);
   const { data, error } = await db().from("contacts").insert({ ...c.row, staff_id: scope.staffId }).select("*").single();
-  if (error) return json({ error: error.message }, 400);
+  if (error) {
+    console.error("Add family failed:", error.message);
+    if (/contacts_phone_key/.test(error.message)) {
+      return json({ error: "This phone number is already saved in another inbox. To let more than one teacher text the same family, run the latest supabase/schema.sql in Supabase." }, 400);
+    }
+    if (/duplicate key/.test(error.message)) return json({ error: "A family with that phone number is already in this inbox." }, 400);
+    return json({ error: `Couldn't add the family: ${error.message}` }, 400);
+  }
   return json({ contact: data });
 });
 
