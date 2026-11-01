@@ -2,7 +2,11 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { env, twilioConfigured } from "./config";
 
 const API = () => `https://api.twilio.com/2010-04-01/Accounts/${env.twilioSid}`;
-const auth = () => "Basic " + Buffer.from(`${env.twilioSid}:${env.twilioToken}`).toString("base64");
+// Signs in with an API key (TWILIO_API_KEY_SID + TWILIO_API_KEY_SECRET) if set, otherwise the Account SID + Auth Token.
+const useKey = () => Boolean(env.twilioKeySid && env.twilioKeySecret);
+const auth = () =>
+  "Basic " +
+  Buffer.from(useKey() ? `${env.twilioKeySid}:${env.twilioKeySecret}` : `${env.twilioSid}:${env.twilioToken}`).toString("base64");
 
 async function twilio(url: string, method = "GET", form?: Record<string, string>) {
   const res = await fetch(url, {
@@ -92,7 +96,10 @@ export async function twilioCheck(): Promise<{ ok: boolean; detail: string }> {
   if (!/^AC[0-9a-f]{32}$/i.test(sid)) {
     return { ok: false, detail: `TWILIO_ACCOUNT_SID doesn't look right. It should start with "AC" and be 34 characters (yours starts "${sid.slice(0, 2)}", ${sid.length} characters).` };
   }
-  if (!/^[0-9a-f]{32}$/i.test(env.twilioToken)) {
+  if (useKey() && !/^SK[0-9a-f]{32}$/i.test(env.twilioKeySid)) {
+    return { ok: false, detail: `TWILIO_API_KEY_SID should start with "SK" and be 34 characters.` };
+  }
+  if (!useKey() && !/^[0-9a-f]{32}$/i.test(env.twilioToken)) {
     return { ok: false, detail: `TWILIO_AUTH_TOKEN doesn't look right. It should be 32 letters and numbers (yours is ${env.twilioToken.length} characters). Copy the Auth Token from the Twilio Console home page, not an API key.` };
   }
   let account: any;
@@ -100,7 +107,11 @@ export async function twilioCheck(): Promise<{ ok: boolean; detail: string }> {
     account = await twilio(`${API()}.json`);
   } catch (e) {
     const m = e instanceof Error ? e.message : String(e);
-    return { ok: false, detail: `Twilio rejected the login (${m}). The Account SID and Auth Token in Vercel don't match — copy both again from the Twilio Console home page, then redeploy.` };
+    const how = useKey() ? "API key (TWILIO_API_KEY_SID / TWILIO_API_KEY_SECRET)" : "Auth Token";
+    return {
+      ok: false,
+      detail: `Twilio rejected the login (${m}). Signing in with: Account ${sid.slice(0, 6)}…${sid.slice(-4)} + ${how}. Check that these are Live (not Test) credentials from the same Twilio account, and that the account is active.`,
+    };
   }
   const acct = `Signed in to "${account.friendly_name || "Twilio"}"${account.status && account.status !== "active" ? ` (account ${account.status})` : ""}`;
   if (!mg) return { ok: true, detail: `${acct}. Sending from ${env.twilioFrom}.` };

@@ -25,13 +25,17 @@ export const env = {
   googleKey: clean(process.env.GOOGLE_TRANSLATE_API_KEY),
   twilioSid: clean(process.env.TWILIO_ACCOUNT_SID),
   twilioToken: clean(process.env.TWILIO_AUTH_TOKEN),
+  twilioKeySid: clean(process.env.TWILIO_API_KEY_SID),
+  twilioKeySecret: clean(process.env.TWILIO_API_KEY_SECRET),
   twilioFrom: clean(process.env.TWILIO_PHONE_NUMBER).replace(/[\s().-]/g, ""),
   twilioMessagingService: clean(process.env.TWILIO_MESSAGING_SERVICE_SID),
   appUrl: clean(process.env.APP_URL).replace(/\/+$/, ""),
 };
 
 export function twilioConfigured(): boolean {
-  return Boolean(env.twilioSid && env.twilioToken && (env.twilioFrom || env.twilioMessagingService));
+  return Boolean(
+    env.twilioSid && (env.twilioToken || (env.twilioKeySid && env.twilioKeySecret)) && (env.twilioFrom || env.twilioMessagingService)
+  );
 }
 
 export function supabaseConfigured(): boolean {
