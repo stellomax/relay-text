@@ -173,7 +173,7 @@ export default function Landing() {
             </figcaption>
           </figure>
           <div className="lp-noapp-copy">
-            <h2>Parents don’t install anything.</h2>
+            <h2>Parents receive texts in their own language, nothing to install.</h2>
             <p>
               Messages arrive in the texting app already on their phone, from a regular phone number. There’s no account to
               create, no password to forget and no app to keep updated.
