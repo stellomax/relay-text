@@ -259,7 +259,19 @@ export default function Messages() {
             </div>
             <div className="pane-empty">
               <img src="/icon-192.png" alt="" width={72} height={72} />
-              <p>{readOnly ? "Choose a conversation to view." : "Choose a conversation, or start a new one."}</p>
+              <p>
+                {readOnly ? (
+                  "Choose a conversation to view."
+                ) : (
+                  <>
+                    Choose a conversation, or{" "}
+                    <button className="link-btn" onClick={() => setSheet("new")}>
+                      start a new one
+                    </button>
+                    .
+                  </>
+                )}
+              </p>
             </div>
           </div>
         )}
