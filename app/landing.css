@@ -64,7 +64,7 @@
 .lp-fine { font-size: 15px; color: var(--ink-2); margin-top: 14px; opacity: 0.85; }
 
 /* the two phones */
-.lp-pair { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 4px; position: relative; }
+.lp-pair { display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; gap: 4px; position: relative; }
 .lp-pair::before {
   content: ""; position: absolute; inset: 8% -6% 14% -6%; background: var(--lilac); border-radius: 48px; z-index: 0;
 }
@@ -74,7 +74,6 @@
   box-shadow: 0 30px 60px -20px rgba(36, 17, 51, 0.35); overflow: hidden; display: flex; flex-direction: column;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--lp-body), sans-serif; letter-spacing: -0.2px;
 }
-.lp-phone-parent .lp-screen { transform: translateY(28px); }
 .lp-statusbar { display: flex; justify-content: center; font-size: 12px; font-weight: 600; padding: 8px 0 2px; }
 .lp-threadhead {
   display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 8px 8px; background: #f7f7f8;
@@ -101,9 +100,8 @@
   margin: 6px 8px 14px; border: 1px solid #c6c6c8; border-radius: 16px; padding: 5px 10px; font-size: 11px; color: #b8b8bd;
 }
 .lp-caption { margin-top: 18px; font-size: 14px; font-weight: 600; color: var(--ink-2); text-align: center; max-width: 220px; }
-.lp-phone-parent .lp-caption { margin-top: 46px; }
 .lp-bridge {
-  position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--purple);
+  position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--purple); align-self: center;
   font-size: 12px; font-weight: 700; padding: 0 2px;
 }
 .lp-bridge span { background: #fff; border-radius: 999px; padding: 3px 9px; box-shadow: 0 2px 8px rgba(36, 17, 51, 0.08); }
@@ -259,11 +257,9 @@
   .lp-compose { font-size: 9px; margin: 4px 6px 10px; }
   .lp-avatar { width: 26px; height: 26px; font-size: 10px; }
   .lp-who { font-size: 9px; }
-  .lp-phone-parent .lp-screen { transform: translateY(18px); }
   .lp-msgs { justify-content: flex-end; } /* like a real phone: newest messages at the bottom */
   .lp-stamp { display: none; }
   .lp-caption { font-size: 12.5px; }
-  .lp-phone-parent .lp-caption { margin-top: 32px; }
   .lp-window-body { grid-template-columns: 1fr; }
   .lp-wl { border-right: 0; border-bottom: 1px solid var(--line); }
   .lp-final { border-radius: 26px; }
