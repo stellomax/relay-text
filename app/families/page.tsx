@@ -6,13 +6,13 @@ import Sheet from "@/components/Sheet";
 import ContactSheet from "@/components/ContactSheet";
 import ContactFields, { ContactForm } from "@/components/ContactFields";
 import { allGroups } from "@/components/NewMessage";
+import { Broadcast } from "@/components/GroupMessage";
 import { Check, ChevronLeft, Plus } from "@/components/icons";
 import { api } from "@/lib/client";
 import { languageName } from "@/lib/languages";
 import { prettyPhone } from "@/lib/phone";
 import type { Contact } from "@/lib/db";
 
-type Summary = { sent: number; simulated: number; failed: number; skipped: number; errors: { contact: string; error: string }[] };
 const NO_GROUP = "__none__";
 
 // Families: the teacher's address book. Pick some families, a group, or everyone, and send one message —
@@ -289,126 +289,5 @@ export default function Families() {
         />
       )}
     </div>
-  );
-}
-
-// One message to many families. Each family gets a separate, private text in their own language.
-function Broadcast({ recipients, onClose }: { recipients: Contact[]; onClose: (sent: boolean) => void }) {
-  const [text, setText] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const [result, setResult] = useState<Summary | null>(null);
-  const [showAll, setShowAll] = useState(false);
-
-  const active = recipients.filter((c) => !c.opted_out && c.consent_at);
-  const needConsent = recipients.filter((c) => !c.opted_out && !c.consent_at).length;
-  const optedOut = recipients.filter((c) => c.opted_out).length;
-  const byLang = useMemo(() => {
-    const m = new Map<string, number>();
-    for (const c of active) m.set(c.language, (m.get(c.language) || 0) + 1);
-    return [...m.entries()].sort((a, b) => b[1] - a[1]);
-  }, [active]);
-
-  async function send() {
-    if (!text.trim() || !active.length) return;
-    if (active.length > 1 && !confirm(`Send this message to ${active.length} families? Each family gets their own private text.`)) return;
-    setBusy(true);
-    setError("");
-    try {
-      const d = await api<{ summary: Summary }>("/api/send", { body: { text, contactIds: active.map((c) => c.id) } });
-      setResult(d.summary);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  if (result) {
-    const delivered = result.sent + result.simulated;
-    return (
-      <Sheet title="Message Sent" onCancel={() => onClose(true)} action={{ label: "Done", onClick: () => onClose(true) }}>
-        <div className="fam-result">
-          <p className="fam-result-big">
-            Sent to {delivered} {delivered === 1 ? "family" : "families"}
-            {result.simulated > 0 && result.sent === 0 ? " (demo mode)" : ""}
-          </p>
-          {optedOut > 0 && <p>{optedOut} skipped because they opted out.</p>}
-          {needConsent > 0 && <p>{needConsent} skipped because consent isn’t on record yet.</p>}
-          {result.failed > 0 && (
-            <>
-              <p className="sheet-error">{result.failed} couldn’t be sent:</p>
-              <ul className="fam-errors">
-                {result.errors.map((e, i) => (
-                  <li key={i}>
-                    <strong>{e.contact}</strong>: {e.error}
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-          <p className="ios-footnote">
-            Families getting their first Relay Text message also see who it’s from and how to opt out (Reply STOP).
-          </p>
-          <p className="ios-footnote">Each family’s replies come back to their own conversation in Messages.</p>
-          <a className="ios-button small" href="/inbox">
-            Go to Messages
-          </a>
-        </div>
-      </Sheet>
-    );
-  }
-
-  const names = active.map((c) => c.parent_name);
-  const preview = showAll ? names : names.slice(0, 6);
-  return (
-    <Sheet
-      title={active.length === 1 ? "New Message" : `Message ${active.length} Families`}
-      onCancel={() => onClose(false)}
-      action={{ label: "Send", onClick: send, busy, disabled: !text.trim() || !active.length }}
-    >
-      <div className="ios-group">
-        <div className="ios-row fam-to">
-          <span className="ios-row-label">to</span>
-          <span className="fam-to-names">
-            {preview.join(", ")}
-            {!showAll && names.length > preview.length && (
-              <>
-                {" "}
-                <button className="link-btn" onClick={() => setShowAll(true)}>
-                  and {names.length - preview.length} more
-                </button>
-              </>
-            )}
-          </span>
-        </div>
-      </div>
-      {byLang.length > 0 && (
-        <p className="ios-footnote">
-          Translated into {byLang.map(([l, n]) => `${languageName(l)} (${n})`).join(", ")}.
-          {optedOut > 0 && ` ${optedOut} opted-out ${optedOut === 1 ? "family is" : "families are"} left out.`}
-          {needConsent > 0 && ` ${needConsent} without consent on record ${needConsent === 1 ? "is" : "are"} left out.`}
-        </p>
-      )}
-      {!active.length && (
-        <p className="sheet-error">
-          None of these families can be texted: they opted out or don’t have consent on record. Tap a family to confirm consent.
-        </p>
-      )}
-      <div className="ios-group">
-        <textarea
-          rows={6}
-          autoFocus
-          placeholder="Write your message in English"
-          value={text}
-          maxLength={1000}
-          onChange={(e) => setText(e.target.value)}
-        />
-      </div>
-      <p className="ios-footnote">
-        Each family gets a separate, private text — no one sees who else got it. {text.length > 0 && `${text.length}/1000`}
-      </p>
-      {error && <p className="sheet-error">{error}</p>}
-    </Sheet>
   );
 }

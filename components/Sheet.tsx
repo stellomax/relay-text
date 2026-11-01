@@ -7,8 +7,10 @@ export default function Sheet({
   title,
   onCancel,
   action,
+  cancelLabel = "Cancel",
   children,
 }: {
+  cancelLabel?: string;
   title: string;
   onCancel: () => void;
   action?: { label: string; onClick: () => void; disabled?: boolean; busy?: boolean };
@@ -25,7 +27,7 @@ export default function Sheet({
       <div className="sheet" role="dialog" aria-modal="true" aria-label={title}>
         <div className="sheet-bar">
           <button className="bar-btn" onClick={onCancel}>
-            Cancel
+            {cancelLabel}
           </button>
           <div className="sheet-title">{title}</div>
           {action ? (

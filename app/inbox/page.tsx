@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Avatar from "@/components/Avatar";
 import Thread from "@/components/Thread";
 import NewMessage from "@/components/NewMessage";
+import GroupMessage from "@/components/GroupMessage";
 import ContactSheet from "@/components/ContactSheet";
 import DemoReply from "@/components/DemoReply";
 import { ChevronRight, Compose, Search } from "@/components/icons";
@@ -15,7 +16,7 @@ import type { Contact, Message } from "@/lib/db";
 
 type Conversation = { contact: Contact; last: Partial<Message> | null; unread: number };
 type Inbox = { id: string; label: string; sub?: string };
-type SheetKind = "new" | "info" | "demo" | null;
+type SheetKind = "new" | "group" | "info" | "demo" | null;
 
 function readParams() {
   if (typeof window === "undefined") return { c: null as string | null, as: null as string | null };
@@ -268,12 +269,21 @@ export default function Messages() {
         <NewMessage
           contacts={convos.map((c) => c.contact)}
           createUrl={`/api/contacts${asQuery}`}
-          familiesUrl={as ? undefined : "/families"}
+          onGroup={() => setSheet("group")}
           onCancel={() => setSheet(null)}
           onPick={async (id) => {
             setSheet(null);
             await load();
             open(id);
+          }}
+        />
+      )}
+      {sheet === "group" && !readOnly && (
+        <GroupMessage
+          contacts={convos.map((c) => c.contact)}
+          onClose={(sent) => {
+            setSheet(null);
+            if (sent) load();
           }}
         />
       )}

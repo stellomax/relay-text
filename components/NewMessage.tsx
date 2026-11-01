@@ -20,13 +20,13 @@ export function allGroups(contacts: Contact[]): string[] {
 export default function NewMessage({
   contacts,
   createUrl = "/api/contacts",
-  familiesUrl,
+  onGroup,
   onCancel,
   onPick,
 }: {
   contacts: Contact[];
   createUrl?: string;
-  familiesUrl?: string;
+  onGroup?: () => void;
   onCancel: () => void;
   onPick: (contactId: string) => void;
 }) {
@@ -120,16 +120,16 @@ export default function NewMessage({
             </span>
           </button>
         </li>
-        {familiesUrl && contacts.length > 1 && !to.trim() && (
+        {onGroup && contacts.length > 1 && !to.trim() && (
           <li>
-            <a className="pick-row add" href={familiesUrl}>
+            <button className="pick-row add" onClick={onGroup}>
               <span className="pick-plus">
                 <People size={18} />
               </span>
               <span className="pick-text">
                 <span className="pick-name">Message several or all families</span>
               </span>
-            </a>
+            </button>
           </li>
         )}
         {matches.map((c) => (
