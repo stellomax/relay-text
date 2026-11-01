@@ -136,3 +136,22 @@ export async function twilioCheck(): Promise<{ ok: boolean; detail: string }> {
     return { ok: false, detail: `${acct}, but couldn't open Messaging Service ${mg} (${m}). Check that the SID is from this same Twilio account.` };
   }
 }
+
+// Second way to confirm an incoming text is real: look the message up in Twilio by its SID and check it matches.
+// Used when the signature check fails (for example, the Auth Token in Vercel is out of date).
+export async function confirmInboundWithTwilio(params: Record<string, string>): Promise<boolean> {
+  const sid = params.MessageSid || params.SmsSid || "";
+  if (!/^(SM|MM)[0-9a-f]{32}$/i.test(sid) || !twilioConfigured()) return false;
+  try {
+    const m: any = await twilio(`${API()}/Messages/${sid}.json`);
+    const digits = (s: string) => String(s || "").replace(/\D/g, "");
+    return (
+      String(m.direction || "").startsWith("inbound") &&
+      digits(m.from) === digits(params.From) &&
+      (!params.To || digits(m.to) === digits(params.To))
+    );
+  } catch (e) {
+    console.warn("Couldn't confirm incoming SMS with Twilio:", e instanceof Error ? e.message : e);
+    return false;
+  }
+}

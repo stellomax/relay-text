@@ -1,6 +1,6 @@
 import { baseUrlFromRequest } from "@/lib/config";
 import { receiveInbound } from "@/lib/messaging";
-import { twiml, validTwilioSignature } from "@/lib/twilio";
+import { confirmInboundWithTwilio, twiml, validTwilioSignature } from "@/lib/twilio";
 
 export const dynamic = "force-dynamic";
 
@@ -11,8 +11,8 @@ export async function POST(req: Request) {
   form.forEach((v, k) => (params[k] = String(v)));
 
   const url = `${baseUrlFromRequest(req)}/api/sms/incoming`;
-  if (!validTwilioSignature(url, params, req.headers.get("x-twilio-signature"))) {
-    console.warn("Rejected incoming SMS: bad Twilio signature for", url);
+  if (!validTwilioSignature(url, params, req.headers.get("x-twilio-signature")) && !(await confirmInboundWithTwilio(params))) {
+    console.warn("Rejected incoming SMS: bad Twilio signature and not confirmed with Twilio, for", url);
     return new Response("Invalid signature", { status: 403 });
   }
 
