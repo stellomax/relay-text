@@ -28,6 +28,12 @@ const HELLOS = [
   { t: "ሰላም", l: "Amharic" },
   { t: "नमस्ते", l: "Nepali" },
   { t: "Nyob zoo", l: "Hmong" },
+  { t: "안녕하세요", l: "Korean" },
+  { t: "Привет", l: "Russian" },
+  { t: "Kumusta", l: "Tagalog" },
+  { t: "こんにちは", l: "Japanese" },
+  { t: "Muraho", l: "Kinyarwanda" },
+  { t: "Salom", l: "Uzbek" },
 ];
 
 function TeacherPhone() {
