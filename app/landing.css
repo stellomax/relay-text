@@ -275,7 +275,7 @@
   border-radius: 32px; box-shadow: 0 30px 60px -24px rgba(36, 17, 51, 0.4);
 }
 .lp-photo-notif {
-  position: absolute; right: -40px; bottom: 18px; width: min(290px, 74%); margin: 0;
+  position: absolute; right: -48px; bottom: 22px; width: min(380px, 90%); margin: 0; padding: 14px 16px; border-radius: 22px;
   background: rgba(255, 255, 255, 0.94); box-shadow: 0 18px 40px -12px rgba(36, 17, 51, 0.35);
   font-family: -apple-system, BlinkMacSystemFont, var(--lp-body), sans-serif;
 }
@@ -285,5 +285,12 @@
   .lp-noapp .lp-photo { order: 2; }
 }
 @media (max-width: 560px) {
-  .lp-photo-notif { right: 10px; bottom: 34px; width: 70%; }
+  .lp-photo-notif { right: 10px; bottom: 30px; width: calc(100% - 20px); }
+}
+
+.lp-photo-notif .lp-notif-top { font-size: 13px; }
+.lp-photo-notif .lp-notif-from { font-size: 18px; margin-top: 4px; }
+.lp-photo-notif .lp-notif-body { font-size: 18px; line-height: 1.35; margin-top: 3px; }
+@media (max-width: 560px) {
+  .lp-photo-notif .lp-notif-from, .lp-photo-notif .lp-notif-body { font-size: 16px; }
 }
