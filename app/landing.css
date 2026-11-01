@@ -309,7 +309,7 @@
 .lp-wr-compose span { display: block; border: 1px solid #d8d4de; border-radius: 16px; padding: 6px 12px; font-size: 12px; color: #a3a0a8; }
 
 /* hero headline: three short lines */
-.lp-hero h1 { max-width: none; }
+.lp-hero h1 { max-width: none; font-size: clamp(32px, 3.8vw, 50px); line-height: 1.1; letter-spacing: -0.03em; }
 .lp-hero h1 span { display: block; }
 .lp-fine a { font-weight: 600; color: var(--purple); }
 
