@@ -7,7 +7,7 @@ import ContactFields, { ContactForm } from "./ContactFields";
 import { People, Plus } from "./icons";
 import { api } from "@/lib/client";
 import { languageName } from "@/lib/languages";
-import { prettyPhone, toE164 } from "@/lib/phone";
+import { formatPhoneInput, prettyPhone, toE164 } from "@/lib/phone";
 import type { Contact } from "@/lib/db";
 
 export function allGroups(contacts: Contact[]): string[] {
@@ -54,7 +54,7 @@ export default function NewMessage({
     setAdding({
       parent_name: looksLikePhone ? "" : to.trim(),
       child_name: "",
-      phone: looksLikePhone ? to.trim() : "",
+      phone: looksLikePhone ? formatPhoneInput(to.trim()) : "",
       language: "es",
       groups: "",
       consent: false,

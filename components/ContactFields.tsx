@@ -1,6 +1,7 @@
 "use client";
 
 import { LANGUAGES } from "@/lib/languages";
+import { formatPhoneInput } from "@/lib/phone";
 
 export type ContactForm = { parent_name: string; child_name: string; phone: string; language: string; groups?: string; consent?: boolean };
 
@@ -39,7 +40,7 @@ export default function ContactFields({
             autoComplete="off"
             placeholder="(303) 555-1234"
             value={value.phone}
-            onChange={set("phone")}
+            onChange={(e) => onChange({ ...value, phone: formatPhoneInput(e.target.value, value.phone) })}
           />
         </label>
         <label className="ios-row">

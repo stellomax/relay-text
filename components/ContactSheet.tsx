@@ -5,6 +5,7 @@ import Sheet from "./Sheet";
 import Avatar from "./Avatar";
 import ContactFields, { ContactForm } from "./ContactFields";
 import { api } from "@/lib/client";
+import { prettyPhone } from "@/lib/phone";
 import type { Contact } from "@/lib/db";
 
 // Tap the name at the top of a conversation: view and edit the family's details.
@@ -30,7 +31,7 @@ export default function ContactSheet({
   const [form, setForm] = useState<ContactForm>({
     parent_name: contact.parent_name.startsWith("Unknown ") ? "" : contact.parent_name,
     child_name: contact.child_name || "",
-    phone: contact.phone,
+    phone: prettyPhone(contact.phone),
     language: contact.language,
     groups: (contact.groups || []).join(", "),
     consent: false,

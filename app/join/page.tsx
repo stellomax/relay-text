@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import LegalPage from "@/components/LegalPage";
 import { LANGUAGES } from "@/lib/languages";
 import { BRAND, COMPANY } from "@/lib/brand";
+import { formatPhoneInput } from "@/lib/phone";
 
 // Public sign-up page: how parents and guardians opt in to school text messages.
 export default function Join() {
@@ -118,7 +119,7 @@ export default function Join() {
         </label>
         <label>
           Mobile phone number
-          <input value={form.phone} onChange={set("phone")} inputMode="tel" autoComplete="tel" placeholder="(303) 555-1234" required />
+          <input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: formatPhoneInput(e.target.value, f.phone) }))} inputMode="tel" autoComplete="tel" placeholder="(303) 555-1234" required />
         </label>
         <label>
           Student name <span className="legal-small">(optional)</span>
