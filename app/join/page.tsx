@@ -14,17 +14,33 @@ export default function Join() {
   const [done, setDone] = useState(false);
   const [code, setCode] = useState("");
   const [teacher, setTeacher] = useState<{ name: string; school: string | null } | null>(null);
+  const [fromLink, setFromLink] = useState(false);
+  const [checked, setChecked] = useState(false);
 
   // A teacher's personal link (relaytext.io/join?t=CODE) signs the family up with that teacher.
   useEffect(() => {
     const t = new URLSearchParams(window.location.search).get("t") || "";
     setCode(t);
-    if (t)
+    setFromLink(!!t);
+  }, []);
+
+  // Look up whose code this is (from the link, or typed in by the parent).
+  useEffect(() => {
+    const t = code.trim();
+    setChecked(false);
+    if (t.length < 4) {
+      setTeacher(null);
+      return;
+    }
+    const timer = setTimeout(() => {
       fetch(`/api/join-info?t=${encodeURIComponent(t)}`)
         .then((r) => r.json())
         .then((d) => setTeacher(d.teacher || null))
-        .catch(() => {});
-  }, []);
+        .catch(() => setTeacher(null))
+        .finally(() => setChecked(true));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [code]);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -58,11 +74,14 @@ export default function Join() {
 
   return (
     <LegalPage title="Get school texts in your language" updated={false}>
-      {teacher && (
+      {teacher && fromLink && (
         <p className="join-teacher">
           Sign up to get texts from <strong>{teacher.name}</strong>
           {teacher.school ? ` at ${teacher.school}` : ""}.
         </p>
+      )}
+      {fromLink && checked && !teacher && (
+        <p className="join-error">This sign-up link isn’t working. Please ask your child’s teacher for a new link.</p>
       )}
       <p>
         {BRAND} lets your child’s teachers and school staff text you in your own language. You get a regular text message,
@@ -70,6 +89,29 @@ export default function Join() {
       </p>
 
       <form className="join-form" onSubmit={submit}>
+        {!fromLink && (
+          <label>
+            Teacher code
+            <input
+              value={code}
+              onChange={(e) => setCode(e.target.value.trim())}
+              autoCapitalize="none"
+              autoCorrect="off"
+              placeholder="From your child’s teacher"
+              required
+            />
+            {teacher ? (
+              <span className="join-ok">
+                ✓ {teacher.name}
+                {teacher.school ? `, ${teacher.school}` : ""}
+              </span>
+            ) : checked ? (
+              <span className="join-hint bad">We couldn’t find that code. Check it with your child’s teacher.</span>
+            ) : (
+              <span className="join-hint">Your child’s teacher gives you this code or a sign-up link.</span>
+            )}
+          </label>
+        )}
         <label>
           Parent or guardian name
           <input value={form.parent_name} onChange={set("parent_name")} autoComplete="name" required />
@@ -104,7 +146,7 @@ export default function Join() {
         </label>
 
         {error && <p className="join-error">{error}</p>}
-        <button className="ios-button" disabled={busy || !consent}>
+        <button className="ios-button" disabled={busy || !consent || !teacher}>
           {busy ? "Signing up…" : "Sign up for texts"}
         </button>
       </form>

@@ -281,6 +281,18 @@ export default function Messages() {
         <ContactSheet
           contact={selected}
           readOnly={readOnly}
+          moveOptions={
+            inboxes
+              ? inboxes.map((i) => ({
+                  id: i.id === "unassigned" ? null : i.id,
+                  label: i.id === "unassigned" ? "Main number (no teacher)" : i.id === me?.id ? `Me (${me.name})` : i.sub ? `${i.label} · ${i.sub}` : i.label,
+                }))
+              : undefined
+          }
+          onMoved={() => {
+            setSheet(null);
+            back();
+          }}
           onClose={() => setSheet(null)}
           onSaved={() => {
             setSheet(null);

@@ -99,6 +99,7 @@ export const POST = withAuth(async (req, me) => {
 
 export const PATCH = withAuth(async (req, me) => {
   const body = await req.json().catch(() => ({}));
+  if (body.action === "move") return move(me, body);
   const existing = body.id ? await load(String(body.id)) : null;
   if (!existing || !canWrite(me, existing)) return json({ error: "Family not found." }, 404);
   const c = clean(body);
@@ -118,6 +119,26 @@ export const PATCH = withAuth(async (req, me) => {
   if (error) return json({ error: error.message }, 400);
   return json({ contact: data, warning });
 });
+
+// Admins: move a family (and their whole conversation) to a teacher, or back to the main number.
+async function move(me: { role: string }, body: Record<string, unknown>) {
+  if (me.role !== "admin") return json({ error: "Only admins can move families between teachers." }, 403);
+  const existing = body.id ? await load(String(body.id)) : null;
+  if (!existing) return json({ error: "Family not found." }, 404);
+  const target = body.staff_id ? String(body.staff_id) : null;
+  if (target === existing.staff_id) return json({ contact: existing });
+  if (target) {
+    const { data: t } = await db().from("staff").select("id, status").eq("id", target).maybeSingle();
+    if (!t || t.status !== "active") return json({ error: "That teacher's account isn't active." }, 400);
+  }
+  if (await duplicate(target, existing.phone, existing.id)) {
+    return json({ error: "That teacher already has a family with this phone number." }, 400);
+  }
+  const { data, error } = await db().from("contacts").update({ staff_id: target }).eq("id", existing.id).select("*").single();
+  if (error) return json({ error: error.message }, 400);
+  await db().from("messages").update({ staff_id: target }).eq("contact_id", existing.id);
+  return json({ contact: data });
+}
 
 export const DELETE = withAuth(async (req, me) => {
   const id = new URL(req.url).searchParams.get("id");

@@ -15,7 +15,11 @@ export default function ContactSheet({
   onSaved,
   onDeleted,
   groupOptions,
+  moveOptions,
+  onMoved,
 }: {
+  moveOptions?: { id: string | null; label: string }[];
+  onMoved?: () => void;
   groupOptions?: string[];
   contact: Contact;
   readOnly?: boolean;
@@ -45,6 +49,22 @@ export default function ContactSheet({
     } catch (e: any) {
       setError(e.message);
       setBusy(false);
+    }
+  }
+
+  const [moveTo, setMoveTo] = useState<string>(contact.staff_id || "");
+  const [moving, setMoving] = useState(false);
+  async function move() {
+    const label = moveOptions?.find((o) => (o.id || "") === moveTo)?.label || "the main number";
+    if (!confirm(`Move ${contact.parent_name} and their conversation to ${label}?`)) return;
+    setMoving(true);
+    setError("");
+    try {
+      await api("/api/contacts", { method: "PATCH", body: { action: "move", id: contact.id, staff_id: moveTo || null } });
+      (onMoved || onSaved)();
+    } catch (e: any) {
+      setError(e.message);
+      setMoving(false);
     }
   }
 
@@ -86,6 +106,29 @@ export default function ContactSheet({
             <input type="checkbox" className="ios-switch" checked={optedOut} onChange={(e) => setOptedOut(e.target.checked)} />
           </label>
         </div>
+      )}
+      {moveOptions && moveOptions.length > 0 && (
+        <>
+          <p className="ios-section">Teacher</p>
+          <div className="ios-group">
+            <label className="ios-row">
+              <span className="ios-row-label">texts with</span>
+              <select value={moveTo} onChange={(e) => setMoveTo(e.target.value)}>
+                {moveOptions.map((o) => (
+                  <option key={o.id || "main"} value={o.id || ""}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {moveTo !== (contact.staff_id || "") && (
+              <button className="ios-row action-row" onClick={move} disabled={moving}>
+                {moving ? "Moving…" : "Move Family"}
+              </button>
+            )}
+          </div>
+          <p className="ios-footnote">Admins only. The family and their whole conversation move to that teacher’s inbox.</p>
+        </>
       )}
       {!readOnly && (
         <div className="ios-group">

@@ -33,7 +33,11 @@ export async function POST(req: Request) {
       const { data: t } = await supa.from("staff").select("*").eq("join_code", code).eq("status", "active").maybeSingle();
       teacher = (t as Staff) || null;
     }
-    const staffId = teacher?.id || null;
+    // Parents sign up only through a teacher's link or code.
+    if (!teacher) {
+      return json({ error: "Please use the sign-up link or code from your child’s teacher." }, 400);
+    }
+    const staffId = teacher.id;
     const source = teacher ? `web form: /join?t=${code}` : "web form: /join";
     consent.consent_source = source;
 
