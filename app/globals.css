@@ -509,3 +509,10 @@ a { color: var(--tint); text-decoration: none; }
 .status-pill.disabled { background: var(--fill); color: var(--label-3); }
 .empty-row td { text-align: center; color: var(--label-3); padding: 28px; cursor: default; }
 .table-foot { margin-top: 10px; }
+
+/* Keep the conversation inside the screen: the message list scrolls, the header and text box stay put. */
+.app { grid-template-rows: minmax(0, 1fr); }
+.pane, .inbox { min-height: 0; }
+.thread { min-height: 0; height: 100%; overflow: hidden; }
+.thread-bar, .translate-row, .composer, .composer-foot, .thread-note { flex-shrink: 0; }
+.scroller { min-height: 0; overscroll-behavior: contain; }
