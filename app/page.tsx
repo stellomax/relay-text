@@ -118,7 +118,7 @@ export default function Landing() {
           <div className="lp-hero-copy">
             <h1>Text every family in their own language.</h1>
             <p className="lp-lede">
-              Teachers write in English. Parents get a regular text in Spanish, Arabic, Somali or one of 30 languages, and
+              Teachers write in English. Parents get a regular text in Spanish, Arabic, Somali or any of 192 languages, and
               reply the same way. Nobody downloads an app.
             </p>
             <div className="lp-ctas">
@@ -302,10 +302,10 @@ export default function Landing() {
         </section>
 
         <section className="lp-hellos" aria-labelledby="langs">
-          <h2 id="langs">Speak to every family at your school.</h2>
+          <h2 id="langs">With 192 languages, no communication gets lost.</h2>
           <p>
-            RelayText supports the home languages most common in U.S. schools, including ones many tools skip, like Somali,
-            Burmese, Dari, Kinyarwanda and Hmong.
+            RelayText covers the home languages most common in U.S. schools, including ones many tools skip, like Somali,
+            Burmese, Kinyarwanda and Hmong.
           </p>
           <ul className="lp-hello-grid">
             {HELLOS.map((h) => (
