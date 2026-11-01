@@ -48,10 +48,19 @@ export default function LanguageSelect({
 
   const common = LANGUAGES;
   const more = useMemo(() => {
-    const taken = new Set(common.map((l) => l.code.toLowerCase()));
-    return all
-      .filter((l) => !taken.has(l.code.toLowerCase()))
-      .sort((a, b) => a.name.localeCompare(b.name));
+    // Google lists a few languages twice under old and new codes (Hebrew iw/he, Javanese jw/jv, Chinese zh/zh-CN).
+    const codes = new Set(common.map((l) => l.code.toLowerCase()));
+    const names = new Set(common.map((l) => l.name.toLowerCase()));
+    const out: Language[] = [];
+    for (const l of all) {
+      const c = l.code.toLowerCase();
+      const n = l.name.toLowerCase();
+      if (codes.has(c) || names.has(n)) continue;
+      codes.add(c);
+      names.add(n);
+      out.push(l);
+    }
+    return out.sort((a, b) => a.name.localeCompare(b.name));
   }, [all, common]);
 
   const known = common.some((l) => l.code === value) || more.some((l) => l.code === value);

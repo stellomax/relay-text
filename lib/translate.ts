@@ -36,6 +36,10 @@ export async function translate(
     }
   );
   const data = await res.json().catch(() => ({}));
+  // A regional code Google doesn't take (e.g. "fa-AF" Dari): fall back to the main language.
+  if (!res.ok && target.includes("-") && /language|target|invalid/i.test(data?.error?.message || "")) {
+    return translate(text, target.split("-")[0], source, opts);
+  }
   if (!res.ok) {
     const msg = data?.error?.message || `HTTP ${res.status}`;
     throw new Error(`Google Translate error: ${msg}`);
