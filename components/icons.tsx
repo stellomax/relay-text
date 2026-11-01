@@ -123,3 +123,16 @@ export const Building = ({ size = 20, className }: P) => (
     <path d="M3 21h18M5 21V10l7-5 7 5v11M9.5 21v-5h5v5M9 11.5h.01M15 11.5h.01" />
   </svg>
 );
+
+export const Check = ({ size = 14, className }: P) => (
+  <svg {...base(size)} strokeWidth={3.2} className={className}>
+    <path d="M4.5 12.5l5 5L19.5 7" />
+  </svg>
+);
+export const Book = ({ size = 20, className }: P) => (
+  <svg {...base(size)} strokeWidth={1.8} className={className}>
+    <rect x="5" y="3" width="14" height="18" rx="2.5" />
+    <circle cx="12" cy="10" r="2.6" />
+    <path d="M8.2 16.6c.8-1.7 2.2-2.6 3.8-2.6s3 .9 3.8 2.6M3 7h2M3 12h2M3 17h2" />
+  </svg>
+);

@@ -81,6 +81,8 @@ create table if not exists public.messages (
 alter table public.contacts add column if not exists consent_at timestamptz;
 alter table public.contacts add column if not exists consent_source text;
 alter table public.contacts add column if not exists staff_id uuid references public.staff(id) on delete set null;
+-- Address-book groups (e.g. "Period 2", "Soccer") for texting several families at once
+alter table public.contacts add column if not exists groups text[] not null default '{}';
 alter table public.messages add column if not exists staff_id uuid references public.staff(id) on delete set null;
 alter table public.messages add column if not exists from_number text;
 alter table public.messages add column if not exists to_number text;

@@ -268,6 +268,7 @@ export default function Messages() {
         <NewMessage
           contacts={convos.map((c) => c.contact)}
           createUrl={`/api/contacts${asQuery}`}
+          familiesUrl={as ? undefined : "/families"}
           onCancel={() => setSheet(null)}
           onPick={async (id) => {
             setSheet(null);

@@ -25,7 +25,7 @@ export async function sendToContacts(
 ): Promise<SendSummary> {
   const summary: SendSummary = { sent: 0, simulated: 0, failed: 0, skipped: 0, errors: [] };
   const live = twilioConfigured();
-  const translations = new Map<string, string>();
+  const translations = new Map<string, Promise<string>>();
   const staffCache = new Map<string, Staff | null>();
 
   async function staffFor(id: string | null): Promise<Staff | null> {
@@ -37,10 +37,11 @@ export async function sendToContacts(
     return staffCache.get(id) || null;
   }
 
-  for (const c of contacts) {
+  // Send to several families at a time so a big group finishes quickly.
+  async function one(c: Contact) {
     if (c.opted_out) {
       summary.skipped++;
-      continue;
+      return;
     }
     const staff = await staffFor(c.staff_id);
     const from = senderNumber(staff);
@@ -56,11 +57,13 @@ export async function sendToContacts(
       is_read: true,
     };
     try {
-      let translated = translations.get(c.language);
-      if (translated === undefined) {
-        translated = sameLang(c.language, "en") ? textEn : (await translate(textEn, c.language, "en")).text;
-        translations.set(c.language, translated);
+      let pending = translations.get(c.language);
+      if (!pending) {
+        pending = sameLang(c.language, "en") ? Promise.resolve(textEn) : translate(textEn, c.language, "en").then((r) => r.text);
+        translations.set(c.language, pending);
+        pending.catch(() => translations.delete(c.language));
       }
+      const translated = await pending;
       row.body_translated = translated;
 
       if (live) {
@@ -83,6 +86,12 @@ export async function sendToContacts(
     const { error } = await db().from("messages").insert(row);
     if (error) throw new Error(error.message);
   }
+  const queue = [...contacts];
+  await Promise.all(
+    Array.from({ length: Math.min(6, queue.length) }, async () => {
+      for (let c = queue.shift(); c; c = queue.shift()) await one(c);
+    })
+  );
   return summary;
 }
 

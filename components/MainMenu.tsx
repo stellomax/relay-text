@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Avatar from "./Avatar";
-import { Bubble, Building, Gear, Info, Link, People, SignOut, Trash } from "./icons";
+import { Book, Bubble, Building, Gear, Info, Link, People, SignOut, Trash } from "./icons";
 import { api } from "@/lib/client";
 
 export type Me = {
@@ -113,6 +113,12 @@ export default function MainMenu({ me, conversation }: { me: Me | null; conversa
               )}
             </div>
           )}
+
+          <div className="menu-group">
+            <a role="menuitem" href="/families">
+              Families <Book />
+            </a>
+          </div>
 
           <div className="menu-group">
             {isAdmin && (

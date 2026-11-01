@@ -16,6 +16,7 @@ export const POST = withAuth(async (req, me) => {
 
   const ids: string[] = Array.isArray(body.contactIds) ? body.contactIds.map(String) : [];
   if (!ids.length) return json({ error: "Choose at least one recipient." }, 400);
+  if (ids.length > 500) return json({ error: "You can message up to 500 families at a time." }, 400);
 
   const { data, error } = await db().from("contacts").select("*").in("id", ids);
   if (error) throw new Error(error.message);

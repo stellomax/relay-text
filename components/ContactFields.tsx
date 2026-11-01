@@ -2,18 +2,25 @@
 
 import { LANGUAGES } from "@/lib/languages";
 
-export type ContactForm = { parent_name: string; child_name: string; phone: string; language: string };
+export type ContactForm = { parent_name: string; child_name: string; phone: string; language: string; groups?: string };
+
+const splitGroups = (s: string) => s.split(",").map((g) => g.trim()).filter(Boolean);
 
 // Grouped inset rows, like the iOS Contacts editor.
 export default function ContactFields({
   value,
   onChange,
   autoFocus,
+  groupOptions = [],
 }: {
   value: ContactForm;
   onChange: (v: ContactForm) => void;
   autoFocus?: boolean;
+  groupOptions?: string[];
 }) {
+  const current = splitGroups(value.groups || "");
+  const suggestions = groupOptions.filter((g) => !current.some((c) => c.toLowerCase() === g.toLowerCase()));
+  const addGroup = (g: string) => onChange({ ...value, groups: [...current, g].join(", ") });
   const set = (k: keyof ContactForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     onChange({ ...value, [k]: e.target.value });
   return (
@@ -48,6 +55,22 @@ export default function ContactFields({
       <p className="ios-footnote">
         Texts are sent and received in this language. You always read and write in English.
       </p>
+      <div className="ios-group">
+        <label className="ios-row">
+          <span className="ios-row-label">groups</span>
+          <input placeholder="e.g. Period 2, Soccer" value={value.groups || ""} onChange={set("groups")} autoComplete="off" />
+        </label>
+      </div>
+      {suggestions.length > 0 && (
+        <div className="group-suggest">
+          {suggestions.slice(0, 12).map((g) => (
+            <button type="button" key={g} className="group-chip add" onClick={() => addGroup(g)}>
+              + {g}
+            </button>
+          ))}
+        </div>
+      )}
+      <p className="ios-footnote">Optional. Use groups to text a whole class or team at once from Families.</p>
     </>
   );
 }

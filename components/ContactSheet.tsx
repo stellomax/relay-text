@@ -14,7 +14,9 @@ export default function ContactSheet({
   onClose,
   onSaved,
   onDeleted,
+  groupOptions,
 }: {
+  groupOptions?: string[];
   contact: Contact;
   readOnly?: boolean;
   onClose: () => void;
@@ -26,6 +28,7 @@ export default function ContactSheet({
     child_name: contact.child_name || "",
     phone: contact.phone,
     language: contact.language,
+    groups: (contact.groups || []).join(", "),
   });
   const [optedOut, setOptedOut] = useState(contact.opted_out);
   const [busy, setBusy] = useState(false);
@@ -35,7 +38,8 @@ export default function ContactSheet({
     setBusy(true);
     setError("");
     try {
-      await api("/api/contacts", { method: "PATCH", body: { id: contact.id, ...form, opted_out: optedOut } });
+      const d = await api<{ warning?: string }>("/api/contacts", { method: "PATCH", body: { id: contact.id, ...form, opted_out: optedOut } });
+      if (d.warning) alert(d.warning);
       onSaved();
     } catch (e: any) {
       setError(e.message);
@@ -63,7 +67,7 @@ export default function ContactSheet({
         <Avatar name={form.parent_name || contact.parent_name} size={76} />
       </div>
       <fieldset className="plain-fieldset" disabled={readOnly}>
-        <ContactFields value={form} onChange={setForm} />
+        <ContactFields value={form} onChange={setForm} groupOptions={groupOptions} />
       </fieldset>
       {optedOut && (
         <div className="ios-group">
