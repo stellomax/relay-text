@@ -18,12 +18,38 @@ export type SendSummary = {
 
 // Translate once per language, then send a separate one-to-one text to every contact,
 // from the number of the teacher each family belongs to.
+// The first text a family gets from Relay Text says who it's from and how to opt out (carrier rules).
+// STOP and HELP stay in English so the carrier recognizes them; the rest is translated.
+const keep = (t: string) => `<span translate="no">${t.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</span>`;
+function disclosureEn(staff: Staff | null): string {
+  const who = staff ? `${staff.name}${staff.school ? `, ${staff.school}` : ""}` : "your school";
+  return `Sent by ${who} via Relay Text. Reply STOP to opt out or HELP for help. Msg & data rates may apply.`;
+}
+async function disclosureIn(lang: string, staff: Staff | null): Promise<string> {
+  if (sameLang(lang, "en")) return disclosureEn(staff);
+  const who = staff ? keep(`${staff.name}${staff.school ? `, ${staff.school}` : ""}`) : "your school";
+  const html = `Sent by ${who} via ${keep("Relay Text")}. Reply ${keep("STOP")} to opt out or ${keep("HELP")} for help. Msg &amp; data rates may apply.`;
+  const r = await translate(html, lang, "en", { html: true });
+  return r.text.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+}
+
 export async function sendToContacts(
   contacts: Contact[],
   textEn: string,
   opts: { statusCallback?: string; sentBy?: string }
 ): Promise<SendSummary> {
   const summary: SendSummary = { sent: 0, simulated: 0, failed: 0, skipped: 0, errors: [] };
+  // Families who have never been texted by Relay Text get the disclosure line on this message.
+  const texted = new Set<string>();
+  if (contacts.length) {
+    const { data: prior } = await db()
+      .from("messages")
+      .select("contact_id")
+      .eq("direction", "outbound")
+      .in("contact_id", contacts.map((c) => c.id));
+    for (const r of prior || []) texted.add((r as { contact_id: string }).contact_id);
+  }
+  const disclosures = new Map<string, Promise<string>>();
   const live = twilioConfigured();
   const translations = new Map<string, Promise<string>>();
   const staffCache = new Map<string, Staff | null>();
@@ -63,7 +89,17 @@ export async function sendToContacts(
         translations.set(c.language, pending);
         pending.catch(() => translations.delete(c.language));
       }
-      const translated = await pending;
+      let translated = await pending;
+      if (!texted.has(c.id)) {
+        const key = `${c.language}|${staff?.id || ""}`;
+        let d = disclosures.get(key);
+        if (!d) {
+          d = disclosureIn(c.language, staff);
+          disclosures.set(key, d);
+        }
+        translated = `${translated}\n\n${await d}`;
+        row.body_en = `${textEn}\n\n${disclosureEn(staff)}`;
+      }
       row.body_translated = translated;
 
       if (live) {
@@ -148,7 +184,14 @@ export async function receiveInbound(params: {
       } catch {}
       const ins = await supa
         .from("contacts")
-        .insert({ parent_name: `Unknown ${params.from}`, phone: params.from, language: lang, staff_id: staffId })
+        .insert({
+          parent_name: `Unknown ${params.from}`,
+          phone: params.from,
+          language: lang,
+          staff_id: staffId,
+          consent_at: new Date().toISOString(),
+          consent_source: "parent texted first",
+        })
         .select("*")
         .single();
       if (ins.error) throw new Error(ins.error.message);

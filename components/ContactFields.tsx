@@ -2,7 +2,7 @@
 
 import { LANGUAGES } from "@/lib/languages";
 
-export type ContactForm = { parent_name: string; child_name: string; phone: string; language: string; groups?: string };
+export type ContactForm = { parent_name: string; child_name: string; phone: string; language: string; groups?: string; consent?: boolean };
 
 const splitGroups = (s: string) => s.split(",").map((g) => g.trim()).filter(Boolean);
 
@@ -12,7 +12,9 @@ export default function ContactFields({
   onChange,
   autoFocus,
   groupOptions = [],
+  askConsent = false,
 }: {
+  askConsent?: boolean;
   value: ContactForm;
   onChange: (v: ContactForm) => void;
   autoFocus?: boolean;
@@ -71,6 +73,15 @@ export default function ContactFields({
         </div>
       )}
       <p className="ios-footnote">Optional. Use groups to text a whole class or team at once from Families.</p>
+      {askConsent && (
+        <label className="consent-row">
+          <input type="checkbox" checked={!!value.consent} onChange={(e) => onChange({ ...value, consent: e.target.checked })} />
+          <span>
+            This parent gave their mobile number to the school and agreed to receive text messages about their child.
+            <span className="ios-row-hint">Required before texting. Your name and the date are saved as the record.</span>
+          </span>
+        </label>
+      )}
     </>
   );
 }

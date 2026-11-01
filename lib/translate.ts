@@ -19,7 +19,8 @@ const sameLang = (a?: string | null, b?: string | null) =>
 export async function translate(
   text: string,
   target: string,
-  source?: string
+  source?: string,
+  opts: { html?: boolean } = {}
 ): Promise<{ text: string; detected: string | null }> {
   if (!text.trim()) return { text, detected: source || null };
   if (source && sameLang(source, target)) return { text, detected: source };
@@ -31,7 +32,7 @@ export async function translate(
     {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ q: text, target, format: "text", ...(source ? { source } : {}) }),
+      body: JSON.stringify({ q: text, target, format: opts.html ? "html" : "text", ...(source ? { source } : {}) }),
     }
   );
   const data = await res.json().catch(() => ({}));

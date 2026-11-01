@@ -20,12 +20,27 @@ export const POST = withAuth(async (req, me) => {
 
   const { data, error } = await db().from("contacts").select("*").in("id", ids);
   if (error) throw new Error(error.message);
-  const contacts = ((data || []) as Contact[]).filter((c) => canWrite(me, c));
-  if (!contacts.length) return json({ error: "You can only text families in your own inbox." }, 403);
+  const mine = ((data || []) as Contact[]).filter((c) => canWrite(me, c));
+  if (!mine.length) return json({ error: "You can only text families in your own inbox." }, 403);
+
+  // Only text families whose consent is on record (they signed up, texted first, or a teacher confirmed it).
+  const contacts = mine.filter((c) => c.consent_at);
+  const noConsent = mine.filter((c) => !c.consent_at).map((c) => c.parent_name);
+  if (!contacts.length) {
+    return json(
+      {
+        error:
+          mine.length === 1
+            ? `${mine[0].parent_name} hasn't been confirmed as agreeing to texts. Open Family Info and check the consent box, then send again.`
+            : "None of these families have consent on record. Open each family and check the consent box first.",
+      },
+      400
+    );
+  }
 
   const summary = await sendToContacts(contacts, text, {
     statusCallback: `${baseUrlFromRequest(req)}/api/sms/status`,
     sentBy: me.email,
   });
-  return json({ summary });
+  return json({ summary, noConsent });
 });

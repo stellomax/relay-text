@@ -57,6 +57,7 @@ export default function NewMessage({
       phone: looksLikePhone ? to.trim() : "",
       language: "es",
       groups: "",
+      consent: false,
     });
     setError("");
   }
@@ -86,16 +87,16 @@ export default function NewMessage({
       <Sheet
         title="New Family"
         onCancel={() => setAdding(null)}
-        action={{ label: "Done", onClick: save, busy, disabled: !adding.parent_name.trim() || !adding.phone.trim() }}
+        action={{ label: "Done", onClick: save, busy, disabled: !adding.parent_name.trim() || !adding.phone.trim() || !adding.consent }}
       >
         {error && <p className="sheet-error">{error}</p>}
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            if (!busy && adding.parent_name.trim() && adding.phone.trim()) save();
+            if (!busy && adding.parent_name.trim() && adding.phone.trim() && adding.consent) save();
           }}
         >
-          <ContactFields value={adding} onChange={setAdding} autoFocus groupOptions={allGroups(contacts)} />
+          <ContactFields value={adding} onChange={setAdding} autoFocus groupOptions={allGroups(contacts)} askConsent />
           <button type="submit" hidden aria-hidden="true" />
         </form>
       </Sheet>

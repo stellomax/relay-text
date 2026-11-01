@@ -113,7 +113,7 @@ export default function Families() {
         <button
           className="bar-btn strong"
           aria-label="Add a family"
-          onClick={() => setAdding({ parent_name: "", child_name: "", phone: "", language: "es", groups: group && group !== NO_GROUP ? group : "" })}
+          onClick={() => setAdding({ parent_name: "", child_name: "", phone: "", language: "es", groups: group && group !== NO_GROUP ? group : "", consent: false })}
         >
           <Plus size={22} />
         </button>
@@ -166,7 +166,7 @@ export default function Families() {
             <p>Add families with the + button, or share your parent sign-up link (in Settings) so families can add themselves.</p>
             <button
               className="ios-button small"
-              onClick={() => setAdding({ parent_name: "", child_name: "", phone: "", language: "es", groups: "" })}
+              onClick={() => setAdding({ parent_name: "", child_name: "", phone: "", language: "es", groups: "", consent: false })}
             >
               Add a Family
             </button>
@@ -214,6 +214,7 @@ export default function Families() {
                           {c.parent_name}
                           {c.child_name && <span className="fam-child"> · {c.child_name}</span>}
                           {c.opted_out && <span className="tag-off">Opted out</span>}
+                          {!c.opted_out && !c.consent_at && <span className="tag-demo">Needs consent</span>}
                         </span>
                         <span className="fam-sub">
                           {prettyPhone(c.phone)} · {languageName(c.language)}
@@ -251,9 +252,9 @@ export default function Families() {
         <Sheet
           title="New Family"
           onCancel={() => setAdding(null)}
-          action={{ label: "Done", onClick: addFamily, disabled: !adding.parent_name.trim() || !adding.phone.trim() }}
+          action={{ label: "Done", onClick: addFamily, disabled: !adding.parent_name.trim() || !adding.phone.trim() || !adding.consent }}
         >
-          <ContactFields value={adding} onChange={setAdding} autoFocus groupOptions={groups} />
+          <ContactFields value={adding} onChange={setAdding} autoFocus groupOptions={groups} askConsent />
         </Sheet>
       )}
 
@@ -299,8 +300,9 @@ function Broadcast({ recipients, onClose }: { recipients: Contact[]; onClose: (s
   const [result, setResult] = useState<Summary | null>(null);
   const [showAll, setShowAll] = useState(false);
 
-  const active = recipients.filter((c) => !c.opted_out);
-  const optedOut = recipients.length - active.length;
+  const active = recipients.filter((c) => !c.opted_out && c.consent_at);
+  const needConsent = recipients.filter((c) => !c.opted_out && !c.consent_at).length;
+  const optedOut = recipients.filter((c) => c.opted_out).length;
   const byLang = useMemo(() => {
     const m = new Map<string, number>();
     for (const c of active) m.set(c.language, (m.get(c.language) || 0) + 1);
@@ -331,7 +333,8 @@ function Broadcast({ recipients, onClose }: { recipients: Contact[]; onClose: (s
             Sent to {delivered} {delivered === 1 ? "family" : "families"}
             {result.simulated > 0 && result.sent === 0 ? " (demo mode)" : ""}
           </p>
-          {result.skipped + optedOut > 0 && <p>{result.skipped || optedOut} skipped because they opted out.</p>}
+          {optedOut > 0 && <p>{optedOut} skipped because they opted out.</p>}
+          {needConsent > 0 && <p>{needConsent} skipped because consent isn’t on record yet.</p>}
           {result.failed > 0 && (
             <>
               <p className="sheet-error">{result.failed} couldn’t be sent:</p>
@@ -344,6 +347,9 @@ function Broadcast({ recipients, onClose }: { recipients: Contact[]; onClose: (s
               </ul>
             </>
           )}
+          <p className="ios-footnote">
+            Families getting their first Relay Text message also see who it’s from and how to opt out (Reply STOP).
+          </p>
           <p className="ios-footnote">Each family’s replies come back to their own conversation in Messages.</p>
           <a className="ios-button small" href="/inbox">
             Go to Messages
@@ -381,9 +387,14 @@ function Broadcast({ recipients, onClose }: { recipients: Contact[]; onClose: (s
         <p className="ios-footnote">
           Translated into {byLang.map(([l, n]) => `${languageName(l)} (${n})`).join(", ")}.
           {optedOut > 0 && ` ${optedOut} opted-out ${optedOut === 1 ? "family is" : "families are"} left out.`}
+          {needConsent > 0 && ` ${needConsent} without consent on record ${needConsent === 1 ? "is" : "are"} left out.`}
         </p>
       )}
-      {!active.length && <p className="sheet-error">Everyone selected has opted out of texts.</p>}
+      {!active.length && (
+        <p className="sheet-error">
+          None of these families can be texted: they opted out or don’t have consent on record. Tap a family to confirm consent.
+        </p>
+      )}
       <div className="ios-group">
         <textarea
           rows={6}

@@ -66,11 +66,25 @@ export const GET = withAuth(async (req, me) => {
 export const POST = withAuth(async (req, me) => {
   const scope = resolveScope(req, me);
   if (scope.readOnly) return json({ error: "You can only add families to your own inbox." }, 403);
-  const c = clean(await req.json().catch(() => ({})));
+  const body = await req.json().catch(() => ({}));
+  const c = clean(body);
   if ("error" in c) return json({ error: c.error }, 400);
+  if (body.consent !== true) {
+    return json({ error: "Please confirm this parent gave their number to the school and agreed to receive texts." }, 400);
+  }
   if (await duplicate(scope.staffId, c.row.phone)) return json({ error: "A family with that phone number is already in this inbox." }, 400);
   const { data, error, warning } = await withGroups(c.groups, (extra) =>
-    db().from("contacts").insert({ ...c.row, ...extra, staff_id: scope.staffId }).select("*").single()
+    db()
+      .from("contacts")
+      .insert({
+        ...c.row,
+        ...extra,
+        staff_id: scope.staffId,
+        consent_at: new Date().toISOString(),
+        consent_source: `confirmed by ${me.email} when adding (parent gave number to school)`,
+      })
+      .select("*")
+      .single()
   );
   if (error) {
     console.error("Add family failed:", error.message);
@@ -94,6 +108,10 @@ export const PATCH = withAuth(async (req, me) => {
   }
   const update: Record<string, unknown> = { ...c.row };
   if (typeof body.opted_out === "boolean") update.opted_out = body.opted_out;
+  if (body.consent === true && !existing.consent_at) {
+    update.consent_at = new Date().toISOString();
+    update.consent_source = `confirmed by ${me.email} (parent gave number to school)`;
+  }
   const { data, error, warning } = await withGroups(c.groups, (extra) =>
     db().from("contacts").update({ ...update, ...extra }).eq("id", existing.id).select("*").single()
   );

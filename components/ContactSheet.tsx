@@ -29,6 +29,7 @@ export default function ContactSheet({
     phone: contact.phone,
     language: contact.language,
     groups: (contact.groups || []).join(", "),
+    consent: false,
   });
   const [optedOut, setOptedOut] = useState(contact.opted_out);
   const [busy, setBusy] = useState(false);
@@ -67,8 +68,14 @@ export default function ContactSheet({
         <Avatar name={form.parent_name || contact.parent_name} size={76} />
       </div>
       <fieldset className="plain-fieldset" disabled={readOnly}>
-        <ContactFields value={form} onChange={setForm} groupOptions={groupOptions} />
+        <ContactFields value={form} onChange={setForm} groupOptions={groupOptions} askConsent={!contact.consent_at && !readOnly} />
       </fieldset>
+      {contact.consent_at && (
+        <p className="ios-footnote">
+          Agreed to texts {new Date(contact.consent_at).toLocaleDateString()}
+          {contact.consent_source ? ` · ${contact.consent_source.replace(/ \(parent gave number to school\)/, "")}` : ""}
+        </p>
+      )}
       {optedOut && (
         <div className="ios-group">
           <label className="ios-row switch-row">
