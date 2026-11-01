@@ -302,7 +302,7 @@ export default function Landing() {
         </section>
 
         <section className="lp-hellos" aria-labelledby="langs">
-          <h2 id="langs">Instant translation for 192 languages, so no communication gets lost.</h2>
+          <h2 id="langs">Real-time translation for 192 languages, so no communication gets lost.</h2>
           <p>
             RelayText covers the home languages most common in U.S. schools, including ones many tools skip, like Somali,
             Burmese, Kinyarwanda and Hmong.
