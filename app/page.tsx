@@ -7,9 +7,9 @@ const display = Bricolage_Grotesque({ subsets: ["latin"], weight: ["600", "700",
 const body = Figtree({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--lp-body" });
 
 export const metadata: Metadata = {
-  title: "RelayText · Text every family in their own language",
+  title: "Relay · Every family. Every language. One conversation.",
   description:
-    "Teachers write in English. Families get a regular text in their own language and reply the same way. No app to download.",
+    "Relay helps schools reach every family. Teachers simply text, Relay handles the language barrier, and parents reply in their own language. No parent app.",
 };
 
 const HELLOS = [
@@ -36,10 +36,20 @@ const HELLOS = [
   { t: "Salom", l: "Uzbek" },
 ];
 
-const BENEFITS = [
+const STORY = [
   {
-    title: "Clearer Communication",
-    text: "Reach every family the first time, in the language they read best.",
+    title: "Reach",
+    text: "Reach families traditional communication misses.",
+    icon: (
+      <>
+        <path d="M22 2L11 13" />
+        <path d="M22 2l-7 20-4-9-9-4z" />
+      </>
+    ),
+  },
+  {
+    title: "Connect",
+    text: "Teachers and parents text naturally, each in their own language.",
     icon: (
       <>
         <path d="M4 4h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9l-4 3.5V15H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
@@ -48,8 +58,8 @@ const BENEFITS = [
     ),
   },
   {
-    title: "Stronger Family Engagement",
-    text: "Hear back from the parents you’ve struggled to reach, without a child translating.",
+    title: "Engage",
+    text: "Remove the language barrier and make two-way family participation easier.",
     icon: (
       <>
         <circle cx="9" cy="7" r="3.2" />
@@ -60,8 +70,8 @@ const BENEFITS = [
     ),
   },
   {
-    title: "Student Success",
-    text: "Families who know about homework and test days become real partners in learning.",
+    title: "Succeed",
+    text: "Build stronger school-family partnerships that support student success.",
     icon: (
       <>
         <path d="M2 9l10-5 10 5-10 5z" />
@@ -70,16 +80,46 @@ const BENEFITS = [
       </>
     ),
   },
+];
+
+const PROOF = ["No parent app", "Real-time translation", "Two-way texting", "Simple for teachers", "Secure & private"];
+
+const CONTACT = "mailto:relay@stellomark.com?subject=Bringing%20Relay%20to%20our%20school";
+
+const FAQ = [
   {
-    title: "Thriving School Culture",
-    text: "Build a school where every family feels seen, heard and welcome.",
-    icon: <path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7a4.3 4.3 0 0 1 7.5 2.8C19.5 15.4 12 20 12 20z" />,
+    q: "Do parents need an app?",
+    a: "No. Families get regular text messages on the phone they already have, including older phones and flip phones. There’s no app, account or password.",
+  },
+  {
+    q: "Is this more work for teachers?",
+    a: "If teachers can text, they can use Relay. It looks and works like the Messages app. They write in English, and Relay handles the language barrier in both directions.",
+  },
+  {
+    q: "Does IT need to be involved?",
+    a: "Usually very little. Relay runs in a web browser, with nothing to install and no system integrations. We set up your school and give you a sign-up code for teachers. Your district may still want to review it.",
+  },
+  {
+    q: "How quickly can we launch?",
+    a: "Teachers can be texting families the same day your school is set up. They sign up with the school code, then share their parent sign-up link or add families who have agreed to receive texts.",
+  },
+  {
+    q: "Is family information protected?",
+    a: "Relay stores only what it needs to carry the conversation: each parent’s name, phone number and language, an optional child’s first name, and the messages. It holds no grades or student records. Only the teacher and your school’s administrators can see a family’s conversation, and family information is never sold or shared for marketing.",
+  },
+  {
+    q: "What about FERPA and district approval?",
+    a: "Relay doesn’t connect to your student information system or store education records. Texts are delivered through Twilio and translated with Google Cloud Translation. We’re glad to walk through your district’s privacy review and data agreement process.",
+  },
+  {
+    q: "What does it cost?",
+    a: "Pricing depends on the size of your school. Get in touch and we’ll set up a pilot that fits.",
   },
 ];
 
 function TeacherPhone() {
   return (
-    <div className="lp-phone lp-phone-teacher" aria-label="The teacher's view in RelayText, in English">
+    <div className="lp-phone lp-phone-teacher" aria-label="The teacher's view in Relay, in English">
       <div className="lp-screen">
         <div className="lp-statusbar">
           <span>9:41</span>
@@ -148,7 +188,7 @@ export default function Landing() {
     <div className={`lp ${display.variable} ${body.variable}`}>
       <header className="lp-nav">
         <a href="/" className="lp-logo" aria-label={BRAND}>
-          <img src="/relay-text-logo.png" alt={BRAND} />
+          <img src="/relay-text-logo.png" alt="RelayText" />
         </a>
         <nav className="lp-nav-actions" aria-label="Account">
           <a className="lp-link" href="/login">
@@ -163,20 +203,24 @@ export default function Landing() {
       <main>
         <section className="lp-hero">
           <div className="lp-hero-copy">
-            <h1>Text every family in their own language.</h1>
+            <h1>
+              <span>Every family.</span> <span>Every language.</span> <span>One conversation.</span>
+            </h1>
             <p className="lp-lede">
-              Teachers write in English. Parents get a regular text in Spanish, Arabic, Somali or any of 192 languages, and
-              reply the same way. Nobody downloads an app.
+              Relay lets every teacher reach every family, and hear back. Teachers simply text. Relay handles the language
+              barrier, and parents reply in their own language from the phone they already have.
             </p>
             <div className="lp-ctas">
-              <a className="lp-btn" href="/signup">
-                Create a teacher account
+              <a className="lp-btn" href={CONTACT}>
+                Bring Relay to your school
               </a>
-              <a className="lp-btn ghost" href="/login">
-                Log in
+              <a className="lp-btn ghost" href="/signup">
+                Teacher sign up
               </a>
             </div>
-            <p className="lp-fine">Teachers sign up with the code from their school.</p>
+            <p className="lp-fine">
+              Teachers: sign up with the code from your school, or <a href="/login">log in</a>.
+            </p>
           </div>
 
           <div className="lp-pair">
@@ -191,6 +235,12 @@ export default function Landing() {
             <ParentPhone />
           </div>
         </section>
+
+        <ul className="lp-proof" aria-label="What schools get with Relay">
+          {PROOF.map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ul>
 
         <section className="lp-noapp">
           <figure className="lp-photo">
@@ -220,10 +270,11 @@ export default function Landing() {
             </figcaption>
           </figure>
           <div className="lp-noapp-copy">
-            <h2>Parents receive texts in their own language, nothing to install.</h2>
+            <h2>Every family can reach their child’s teacher.</h2>
             <p>
-              Messages arrive in the texting app already on their phone, from a regular phone number. There’s no account to
-              create, no password to forget and no app to keep updated.
+              Whatever language a family speaks and whatever phone they have, they can read their teacher’s messages and
+              answer in their own words. Texts arrive in the app already on their phone. There’s nothing to install, no
+              account to create and no password to forget.
             </p>
             <ul className="lp-checks">
               <li>Works on any phone that can text, including older phones and flip phones</li>
@@ -235,9 +286,9 @@ export default function Landing() {
         </section>
 
         <section className="lp-benefits" aria-labelledby="benefits">
-          <h2 id="benefits">How it benefits your school</h2>
+          <h2 id="benefits">More than translation: a connection with every family</h2>
           <ul>
-            {BENEFITS.map((b) => (
+            {STORY.map((b) => (
               <li key={b.title}>
                 <span className="lp-benefit-icon" aria-hidden>
                   <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -253,28 +304,28 @@ export default function Landing() {
 
         <section className="lp-schools" aria-labelledby="schools">
           <div className="lp-schools-copy">
-            <h2 id="schools">Built for schools.</h2>
+            <h2 id="schools">Simple for teachers. Clear for principals.</h2>
             <dl>
               <div>
-                <dt>A number for every teacher</dt>
-                <dd>Each teacher texts from their own RelayText number. Their personal cell stays private.</dd>
+                <dt>Teachers just text</dt>
+                <dd>It looks and works like the Messages app they already use. No new platform to learn, no extra burden.</dd>
               </div>
               <div>
-                <dt>Familiar from day one</dt>
-                <dd>It looks and works like the Messages app teachers already use. There’s nothing to learn.</dd>
+                <dt>Real conversations, both ways</dt>
+                <dd>Parents reply in their own language. Teachers read it in English and answer naturally.</dd>
               </div>
               <div>
-                <dt>Admins see the whole school</dt>
-                <dd>Add teachers with a school sign-up code, view any conversation and manage numbers in one place.</dd>
+                <dt>Principals can see it working</dt>
+                <dd>Add teachers with a school sign-up code and view any conversation, read-only, in one place.</dd>
               </div>
               <div>
-                <dt>Consent and opt-outs handled</dt>
-                <dd>Families sign up with a simple form, and STOP replies are honored automatically.</dd>
+                <dt>Private numbers, consent built in</dt>
+                <dd>Each teacher texts from their own Relay number, consent is recorded, and STOP is honored automatically.</dd>
               </div>
             </dl>
           </div>
 
-          <div className="lp-window" aria-label="The RelayText inbox">
+          <div className="lp-window" aria-label="The Relay inbox">
             <div className="lp-window-bar">
               <i />
               <i />
@@ -348,10 +399,10 @@ export default function Landing() {
         </section>
 
         <section className="lp-hellos" aria-labelledby="langs">
-          <h2 id="langs">Real-time translation in 192 languages, so no communication gets lost.</h2>
+          <h2 id="langs">Whatever language a family speaks at home.</h2>
           <p>
-            RelayText covers the home languages most common in U.S. schools, including ones many tools skip, like Somali,
-            Burmese, Kinyarwanda and Hmong.
+            Real-time translation in 192 languages, including the home languages many tools skip, like Somali, Burmese,
+            Kinyarwanda and Hmong.
           </p>
           <ul className="lp-hello-grid">
             {HELLOS.map((h) => (
@@ -365,15 +416,27 @@ export default function Landing() {
           </ul>
         </section>
 
+        <section className="lp-faq" aria-labelledby="faq">
+          <h2 id="faq">Questions principals ask</h2>
+          <dl>
+            {FAQ.map((f) => (
+              <div key={f.q}>
+                <dt>{f.q}</dt>
+                <dd>{f.a}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
         <section className="lp-final">
-          <h2>Start texting families today.</h2>
-          <p>Get your school’s sign-up code from your RelayText admin, then create your account in a minute.</p>
+          <h2>Bring Relay to your school.</h2>
+          <p>Start with a pilot. We’ll set up your school, and your teachers can be texting families the same day.</p>
           <div className="lp-ctas center">
-            <a className="lp-btn light" href="/signup">
-              Sign up
+            <a className="lp-btn light" href={CONTACT}>
+              Contact us
             </a>
-            <a className="lp-btn outline-light" href="/login">
-              Log in
+            <a className="lp-btn outline-light" href="/signup">
+              Teacher sign up
             </a>
           </div>
         </section>

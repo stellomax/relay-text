@@ -4,7 +4,7 @@ import { confirmInboundWithTwilio, twiml, validTwilioSignature } from "@/lib/twi
 
 export const dynamic = "force-dynamic";
 
-// Twilio calls this when a parent texts any RelayText number. The "To" number tells us which teacher it's for.
+// Twilio calls this when a parent texts any Relay number. The "To" number tells us which teacher it's for.
 export async function POST(req: Request) {
   const form = await req.formData();
   const params: Record<string, string> = {};

@@ -127,7 +127,7 @@ export const PATCH = withAdmin(async (req, me) => {
         const email = b.email.trim().toLowerCase();
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Enter a valid email address." }, 400);
         if (isBuiltInAdmin(s.email)) return json({ error: "Built-in admin emails can't be changed here." }, 400);
-        if (await staffByEmail(email)) return json({ error: "Someone already has a RelayText account with that email." }, 400);
+        if (await staffByEmail(email)) return json({ error: "Someone already has a Relay account with that email." }, 400);
         // Move their login to the new email too, so they sign in with it.
         const uid = s.user_id || (await findAuthUserId(s.email));
         if (uid) {
