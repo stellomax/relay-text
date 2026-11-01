@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { json, withAdmin, errorMessage } from "@/lib/http";
 import { autoBuyEnabled } from "@/lib/numbers";
 import { translate } from "@/lib/translate";
+import { twilioCheck } from "@/lib/twilio";
 
 export const dynamic = "force-dynamic";
 
@@ -29,10 +30,7 @@ export const GET = withAdmin(async (req, me) => {
   }
 
   const sms = twilioConfigured()
-    ? {
-        ok: true,
-        detail: `Live texting from ${env.twilioMessagingService ? "Messaging Service " + env.twilioMessagingService : env.twilioFrom}`,
-      }
+    ? await twilioCheck().catch((e) => ({ ok: false, detail: errorMessage(e) }))
     : { ok: false, detail: "Demo mode: texts are simulated. Add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN and TWILIO_PHONE_NUMBER to go live." };
 
   return json({

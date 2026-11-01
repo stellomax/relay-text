@@ -84,3 +84,39 @@ export function twiml(): Response {
     headers: { "content-type": "text/xml" },
   });
 }
+
+// Settings health check: actually signs in to Twilio and looks up the Messaging Service. Never returns secrets.
+export async function twilioCheck(): Promise<{ ok: boolean; detail: string }> {
+  const sid = env.twilioSid;
+  const mg = env.twilioMessagingService;
+  if (!/^AC[0-9a-f]{32}$/i.test(sid)) {
+    return { ok: false, detail: `TWILIO_ACCOUNT_SID doesn't look right. It should start with "AC" and be 34 characters (yours starts "${sid.slice(0, 2)}", ${sid.length} characters).` };
+  }
+  if (!/^[0-9a-f]{32}$/i.test(env.twilioToken)) {
+    return { ok: false, detail: `TWILIO_AUTH_TOKEN doesn't look right. It should be 32 letters and numbers (yours is ${env.twilioToken.length} characters). Copy the Auth Token from the Twilio Console home page, not an API key.` };
+  }
+  let account: any;
+  try {
+    account = await twilio(`${API()}.json`);
+  } catch (e) {
+    const m = e instanceof Error ? e.message : String(e);
+    return { ok: false, detail: `Twilio rejected the login (${m}). The Account SID and Auth Token in Vercel don't match — copy both again from the Twilio Console home page, then redeploy.` };
+  }
+  const acct = `Signed in to "${account.friendly_name || "Twilio"}"${account.status && account.status !== "active" ? ` (account ${account.status})` : ""}`;
+  if (!mg) return { ok: true, detail: `${acct}. Sending from ${env.twilioFrom}.` };
+  if (!/^MG[0-9a-f]{32}$/i.test(mg)) {
+    return { ok: false, detail: `${acct}, but TWILIO_MESSAGING_SERVICE_SID doesn't look right. It should start with "MG" and be 34 characters.` };
+  }
+  try {
+    const svc: any = await twilio(`https://messaging.twilio.com/v1/Services/${mg}`);
+    const nums: any = await twilio(`https://messaging.twilio.com/v1/Services/${mg}/PhoneNumbers?PageSize=50`);
+    const list: string[] = (nums.phone_numbers || []).map((p: any) => p.phone_number);
+    if (!list.length) {
+      return { ok: false, detail: `${acct}. Messaging Service "${svc.friendly_name}" (${mg}) has no phone numbers in its Sender Pool. Add your number there.` };
+    }
+    return { ok: true, detail: `${acct}. Live texting from "${svc.friendly_name}" (${mg}), sender pool: ${list.join(", ")}` };
+  } catch (e) {
+    const m = e instanceof Error ? e.message : String(e);
+    return { ok: false, detail: `${acct}, but couldn't open Messaging Service ${mg} (${m}). Check that the SID is from this same Twilio account.` };
+  }
+}
