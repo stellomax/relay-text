@@ -148,8 +148,8 @@ export default function Landing() {
         <section className="lp-noapp">
           <figure className="lp-photo">
             <img
-              src="https://images.unsplash.com/photo-1562147113-610c96ae71ae?w=1000&q=80&auto=format&fit=crop"
-              alt="Two parents reading a text message together on one phone"
+              src="https://images.unsplash.com/photo-1700190828755-2965e99a7604?w=1000&q=80&auto=format&fit=crop"
+              alt="A mother sitting in her kitchen, smiling as she reads a text on her phone"
               loading="lazy"
               width={1000}
               height={1250}
@@ -159,15 +159,15 @@ export default function Landing() {
                 <span className="lp-notif-app">Messages</span>
                 <span>now</span>
               </div>
-              <div className="lp-notif-from">Mr. Okafor</div>
-              <div className="lp-notif-body" lang="fr">
-                Bonjour ! Rappel : la journée photo est vendredi. Merci de renvoyer le formulaire signé.
+              <div className="lp-notif-from">Ms. Rivera</div>
+              <div className="lp-notif-body" lang="es">
+                ¡Hola! Recordatorio: el día de fotos es el viernes. Por favor envíe el formulario firmado.
               </div>
             </div>
             <figcaption>
               Photo:{" "}
-              <a href="https://unsplash.com/photos/man-and-a-woman-looking-at-a-smartphone-TubEi7uf170" rel="noopener" target="_blank">
-                David Rotimi
+              <a href="https://unsplash.com/photos/a-woman-sitting-on-a-stool-looking-at-a-cell-phone-3VV2RjB1cOc" rel="noopener" target="_blank">
+                Rifki Kurniawan
               </a>{" "}
               on Unsplash
             </figcaption>

@@ -271,7 +271,7 @@
 /* "Parents don't install anything": photo of parents reading a text, with the message overlaid */
 .lp-photo { position: relative; margin: 0; max-width: 460px; justify-self: center; width: 100%; }
 .lp-photo img {
-  display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 35%;
+  display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; object-position: 55% 40%;
   border-radius: 32px; box-shadow: 0 30px 60px -24px rgba(36, 17, 51, 0.4);
 }
 .lp-photo-notif {
