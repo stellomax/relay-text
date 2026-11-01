@@ -2,7 +2,7 @@
 export const SESSION_COOKIE = "rt_session";
 export const SESSION_DAYS = 7;
 
-export type Session = { email: string; exp: number };
+export type Session = { email: string; exp: number; role?: "admin" | "teacher" };
 
 function secret(): string {
   return process.env.SESSION_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
@@ -34,8 +34,8 @@ async function hmac(data: string): Promise<string> {
   return b64url(new Uint8Array(sig));
 }
 
-export async function createSessionToken(email: string): Promise<string> {
-  const payload: Session = { email, exp: Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000 };
+export async function createSessionToken(email: string, role?: "admin" | "teacher"): Promise<string> {
+  const payload: Session = { email, role, exp: Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000 };
   const body = b64url(new TextEncoder().encode(JSON.stringify(payload)));
   return `${body}.${await hmac(body)}`;
 }

@@ -71,8 +71,10 @@ export async function POST(req: Request) {
     }
     await db().from("staff").update({ user_id: data.user.id, last_seen_at: new Date().toISOString() }).eq("id", me.id);
 
-    const token = await createSessionToken(email);
-    const res = json({ ok: true });
+    const role = isBuiltInAdmin(email) ? "admin" : me.role;
+    const token = await createSessionToken(email, role);
+    // Admins start on the teacher list; teachers start in their inbox.
+    const res = json({ ok: true, home: role === "admin" ? "/admin" : "/inbox" });
     res.headers.append(
       "set-cookie",
       `${SESSION_COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_DAYS * 86400}`

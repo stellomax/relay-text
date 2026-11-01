@@ -110,7 +110,7 @@ export async function POST(req: Request) {
     }
     await assignNumber(me, baseUrlFromRequest(req)).catch((e) => console.error("number on signup", e));
 
-    const token = await createSessionToken(email);
+    const token = await createSessionToken(email, me.role);
     const res = json({ ok: true });
     res.headers.append(
       "set-cookie",

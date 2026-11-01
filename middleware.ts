@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySessionToken } from "./lib/session";
 
-// The home page is public (signed-in staff go straight to their inbox).
+// The home page is public (signed-in admins go to the teacher list, teachers to their inbox).
 // Everything else requires a staff login except sign-in, teacher sign-up, the public parent sign-up,
 // Privacy Policy and Terms pages, and Twilio's webhooks.
 export async function middleware(req: NextRequest) {
@@ -11,7 +11,7 @@ export async function middleware(req: NextRequest) {
   if (path === "/") {
     if (!session) return NextResponse.next();
     const url = req.nextUrl.clone();
-    url.pathname = "/inbox";
+    url.pathname = session.role === "admin" ? "/admin" : "/inbox";
     return NextResponse.redirect(url);
   }
 
