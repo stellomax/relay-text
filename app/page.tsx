@@ -105,7 +105,7 @@ export default function Landing() {
         </a>
         <nav className="lp-nav-actions" aria-label="Account">
           <a className="lp-link" href="/login">
-            Teachers
+            Teacher Login
           </a>
           <a className="lp-btn small" href="/signup">
             Sign up
