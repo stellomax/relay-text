@@ -40,6 +40,39 @@ type Data = {
 };
 type Notice = { title: string; lines: string[]; copy?: string; big?: string } | null;
 
+type SortKey = "name" | "school" | "role" | "number" | "families" | "messages30d" | "last_seen_at" | "status";
+const COLUMNS: { key: SortKey; label: string; num?: boolean }[] = [
+  { key: "name", label: "Teacher" },
+  { key: "school", label: "School" },
+  { key: "role", label: "Role" },
+  { key: "number", label: "Texting number" },
+  { key: "families", label: "Families", num: true },
+  { key: "messages30d", label: "Texts (30 days)", num: true },
+  { key: "last_seen_at", label: "Last active" },
+  { key: "status", label: "Status" },
+];
+
+function sortValue(p: Person, key: SortKey): string | number {
+  switch (key) {
+    case "families":
+      return p.families;
+    case "messages30d":
+      return p.messages30d;
+    case "last_seen_at":
+      return p.last_seen_at ? new Date(p.last_seen_at).getTime() : 0;
+    case "role":
+      return p.superAdmin ? "0" : p.role === "admin" ? "1" : "2";
+    case "number":
+      return p.phone_number || "~";
+    case "school":
+      return (p.school || "~").toLowerCase();
+    case "status":
+      return p.status;
+    default:
+      return p.name.toLowerCase();
+  }
+}
+
 const EMPTY_NEW = { mode: "code" as "code" | "direct", name: "", email: "", school_id: "", area_code: "", admin: false };
 
 // Admin: create sign-up codes for new teachers, and manage teachers, admins and their texting numbers.
@@ -51,6 +84,8 @@ export default function AdminPage() {
   const [busy, setBusy] = useState("");
   const [notice, setNotice] = useState<Notice>(null);
   const [schoolFilter, setSchoolFilter] = useState<string>("");
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: "name", dir: 1 });
 
   const load = useCallback(async () => {
     try {
@@ -146,9 +181,17 @@ export default function AdminPage() {
   }
 
   const pending = data?.staff.filter((s) => s.status === "pending") || [];
-  const people = (data?.staff.filter((s) => s.status !== "pending") || []).filter(
-    (s) => !schoolFilter || (schoolFilter === "none" ? !s.school_id : s.school_id === schoolFilter)
-  );
+  const q = search.trim().toLowerCase();
+  const people = (data?.staff.filter((s) => s.status !== "pending") || [])
+    .filter((s) => !schoolFilter || (schoolFilter === "none" ? !s.school_id : s.school_id === schoolFilter))
+    .filter((s) => !q || [s.name, s.email, s.school || "", s.phone_number || ""].join(" ").toLowerCase().includes(q))
+    .sort((a, b) => {
+      const va = sortValue(a, sort.key);
+      const vb = sortValue(b, sort.key);
+      return (va < vb ? -1 : va > vb ? 1 : 0) * sort.dir;
+    });
+  const toggleSort = (key: SortKey) =>
+    setSort((s) => (s.key === key ? { key, dir: s.dir === 1 ? -1 : 1 } : { key, dir: key === "families" || key === "messages30d" || key === "last_seen_at" ? -1 : 1 }));
 
   return (
     <div className="settings">
@@ -167,18 +210,12 @@ export default function AdminPage() {
         </button>
       </header>
 
-      <div className="settings-body">
+      <div className="settings-body admin-wide">
         {error && <p className="sheet-error">{error}</p>}
         {!data && !error && <p className="ios-footnote top">Loading…</p>}
 
         {data && (
           <>
-            <button
-              className="ios-button add-teacher-btn"
-              onClick={() => setAdding({ ...EMPTY_NEW, school_id: schoolFilter && schoolFilter !== "none" ? schoolFilter : "" })}
-            >
-              <Plus size={18} /> Add Teacher
-            </button>
 
             <div className={`admin-banner ${data.autoBuy ? "live" : ""}`}>
               {data.autoBuy
@@ -257,10 +294,16 @@ export default function AdminPage() {
               </div>
             )}
 
-            {data.schools.length > 0 && (
-              <label className="inbox-picker filter-picker">
-                <span className="inbox-picker-label">School</span>
-                <select value={schoolFilter} onChange={(e) => setSchoolFilter(e.target.value)}>
+            <div className="admin-toolbar">
+              <input
+                className="admin-search"
+                placeholder="Search name, email or number"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                aria-label="Search teachers"
+              />
+              {data.schools.length > 0 && (
+                <select className="admin-select" value={schoolFilter} onChange={(e) => setSchoolFilter(e.target.value)} aria-label="Filter by school">
                   <option value="">All schools</option>
                   {data.schools.map((sc) => (
                     <option key={sc.id} value={sc.id}>
@@ -269,35 +312,76 @@ export default function AdminPage() {
                   ))}
                   <option value="none">No school</option>
                 </select>
-                <ChevronRight size={12} className="picker-chev" />
-              </label>
-            )}
-
-            <p className="ios-section">Teachers and admins · {people.length}</p>
-            <div className="ios-group">
-              {people.map((p) => (
-                <button key={p.id} className={`ios-row person-row ${p.status === "disabled" ? "off" : ""}`} onClick={() => setOpen(p)}>
-                  <Avatar name={p.name} size={38} />
-                  <span className="person-main">
-                    <span className="person-name">
-                      {p.name}
-                      {p.role === "admin" && <span className="tag-admin">{p.superAdmin ? "Super Admin" : "Admin"}</span>}
-                      {p.status === "disabled" && <span className="tag-off">Off</span>}
-                    </span>
-                    <span className="ios-row-hint">
-                      {p.phone_number ? prettyPhone(p.phone_number) : "No number"}
-                      {p.phone_placeholder ? " (demo)" : ""}
-                      {p.school ? ` · ${p.school}` : ""}
-                    </span>
-                    <span className="ios-row-hint">
-                      {p.families} {p.families === 1 ? "family" : "families"} · {p.messages30d} texts in 30 days
-                      {p.last_seen_at ? ` · active ${listTime(p.last_seen_at)}` : ""}
-                    </span>
-                  </span>
-                  <ChevronRight size={13} className="row-chev" />
-                </button>
-              ))}
+              )}
+              <button
+                className="pill-btn add-pill"
+                onClick={() => setAdding({ ...EMPTY_NEW, school_id: schoolFilter && schoolFilter !== "none" ? schoolFilter : "" })}
+              >
+                <Plus size={16} /> Add Teacher
+              </button>
             </div>
+
+            <div className="table-wrap">
+              <table className="staff-table">
+                <thead>
+                  <tr>
+                    {COLUMNS.map((c) => (
+                      <th key={c.key} className={c.num ? "num" : ""} aria-sort={sort.key === c.key ? (sort.dir === 1 ? "ascending" : "descending") : "none"}>
+                        <button onClick={() => toggleSort(c.key)}>
+                          {c.label}
+                          <span className="sort-ind" aria-hidden>
+                            {sort.key === c.key ? (sort.dir === 1 ? "▲" : "▼") : ""}
+                          </span>
+                        </button>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {people.map((p) => (
+                    <tr
+                      key={p.id}
+                      className={p.status === "disabled" ? "off" : ""}
+                      onClick={() => setOpen(p)}
+                      tabIndex={0}
+                      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), setOpen(p))}
+                    >
+                      <td>
+                        <span className="cell-person">
+                          <Avatar name={p.name} size={32} />
+                          <span>
+                            <span className="cell-name">{p.name}</span>
+                            <span className="cell-sub">{p.email}</span>
+                          </span>
+                        </span>
+                      </td>
+                      <td>{p.school || <span className="muted">—</span>}</td>
+                      <td>
+                        {p.role === "admin" ? <span className="tag-admin">{p.superAdmin ? "Super Admin" : "Admin"}</span> : "Teacher"}
+                      </td>
+                      <td className="nowrap">
+                        {p.phone_number ? prettyPhone(p.phone_number) : <span className="muted">None</span>}
+                        {p.phone_placeholder && <span className="tag-demo">Demo</span>}
+                      </td>
+                      <td className="num">{p.families}</td>
+                      <td className="num">{p.messages30d}</td>
+                      <td className="nowrap">{p.last_seen_at ? listTime(p.last_seen_at) : <span className="muted">Never</span>}</td>
+                      <td>
+                        <span className={`status-pill ${p.status}`}>{p.status === "active" ? "Active" : "Off"}</span>
+                      </td>
+                    </tr>
+                  ))}
+                  {people.length === 0 && (
+                    <tr className="empty-row">
+                      <td colSpan={COLUMNS.length}>{q || schoolFilter ? "No teachers match." : "No teachers yet. Use Add Teacher to invite one."}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <p className="ios-footnote table-foot">
+              {people.length} {people.length === 1 ? "person" : "people"} · Click a row to edit, manage their number or reset their password.
+            </p>
             {data.unassignedFamilies > 0 && (
               <p className="ios-footnote">
                 {data.unassignedFamilies} {data.unassignedFamilies === 1 ? "family is" : "families are"} on the main number

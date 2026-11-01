@@ -476,3 +476,36 @@ a { color: var(--tint); text-decoration: none; }
 .invite-code.code-off { color: var(--label-4); }
 .add-teacher-btn { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px; }
 .add-teacher-btn svg { color: #fff; }
+
+/* admin: teacher table */
+.settings-body.admin-wide { max-width: 1180px; }
+.admin-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+.admin-search { flex: 1 1 240px; min-width: 0; height: 38px; border: 1px solid #d1d1d6; border-radius: 10px; padding: 0 12px; font-size: 15px; background: #fff; outline: none; }
+.admin-search:focus, .admin-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(106, 2, 160, 0.15); }
+.admin-select { height: 38px; border: 1px solid #d1d1d6; border-radius: 10px; padding: 0 30px 0 12px; font-size: 15px; background: #fff; max-width: 260px; }
+.add-pill { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 16px; font-size: 15px; margin-left: auto; }
+.add-pill svg { color: #fff; }
+.table-wrap { background: #fff; border-radius: 12px; overflow-x: auto; border: 1px solid #e3e3e8; }
+.staff-table { width: 100%; border-collapse: collapse; min-width: 900px; font-size: 14px; letter-spacing: -0.1px; }
+.staff-table th { text-align: left; font-weight: 600; font-size: 12px; color: var(--label-3); background: #fafafb; border-bottom: 1px solid #e3e3e8; padding: 0; white-space: nowrap; }
+.staff-table th button { appearance: none; border: 0; background: none; font: inherit; color: inherit; padding: 10px 12px; width: 100%; text-align: inherit; cursor: pointer; display: inline-flex; gap: 4px; align-items: center; }
+.staff-table th.num button { justify-content: flex-end; }
+.staff-table th[aria-sort="ascending"], .staff-table th[aria-sort="descending"] { color: var(--brand); }
+.sort-ind { font-size: 9px; width: 9px; }
+.staff-table td { padding: 10px 12px; border-bottom: 1px solid #f0f0f3; vertical-align: middle; }
+.staff-table tbody tr { cursor: pointer; }
+.staff-table tbody tr:hover, .staff-table tbody tr:focus-visible { background: rgba(106, 2, 160, 0.04); outline: none; }
+.staff-table tbody tr:last-child td { border-bottom: 0; }
+.staff-table tr.off { opacity: 0.55; }
+.staff-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.staff-table .nowrap { white-space: nowrap; }
+.staff-table .tag-admin, .staff-table .tag-demo { margin-left: 6px; }
+.staff-table td:nth-child(3) .tag-admin { margin-left: 0; }
+.cell-person { display: flex; align-items: center; gap: 10px; }
+.cell-name { display: block; font-weight: 600; }
+.cell-sub { display: block; font-size: 12px; color: var(--label-3); }
+.status-pill { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+.status-pill.active { background: #e3f7e8; color: #135c2a; }
+.status-pill.disabled { background: var(--fill); color: var(--label-3); }
+.empty-row td { text-align: center; color: var(--label-3); padding: 28px; cursor: default; }
+.table-foot { margin-top: 10px; }
