@@ -58,10 +58,9 @@ export const POST = withAdmin(async (req, me) => {
   const name = String(b.name || "").trim().slice(0, 100);
   const sch = await schoolById(b.school_id ? String(b.school_id) : null);
   const school = sch?.name || null;
-  const area_code = cleanAreaCode(b.area_code) || sch?.area_code || null;
+  const area_code = sch?.area_code || null; // every teacher uses their school's area code
   const role = b.role === "admin" ? "admin" : "teacher";
   if (!name) return json({ error: "Enter the teacher's name." }, 400);
-  if (b.area_code && !cleanAreaCode(b.area_code)) return json({ error: "Enter a 3-digit area code, like 303." }, 400);
 
   for (let attempt = 0; attempt < 8; attempt++) {
     const code = await newFreeCode();
@@ -120,12 +119,8 @@ export const PATCH = withAdmin(async (req, me) => {
         const sch = await schoolById(b.school_id ? String(b.school_id) : null);
         update.school_id = sch?.id || null;
         update.school = sch?.name || null;
-        if (sch?.area_code && b.area_code === undefined && !s.area_code) update.area_code = sch.area_code;
-      }
-      if (b.area_code !== undefined) {
-        const ac = cleanAreaCode(b.area_code);
-        if (b.area_code && !ac) return json({ error: "Enter a 3-digit area code, like 303." }, 400);
-        update.area_code = ac;
+        // Teachers use their school's area code.
+        if (sch?.id !== s.school_id || !s.area_code) update.area_code = sch?.area_code || null;
       }
       if (typeof b.email === "string" && b.email.trim().toLowerCase() !== s.email) {
         if (!isSuperAdmin(me.email)) return json({ error: "Only super admins can change a teacher's email." }, 403);
@@ -190,11 +185,10 @@ async function addDirectly(req: Request, b: Record<string, unknown>) {
   const email = String(b.email || "").trim().toLowerCase();
   const sch = await schoolById(b.school_id ? String(b.school_id) : null);
   const school = sch?.name || null;
-  const area_code = cleanAreaCode(b.area_code) || sch?.area_code || null;
+  const area_code = sch?.area_code || null;
   const role = b.role === "admin" || isBuiltInAdmin(email) ? "admin" : "teacher";
   if (!name) return json({ error: "Enter the teacher's name." }, 400);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Enter a valid email address." }, 400);
-  if (b.area_code && !cleanAreaCode(b.area_code)) return json({ error: "Enter a 3-digit area code, like 303." }, 400);
   if (await staffByEmail(email)) return json({ error: "Someone with this email already has an account." }, 400);
 
   const password = tempPassword();

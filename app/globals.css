@@ -577,3 +577,5 @@ a { color: var(--tint); text-decoration: none; }
 .gm-done { width: 56px; height: 56px; border-radius: 50%; background: #34c759; color: #fff; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
 .fam-result .ios-button { margin-top: 14px; }
 .center-text { text-align: center; }
+/* Keep iOS switches their natural size inside rows (rows stretch inputs by default). */
+.ios-row input.ios-switch { flex: 0 0 51px; width: 51px; padding: 0; }

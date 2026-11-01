@@ -477,13 +477,6 @@ export default function AdminPage() {
                 ))}
               </select>
             </label>
-            <input
-              placeholder="Area code (optional; defaults to the school's)"
-              inputMode="numeric"
-              maxLength={3}
-              value={adding.area_code}
-              onChange={(e) => setAdding({ ...adding, area_code: e.target.value })}
-            />
           </div>
           <div className="ios-group">
             <label className="ios-row switch-row">
@@ -552,7 +545,6 @@ function PersonSheet({
     name: p.name,
     email: p.email,
     school_id: p.school_id || "",
-    area_code: p.area_code || "",
     admin: p.role === "admin",
   });
   const emailChanged = f.email.trim().toLowerCase() !== p.email;
@@ -560,7 +552,6 @@ function PersonSheet({
     f.name !== p.name ||
     emailChanged ||
     f.school_id !== (p.school_id || "") ||
-    f.area_code !== (p.area_code || "") ||
     f.admin !== (p.role === "admin");
   const canEditEmail = viewerIsSuper && !p.builtInAdmin;
 
@@ -579,7 +570,6 @@ function PersonSheet({
                 onAct("update", {
                   name: f.name,
                   school_id: f.school_id,
-                  area_code: f.area_code,
                   role: f.admin ? "admin" : "teacher",
                   ...(emailChanged ? { email: f.email } : {}),
                 });
@@ -618,10 +608,7 @@ function PersonSheet({
             ))}
           </select>
         </label>
-        <label className="ios-row">
-          <span className="ios-row-label">area code</span>
-          <input inputMode="numeric" maxLength={3} value={f.area_code} onChange={(e) => setF({ ...f, area_code: e.target.value })} />
-        </label>
+        
         <label className="ios-row switch-row">
           <span>Admin</span>
           <input

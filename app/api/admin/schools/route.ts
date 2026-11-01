@@ -71,6 +71,8 @@ export const PATCH = withSuper(async (req) => {
   if (typeof b.active === "boolean") update.active = b.active;
   const { error } = await supa.from("schools").update(update).eq("id", b.id);
   if (error) return json({ error: /duplicate|unique/i.test(error.message) ? "A school with that name already exists." : error.message }, 400);
+  // Keep the school's teachers on the school's area code (and name).
+  await supa.from("staff").update({ area_code: c.row.area_code, school: c.row.name }).eq("school_id", b.id);
   // Keep teachers' school name in step with the school.
   await supa.from("staff").update({ school: c.row.name }).eq("school_id", b.id);
   return json({ ok: true });
