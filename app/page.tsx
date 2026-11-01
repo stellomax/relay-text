@@ -36,6 +36,47 @@ const HELLOS = [
   { t: "Salom", l: "Uzbek" },
 ];
 
+const BENEFITS = [
+  {
+    title: "Clearer Communication",
+    text: "Reach every family the first time, in the language they read best.",
+    icon: (
+      <>
+        <path d="M4 4h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9l-4 3.5V15H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
+        <path d="M18 9h2a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-1v2.5L16 19h-4a2 2 0 0 1-1.8-1.1" />
+      </>
+    ),
+  },
+  {
+    title: "Stronger Family Engagement",
+    text: "Hear back from the parents you’ve struggled to reach, without a child translating.",
+    icon: (
+      <>
+        <circle cx="9" cy="7" r="3.2" />
+        <path d="M3 20v-1.5A4.5 4.5 0 0 1 7.5 14h3a4.5 4.5 0 0 1 4.5 4.5V20" />
+        <circle cx="17.5" cy="8.5" r="2.5" />
+        <path d="M17 14h1a3.5 3.5 0 0 1 3.5 3.5V20" />
+      </>
+    ),
+  },
+  {
+    title: "Student Success",
+    text: "Families who know about homework and test days become real partners in learning.",
+    icon: (
+      <>
+        <path d="M2 9l10-5 10 5-10 5z" />
+        <path d="M6 11v5c0 1.6 2.7 3 6 3s6-1.4 6-3v-5" />
+        <path d="M22 9v6" />
+      </>
+    ),
+  },
+  {
+    title: "Thriving Culture",
+    text: "Build a school where every family feels seen, heard and welcome.",
+    icon: <path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7a4.3 4.3 0 0 1 7.5 2.8C19.5 15.4 12 20 12 20z" />,
+  },
+];
+
 function TeacherPhone() {
   return (
     <div className="lp-phone lp-phone-teacher" aria-label="The teacher's view in RelayText, in English">
@@ -193,22 +234,21 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="lp-steps" aria-labelledby="how">
-          <h2 id="how">How it works</h2>
-          <ol>
-            <li>
-              <h3>Write in English</h3>
-              <p>Pick a family and type your message, the same way you’d text anyone.</p>
-            </li>
-            <li>
-              <h3>RelayText translates and sends it</h3>
-              <p>It goes out as a normal text in the family’s language, from your own RelayText number.</p>
-            </li>
-            <li>
-              <h3>Read the reply in English</h3>
-              <p>The parent answers in their language. You see it in English, with the original right underneath.</p>
-            </li>
-          </ol>
+        <section className="lp-benefits" aria-labelledby="benefits">
+          <h2 id="benefits">How it benefits your school</h2>
+          <ul>
+            {BENEFITS.map((b) => (
+              <li key={b.title}>
+                <span className="lp-benefit-icon" aria-hidden>
+                  <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    {b.icon}
+                  </svg>
+                </span>
+                <h3>{b.title}</h3>
+                <p>{b.text}</p>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section className="lp-schools" aria-labelledby="schools">
