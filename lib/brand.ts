@@ -1,5 +1,5 @@
 // Names and addresses shown on the public sign-up, Privacy Policy and Terms pages.
-export const BRAND = "Relay Text";
+export const BRAND = "RelayText";
 // Legal name of the Brand registered with Twilio (A2P 10DLC). Shown on the public pages so they match.
 export const COMPANY = "Stello Marketing, LLC";
 export const SITE = "relaytext.io";

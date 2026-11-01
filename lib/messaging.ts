@@ -18,17 +18,17 @@ export type SendSummary = {
 
 // Translate once per language, then send a separate one-to-one text to every contact,
 // from the number of the teacher each family belongs to.
-// The first text a family gets from Relay Text says who it's from and how to opt out (carrier rules).
+// The first text a family gets from RelayText says who it's from and how to opt out (carrier rules).
 // STOP and HELP stay in English so the carrier recognizes them; the rest is translated.
 const keep = (t: string) => `<span translate="no">${t.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</span>`;
 function disclosureEn(staff: Staff | null): string {
   const who = staff ? `${staff.name}${staff.school ? `, ${staff.school}` : ""}` : "your school";
-  return `Sent by ${who} via Relay Text. Reply STOP to opt out or HELP for help. Msg & data rates may apply.`;
+  return `Sent by ${who} via RelayText. Reply STOP to opt out or HELP for help. Msg & data rates may apply.`;
 }
 async function disclosureIn(lang: string, staff: Staff | null): Promise<string> {
   if (sameLang(lang, "en")) return disclosureEn(staff);
   const who = staff ? keep(`${staff.name}${staff.school ? `, ${staff.school}` : ""}`) : "your school";
-  const html = `Sent by ${who} via ${keep("Relay Text")}. Reply ${keep("STOP")} to opt out or ${keep("HELP")} for help. Msg &amp; data rates may apply.`;
+  const html = `Sent by ${who} via ${keep("RelayText")}. Reply ${keep("STOP")} to opt out or ${keep("HELP")} for help. Msg &amp; data rates may apply.`;
   const r = await translate(html, lang, "en", { html: true });
   return r.text.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
 }
@@ -39,7 +39,7 @@ export async function sendToContacts(
   opts: { statusCallback?: string; sentBy?: string }
 ): Promise<SendSummary> {
   const summary: SendSummary = { sent: 0, simulated: 0, failed: 0, skipped: 0, errors: [] };
-  // Families who have never been texted by Relay Text get the disclosure line on this message.
+  // Families who have never been texted by RelayText get the disclosure line on this message.
   const texted = new Set<string>();
   if (contacts.length) {
     const { data: prior } = await db()

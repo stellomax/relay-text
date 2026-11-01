@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Relay Text",
+  title: "RelayText",
   description: "Text families in their own language. No app required.",
   manifest: "/manifest.webmanifest",
   icons: {
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   // "Add to Home Screen" on iPhone opens it full-screen, like a native app.
-  appleWebApp: { capable: true, title: "Relay Text", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "RelayText", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {

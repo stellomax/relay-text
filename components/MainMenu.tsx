@@ -25,7 +25,7 @@ export type ConversationActions = {
   onDelete: () => void;
 };
 
-// The one menu in Relay Text, opened from your avatar at the top right.
+// The one menu in RelayText, opened from your avatar at the top right.
 // Shows conversation actions when a conversation is open, then items for your role.
 export default function MainMenu({ me, conversation }: { me: Me | null; conversation?: ConversationActions | null }) {
   const [open, setOpen] = useState(false);

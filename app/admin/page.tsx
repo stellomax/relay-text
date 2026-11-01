@@ -117,7 +117,7 @@ export default function AdminPage() {
         setNotice({
           title: "Temporary Password",
           lines: [`Give this to ${p.name}. They can change it in Settings after signing in.`],
-          copy: `Sign in to Relay Text at relaytext.io with ${p.email}\nTemporary password: ${r.tempPassword}`,
+          copy: `Sign in to RelayText at relaytext.io with ${p.email}\nTemporary password: ${r.tempPassword}`,
         });
       } else if (r.number?.note || r.numberError) {
         setNotice({ title: "Number", lines: [r.numberError ? `Couldn't assign a number: ${r.numberError}` : r.number.note] });
@@ -133,7 +133,7 @@ export default function AdminPage() {
   }
 
   function inviteMessage(code: string) {
-    return `You're invited to Relay Text. Go to ${data?.signupUrl || "relaytext.io/signup"} and enter sign-up code ${code} to create your account. The code works once and expires in 30 days.`;
+    return `You're invited to RelayText. Go to ${data?.signupUrl || "relaytext.io/signup"} and enter sign-up code ${code} to create your account. The code works once and expires in 30 days.`;
   }
 
   async function createCode() {
@@ -151,7 +151,7 @@ export default function AdminPage() {
         setNotice({
           title: "Teacher Added",
           lines,
-          copy: `Your Relay Text account is ready. Sign in at relaytext.io with ${r.email}\nTemporary password: ${r.tempPassword}\nYou can change your password in Settings.`,
+          copy: `Your RelayText account is ready. Sign in at relaytext.io with ${r.email}\nTemporary password: ${r.tempPassword}\nYou can change your password in Settings.`,
         });
         setAdding(null);
         await load();
@@ -640,7 +640,7 @@ function PersonSheet({
               confirm(
                 p.phone_placeholder
                   ? "Remove this demo number?"
-                  : "Release this number? Families texting it will no longer reach Relay Text, and the number may not be recoverable."
+                  : "Release this number? Families texting it will no longer reach RelayText, and the number may not be recoverable."
               ) && onAct("release_number")
             }
           >

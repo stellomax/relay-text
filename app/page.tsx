@@ -7,7 +7,7 @@ const display = Bricolage_Grotesque({ subsets: ["latin"], weight: ["600", "700",
 const body = Figtree({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--lp-body" });
 
 export const metadata: Metadata = {
-  title: "Relay Text · Text every family in their own language",
+  title: "RelayText · Text every family in their own language",
   description:
     "Teachers write in English. Families get a regular text in their own language and reply the same way. No app to download.",
 };
@@ -32,7 +32,7 @@ const HELLOS = [
 
 function TeacherPhone() {
   return (
-    <div className="lp-phone lp-phone-teacher" aria-label="The teacher's view in Relay Text, in English">
+    <div className="lp-phone lp-phone-teacher" aria-label="The teacher's view in RelayText, in English">
       <div className="lp-screen">
         <div className="lp-statusbar">
           <span>9:41</span>
@@ -195,8 +195,8 @@ export default function Landing() {
               <p>Pick a family and type your message, the same way you’d text anyone.</p>
             </li>
             <li>
-              <h3>Relay Text translates and sends it</h3>
-              <p>It goes out as a normal text in the family’s language, from your own Relay Text number.</p>
+              <h3>RelayText translates and sends it</h3>
+              <p>It goes out as a normal text in the family’s language, from your own RelayText number.</p>
             </li>
             <li>
               <h3>Read the reply in English</h3>
@@ -211,7 +211,7 @@ export default function Landing() {
             <dl>
               <div>
                 <dt>A number for every teacher</dt>
-                <dd>Each teacher texts from their own Relay Text number. Their personal cell stays private.</dd>
+                <dd>Each teacher texts from their own RelayText number. Their personal cell stays private.</dd>
               </div>
               <div>
                 <dt>Familiar from day one</dt>
@@ -228,7 +228,7 @@ export default function Landing() {
             </dl>
           </div>
 
-          <div className="lp-window" aria-label="The Relay Text inbox">
+          <div className="lp-window" aria-label="The RelayText inbox">
             <div className="lp-window-bar">
               <i />
               <i />
@@ -282,7 +282,7 @@ export default function Landing() {
         <section className="lp-hellos" aria-labelledby="langs">
           <h2 id="langs">Speak to every family at your school.</h2>
           <p>
-            Relay Text supports the home languages most common in U.S. schools, including ones many tools skip, like Somali,
+            RelayText supports the home languages most common in U.S. schools, including ones many tools skip, like Somali,
             Burmese, Dari, Kinyarwanda and Hmong.
           </p>
           <ul className="lp-hello-grid">
@@ -299,7 +299,7 @@ export default function Landing() {
 
         <section className="lp-final">
           <h2>Start texting families today.</h2>
-          <p>Get your school’s sign-up code from your Relay Text admin, then create your account in a minute.</p>
+          <p>Get your school’s sign-up code from your RelayText admin, then create your account in a minute.</p>
           <div className="lp-ctas center">
             <a className="lp-btn light" href="/signup">
               Sign up

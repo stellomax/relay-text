@@ -1,7 +1,7 @@
-/* Relay Text: modeled on the iPhone Messages app, tinted with the Relay Text purple. */
+/* RelayText: modeled on the iPhone Messages app, tinted with the RelayText purple. */
 :root {
   color-scheme: light;
-  --brand: #6a02a0;          /* Relay Text purple (from the logo) */
+  --brand: #6a02a0;          /* RelayText purple (from the logo) */
   --brand-hi: #7a05b4;
   --brand-lo: #55017d;
   --tint: #6a02a0;           /* iOS "tint" for buttons and links */

@@ -153,7 +153,7 @@ export default function Messages() {
     <div className={`app ${selectedId ? "show-thread" : ""}`}>
       <aside className="inbox">
         <div className="inbox-bar">
-          <img className="inbox-logo" src="/relay-text-logo.png" alt="Relay Text" />
+          <img className="inbox-logo" src="/relay-text-logo.png" alt="RelayText" />
           <span className="inbox-bar-actions">
             {!readOnly && (
               <button className="icon-btn" onClick={() => setSheet("new")} aria-label="New message" title="New message">

@@ -1,4 +1,4 @@
-/* Relay Text landing page. Scoped under .lp so it never touches the app screens. */
+/* RelayText landing page. Scoped under .lp so it never touches the app screens. */
 .lp {
   --purple: #6a02a0;
   --purple-deep: #4a0170;

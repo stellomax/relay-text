@@ -45,7 +45,7 @@ export default function SchoolsPage() {
   }
 
   function inviteText(s: School) {
-    return `Join ${s.name} on Relay Text: go to ${signupUrl} and enter sign-up code ${s.signup_code}.`;
+    return `Join ${s.name} on RelayText: go to ${signupUrl} and enter sign-up code ${s.signup_code}.`;
   }
 
   async function save() {

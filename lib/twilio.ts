@@ -32,7 +32,7 @@ export async function sendSms(to: string, body: string, statusCallback?: string,
   return { sid: data.sid as string, status: (data.status as string) || "queued", from: (data.from as string) || from || env.twilioFrom || null };
 }
 
-// Buy a local, SMS-capable number, preferably in the given area code, and point its incoming texts at Relay Text.
+// Buy a local, SMS-capable number, preferably in the given area code, and point its incoming texts at RelayText.
 export async function buyNumber(opts: { areaCode?: string | null; friendlyName: string; smsUrl: string }) {
   const search = async (params: Record<string, string>) => {
     const q = new URLSearchParams({ SmsEnabled: "true", PageSize: "5", ...params });

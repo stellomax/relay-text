@@ -1,6 +1,6 @@
 {
-  "name": "Relay Text",
-  "short_name": "Relay Text",
+  "name": "RelayText",
+  "short_name": "RelayText",
   "start_url": "/inbox",
   "display": "standalone",
   "background_color": "#ffffff",

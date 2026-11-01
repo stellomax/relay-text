@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { isPersonalEmail, REQUIRE_SCHOOL_EMAIL } from "@/lib/schoolEmail";
 
-// Teachers create their account with the 5-digit sign-up code their Relay Text admin gave them.
+// Teachers create their account with the 5-digit sign-up code their RelayText admin gave them.
 export default function Signup() {
   const [f, setF] = useState({ code: "", name: "", email: "", password: "", confirmPassword: "" });
   const [check, setCheck] = useState<null | { valid: boolean; name?: string; school?: string | null }>(null);
@@ -55,7 +55,7 @@ export default function Signup() {
 
   return (
     <div className="login">
-      <img src="/relay-text-logo.png" alt="Relay Text" className="login-logo" />
+      <img src="/relay-text-logo.png" alt="RelayText" className="login-logo" />
       <p className="login-tag">Create your teacher account.</p>
       <form onSubmit={submit} className="login-form">
         <div className="ios-group">
@@ -79,7 +79,7 @@ export default function Signup() {
             {check?.name ? ` · Welcome, ${check.name.split(" ")[0]}!` : ""}
           </p>
         )}
-        {!check && <p className="ios-footnote">Your Relay Text admin gives you this code.</p>}
+        {!check && <p className="ios-footnote">Your RelayText admin gives you this code.</p>}
 
         <div className="ios-group">
           <input placeholder="Your name" autoComplete="name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} required />
@@ -112,7 +112,7 @@ export default function Signup() {
         {personal && <p className="login-error">Please use your school email address, not a personal one.</p>}
         {mismatch && <p className="login-error">The passwords don’t match.</p>}
         <p className="ios-footnote">
-          You’ll get your own Relay Text number for texting families, so your personal cell number is never shared.
+          You’ll get your own RelayText number for texting families, so your personal cell number is never shared.
         </p>
         {error && <p className="login-error">{error}</p>}
         <button className="ios-button" disabled={busy || !ready}>

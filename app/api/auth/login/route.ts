@@ -8,7 +8,7 @@ import { assignNumber } from "@/lib/numbers";
 
 export const dynamic = "force-dynamic";
 
-// Staff sign in with their Relay Text email + password.
+// Staff sign in with their RelayText email + password.
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -28,10 +28,10 @@ export async function POST(req: Request) {
       const code = (error as { code?: string } | null)?.code || "";
       console.error("Sign-in error:", error?.status, code, error?.message);
       if (msg.includes("invalid login") || code === "invalid_credentials") {
-        return json({ error: "That email and password didn't match a Relay Text login." }, 401);
+        return json({ error: "That email and password didn't match a RelayText login." }, 401);
       }
       if (msg.includes("not confirmed") || code === "email_not_confirmed") {
-        return json({ error: "This login hasn't been confirmed yet. Ask a Relay Text admin for help." }, 401);
+        return json({ error: "This login hasn't been confirmed yet. Ask a RelayText admin for help." }, 401);
       }
       if (msg.includes("api key") || msg.includes("apikey") || error?.status === 401) {
         return json({ error: "Supabase rejected the app's key. Check SUPABASE_SERVICE_ROLE_KEY in Vercel, then redeploy." }, 500);
@@ -58,13 +58,13 @@ export async function POST(req: Request) {
       await assignNumber(me, baseUrlFromRequest(req)).catch((e) => console.error("number", e));
     }
     if (!me) {
-      return json({ error: "There's no Relay Text account for this email. Teachers: create your account at relaytext.io/signup with the code from your admin." }, 403);
+      return json({ error: "There's no RelayText account for this email. Teachers: create your account at relaytext.io/signup with the code from your admin." }, 403);
     }
     if (me.status === "pending") {
       return json({ error: "Your account is waiting for approval. You'll be able to sign in once an admin approves it." }, 403);
     }
     if (me.status === "disabled") {
-      return json({ error: "This account has been turned off. Contact your Relay Text admin." }, 403);
+      return json({ error: "This account has been turned off. Contact your RelayText admin." }, 403);
     }
     if (isBuiltInAdmin(email) && me.role !== "admin") {
       await db().from("staff").update({ role: "admin" }).eq("id", me.id);

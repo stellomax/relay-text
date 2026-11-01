@@ -20,14 +20,14 @@ export default function LoginPage() {
     const data = await res.json().catch(() => ({}));
     if (res.ok) window.location.href = data.home || "/inbox";
     else {
-      setError(data.error || `Sign in failed (error ${res.status}). Please send this to your Relay Text admin.`);
+      setError(data.error || `Sign in failed (error ${res.status}). Please send this to your RelayText admin.`);
       setBusy(false);
     }
   }
 
   return (
     <div className="login">
-      <img src="/relay-text-logo.png" alt="Relay Text" className="login-logo" />
+      <img src="/relay-text-logo.png" alt="RelayText" className="login-logo" />
       <p className="login-tag">Text families in their own language.</p>
       <form onSubmit={submit} className="login-form">
         <div className="ios-group">

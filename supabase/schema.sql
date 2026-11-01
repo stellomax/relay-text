@@ -1,4 +1,4 @@
--- Relay Text database setup
+-- RelayText database setup
 -- Run in Supabase: SQL Editor → New query → paste all of this → Run.
 -- Safe to run again on an existing database; it won't delete anything.
 
