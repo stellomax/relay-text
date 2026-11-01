@@ -1,4 +1,4 @@
-import { baseUrlFromRequest } from "@/lib/config";
+import { baseUrlFromRequest, twilioConfigured } from "@/lib/config";
 import { json, withAuth } from "@/lib/http";
 import { authClient, findAuthUserId, setPassword } from "@/lib/supabaseAuth";
 import { db } from "@/lib/db";
@@ -18,6 +18,7 @@ export const GET = withAuth(async (req, me) => {
       is_super: me.role === "admin" && isSuperAdmin(me.email),
       phone_number: me.phone_number,
       phone_placeholder: me.phone_placeholder,
+      texting_live: twilioConfigured(),
       join_link: me.join_code ? `${baseUrlFromRequest(req)}/join?t=${me.join_code}` : null,
     },
   });

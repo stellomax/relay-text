@@ -111,7 +111,9 @@ export default function SetupPage() {
             </div>
             <p className="ios-footnote">
               {me.phone_placeholder
-                ? "This is a demo number. You'll get a real number once Relay Text texting goes live."
+                ? (me as any).texting_live
+                  ? "Placeholder number. For now your texts go out from the school's main Relay Text number. Your own number will appear here once it's assigned."
+                  : "This is a demo number. You'll get a real number once Relay Text texting goes live."
                 : "Families see this number, never your personal cell. Their replies come back here."}
             </p>
 
