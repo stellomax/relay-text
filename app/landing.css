@@ -307,3 +307,33 @@
 .lp-wl-row:not(.sel) + .lp-wl-row:not(.sel) { border-top: 1px solid #f1eff4; }
 .lp-wr-compose { padding: 10px 14px 12px; border-top: 1px solid var(--line); }
 .lp-wr-compose span { display: block; border: 1px solid #d8d4de; border-radius: 16px; padding: 6px 12px; font-size: 12px; color: #a3a0a8; }
+
+/* hero headline: three short lines */
+.lp-hero h1 { max-width: none; }
+.lp-hero h1 span { display: block; }
+.lp-fine a { font-weight: 600; color: var(--purple); }
+
+/* principal proof bar, right under the hero */
+.lp-proof {
+  list-style: none; margin: 0 auto; padding: 18px clamp(16px, 4vw, 48px); max-width: 1320px;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px;
+}
+.lp-proof li {
+  display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; color: var(--plum);
+  background: var(--lilac); border-radius: 999px; padding: 9px 16px;
+}
+.lp-proof li::before {
+  content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--purple); flex: 0 0 8px;
+}
+
+/* questions principals ask */
+.lp-faq { max-width: 1120px; margin: 0 auto; padding: clamp(40px, 6vw, 80px) clamp(16px, 4vw, 48px) clamp(56px, 8vw, 104px); }
+.lp-faq h2 { text-align: center; }
+.lp-faq dl { margin: 40px 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.lp-faq dl > div { background: var(--lilac); border-radius: 22px; padding: 24px 26px; }
+.lp-faq dt { font-family: var(--lp-display), var(--lp-body), sans-serif; font-weight: 700; font-size: 20px; color: var(--plum); }
+.lp-faq dd { margin: 8px 0 0; color: var(--ink-2); }
+@media (max-width: 760px) {
+  .lp-faq dl { grid-template-columns: 1fr; }
+  .lp-proof li { font-size: 14px; padding: 7px 13px; }
+}

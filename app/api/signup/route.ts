@@ -75,7 +75,7 @@ export async function POST(req: Request) {
     const password = String(b.password || "");
 
     const inv = await openInvite(code);
-    if (!inv) return json({ error: "That sign-up code isn't valid or has already been used. Check it with your RelayText admin." }, 400);
+    if (!inv) return json({ error: "That sign-up code isn't valid or has already been used. Check it with your Relay admin." }, 400);
     if (!name) return json({ error: "Enter your name." }, 400);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Enter a valid email address." }, 400);
     if (REQUIRE_SCHOOL_EMAIL && isPersonalEmail(email)) return json({ error: "Please use your school email address, not a personal one." }, 400);

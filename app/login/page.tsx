@@ -20,7 +20,7 @@ export default function LoginPage() {
     const data = await res.json().catch(() => ({}));
     if (res.ok) window.location.href = data.home || "/inbox";
     else {
-      setError(data.error || `Sign in failed (error ${res.status}). Please send this to your RelayText admin.`);
+      setError(data.error || `Sign in failed (error ${res.status}). Please send this to your Relay admin.`);
       setBusy(false);
     }
   }

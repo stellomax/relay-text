@@ -1,4 +1,4 @@
-# RelayText
+# Relay
 
 Text families in their own language. No app required on their phone.
 
@@ -60,4 +60,4 @@ Parent phone numbers and student names are student records. Row-level security i
 - `ADMIN_EMAILS`: extra admin emails, comma-separated.
 - `TWILIO_MESSAGING_SERVICE_SID`: send from a Messaging Service instead of a single number.
 - `SESSION_SECRET`: separate secret for staff login sessions (defaults to the service key).
-- Outgoing bubble color: `--bubble-out` in `app/globals.css` (RelayText purple by default).
+- Outgoing bubble color: `--bubble-out` in `app/globals.css` (Relay purple by default).
