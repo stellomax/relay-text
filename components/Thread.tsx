@@ -160,7 +160,7 @@ export default function Thread({
             aria-pressed={showTranslations}
             title={showTranslations ? `Hide the ${lang} text` : `Show the ${lang} text`}
           >
-            Translate <Globe size={18} />
+            {showTranslations ? "Hide Translation" : "Show Translation"} <Globe size={18} />
           </button>
         </div>
       )}
