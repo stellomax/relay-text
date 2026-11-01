@@ -1,6 +1,7 @@
 import { db, Contact } from "@/lib/db";
 import { json, withAuth } from "@/lib/http";
 import { toE164 } from "@/lib/phone";
+import { isLanguageCode } from "@/lib/languages";
 import { canWrite, resolveScope, scoped } from "@/lib/staff";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,7 @@ function clean(body: Record<string, unknown>) {
   const phone = toE164(String(body.phone || ""));
   if (!parent_name) return { error: "Parent name is required." };
   if (!phone) return { error: "Enter a valid phone number, e.g. (303) 555-1234." };
-  if (!language) return { error: "Choose a language." };
+  if (!isLanguageCode(language)) return { error: "Choose a language." };
   return { row: { parent_name, child_name, language, phone }, groups: cleanGroups(body.groups) };
 }
 

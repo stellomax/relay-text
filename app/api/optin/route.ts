@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { baseUrlFromRequest, twilioConfigured } from "@/lib/config";
 import { json, errorMessage } from "@/lib/http";
 import { toE164 } from "@/lib/phone";
-import { LANGUAGES } from "@/lib/languages";
+import { isLanguageCode } from "@/lib/languages";
 import { OPT_IN_CONFIRMATION } from "@/lib/brand";
 import { sendSms } from "@/lib/twilio";
 import type { Staff } from "@/lib/db";
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
   const parent_name = String(body.parent_name || "").trim().slice(0, 120);
   const child_name = String(body.child_name || "").trim().slice(0, 120) || null;
   const phone = toE164(String(body.phone || ""));
-  const language = LANGUAGES.some((l) => l.code === body.language) ? String(body.language) : "es";
+  const language = isLanguageCode(body.language) ? body.language : "es";
 
   if (body.consent !== true) return json({ error: "Please check the box to agree to receive text messages." }, 400);
   if (!parent_name) return json({ error: "Please enter your name." }, 400);

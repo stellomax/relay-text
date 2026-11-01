@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import LegalPage from "@/components/LegalPage";
-import { LANGUAGES } from "@/lib/languages";
+import LanguageSelect from "@/components/LanguageSelect";
 import { BRAND, COMPANY } from "@/lib/brand";
 import { formatPhoneInput } from "@/lib/phone";
 
@@ -127,13 +127,7 @@ export default function Join() {
         </label>
         <label>
           Language for text messages
-          <select value={form.language} onChange={set("language")}>
-            {LANGUAGES.map((l) => (
-              <option key={l.code} value={l.code}>
-                {l.native === l.name ? l.name : `${l.native} (${l.name})`}
-              </option>
-            ))}
-          </select>
+          <LanguageSelect value={form.language} onChange={(code) => setForm((f) => ({ ...f, language: code }))} />
         </label>
 
         <label className="consent">

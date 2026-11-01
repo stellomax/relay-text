@@ -1,6 +1,6 @@
 "use client";
 
-import { LANGUAGES } from "@/lib/languages";
+import LanguageSelect from "./LanguageSelect";
 import { formatPhoneInput } from "@/lib/phone";
 
 export type ContactForm = { parent_name: string; child_name: string; phone: string; language: string; groups?: string; consent?: boolean };
@@ -45,14 +45,7 @@ export default function ContactFields({
         </label>
         <label className="ios-row">
           <span className="ios-row-label">language</span>
-          <select value={value.language} onChange={set("language")}>
-            {LANGUAGES.map((l) => (
-              <option key={l.code} value={l.code}>
-                {l.name}
-                {l.native !== l.name ? ` · ${l.native}` : ""}
-              </option>
-            ))}
-          </select>
+          <LanguageSelect value={value.language} onChange={(code) => onChange({ ...value, language: code })} />
         </label>
       </div>
       <p className="ios-footnote">

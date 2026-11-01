@@ -1,5 +1,6 @@
-// Languages common among ESL families in U.S. schools. Codes are Google Translate codes.
-// Add more any time: https://cloud.google.com/translate/docs/languages
+// Languages common among ESL families in U.S. schools, shown first in every language menu.
+// Every other language Google Translate supports is listed after these (see /api/languages).
+// Codes are Google Translate codes.
 export const LANGUAGES: { code: string; name: string; native: string }[] = [
   { code: "es", name: "Spanish", native: "Español" },
   { code: "ar", name: "Arabic", native: "العربية" },
@@ -34,10 +35,44 @@ export const LANGUAGES: { code: string; name: string; native: string }[] = [
   { code: "en", name: "English", native: "English" },
 ];
 
+export type Language = { code: string; name: string; native?: string };
+
+// Names for any language code, using the browser's / server's built-in language names.
+function intlName(code: string, inLang: string): string | null {
+  try {
+    const n = new Intl.DisplayNames([inLang], { type: "language" }).of(code);
+    return n && n.toLowerCase() !== code.toLowerCase() ? n : null;
+  } catch {
+    return null;
+  }
+}
+
+// Names learned from Google's full list (filled in by the language menu).
+const extraNames = new Map<string, string>();
+export function rememberLanguages(list: Language[]) {
+  for (const l of list) extraNames.set(l.code.toLowerCase(), l.name);
+}
+
 export function languageName(code: string | null | undefined): string {
   if (!code) return "Unknown";
   const hit = LANGUAGES.find((l) => l.code.toLowerCase() === code.toLowerCase());
   if (hit) return hit.name;
+  const known = extraNames.get(code.toLowerCase());
+  if (known) return known;
+  const intl = intlName(code, "en");
+  if (intl) return intl;
   const base = LANGUAGES.find((l) => l.code.split("-")[0] === code.split("-")[0]);
   return base ? base.name : code;
 }
+
+// The language's name in itself, e.g. "fr" → "français".
+export function nativeName(code: string): string | null {
+  const hit = LANGUAGES.find((l) => l.code.toLowerCase() === code.toLowerCase());
+  if (hit) return hit.native;
+  const n = intlName(code, code);
+  return n ? n.charAt(0).toUpperCase() + n.slice(1) : null;
+}
+
+// Looks like a Google Translate language code (e.g. "es", "zh-CN", "hmn", "fa-AF").
+export const isLanguageCode = (code: unknown): code is string =>
+  typeof code === "string" && /^[a-z]{2,3}(-[A-Za-z0-9]{2,4})?$/.test(code);
