@@ -102,18 +102,23 @@ export async function twilioCheck(): Promise<{ ok: boolean; detail: string }> {
   if (!useKey() && !/^[0-9a-f]{32}$/i.test(env.twilioToken)) {
     return { ok: false, detail: `TWILIO_AUTH_TOKEN doesn't look right. It should be 32 letters and numbers (yours is ${env.twilioToken.length} characters). Copy the Auth Token from the Twilio Console home page, not an API key.` };
   }
-  let account: any;
+  let account: any = {};
   try {
     account = await twilio(`${API()}.json`);
   } catch (e) {
     const m = e instanceof Error ? e.message : String(e);
-    const how = useKey() ? "API key (TWILIO_API_KEY_SID / TWILIO_API_KEY_SECRET)" : "Auth Token";
-    return {
-      ok: false,
-      detail: `Twilio rejected the login (${m}). Signing in with: Account ${sid.slice(0, 6)}…${sid.slice(-4)} + ${how}. Check that these are Live (not Test) credentials from the same Twilio account, and that the account is active.`,
-    };
+    // A Standard API key can send texts but isn't allowed to read the account profile (70004) — that's fine.
+    if (!(useKey() && /70004/.test(m))) {
+      const how = useKey() ? "API key (TWILIO_API_KEY_SID / TWILIO_API_KEY_SECRET)" : "Auth Token";
+      return {
+        ok: false,
+        detail: `Twilio rejected the login (${m}). Signing in with: Account ${sid.slice(0, 6)}…${sid.slice(-4)} + ${how}. Check that these are Live (not Test) credentials from the same Twilio account, and that the account is active.`,
+      };
+    }
   }
-  const acct = `Signed in to "${account.friendly_name || "Twilio"}"${account.status && account.status !== "active" ? ` (account ${account.status})` : ""}`;
+  const acct = account.friendly_name
+    ? `Signed in to "${account.friendly_name}"${account.status && account.status !== "active" ? ` (account ${account.status})` : ""}`
+    : `Signed in with API key`;
   if (!mg) return { ok: true, detail: `${acct}. Sending from ${env.twilioFrom}.` };
   if (!/^MG[0-9a-f]{32}$/i.test(mg)) {
     return { ok: false, detail: `${acct}, but TWILIO_MESSAGING_SERVICE_SID doesn't look right. It should start with "MG" and be 34 characters.` };
