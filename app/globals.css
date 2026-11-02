@@ -843,3 +843,12 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .error-note { color: var(--red) !important; }
 .new-thread .composer { border-top: 0.5px solid var(--separator); padding-top: 9px; }
 .pill textarea:disabled { background: transparent; cursor: not-allowed; }
+.to-line.clickable { cursor: pointer; align-items: center; }
+.to-line.clickable:hover { background: #fafafa; }
+.to-line.clickable:focus-visible { outline: 2px solid rgba(106, 2, 160, 0.35); outline-offset: -2px; }
+.to-hint { color: var(--tint) !important; font-weight: 500; }
+.to-add { color: var(--tint); font-size: 15px; font-weight: 600; flex: none; }
+.new-empty { margin: auto; }
+.new-empty .ios-button.big { max-width: 260px; margin-top: 14px; }
+.new-thread .new-scroller { background: var(--bg); }
+.pill textarea[readonly] { cursor: pointer; }
