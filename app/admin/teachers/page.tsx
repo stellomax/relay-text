@@ -134,8 +134,12 @@ export default function AdminPage() {
     }
   }
 
-  function inviteMessage(code: string) {
-    return `You're invited to Relay. Go to ${data?.signupUrl || "relaytext.io/signup"} and enter sign-up code ${code} to create your account. The code works once and expires in 30 days.`;
+  // What Relay is, in one line, for the start of messages sent to new teachers.
+  const ABOUT = (school?: string | null) =>
+    `Relay is the app ${school || "our school"} uses to text parents in their own language. You write in English, each parent gets a regular text in their language, and their replies come back to you in English. Parents don't need an app, and your personal cell number is never shared.`;
+
+  function inviteMessage(code: string, school?: string | null) {
+    return `You're invited to Relay. ${ABOUT(school)}\n\nTo create your account, go to ${data?.signupUrl || "relaytext.io/signup"} and enter sign-up code ${code}. The code works once and expires in 30 days.`;
   }
 
   async function createCode() {
@@ -153,7 +157,7 @@ export default function AdminPage() {
         setNotice({
           title: "Teacher Added",
           lines,
-          copy: `Your Relay account is ready. Sign in at relaytext.io with ${r.email}\nTemporary password: ${r.tempPassword}\nYou can change your password in Settings.`,
+          copy: `Your Relay account is ready. ${ABOUT(data?.schools.find((x) => x.id === adding.school_id)?.name)}\n\nSign in at relaytext.io with ${r.email}\nTemporary password: ${r.tempPassword}\nYou can change your password in Settings.`,
         });
         setAdding(null);
         await load();
@@ -163,7 +167,7 @@ export default function AdminPage() {
         title: "Sign-up Code",
         big: r.invite.code,
         lines: [`Give this code to ${adding.name}. They enter it at relaytext.io/signup to create their account and get their own texting number.`],
-        copy: inviteMessage(r.invite.code),
+        copy: inviteMessage(r.invite.code, data?.schools.find((x) => x.id === adding.school_id)?.name),
       });
       setAdding(null);
       await load();
@@ -235,7 +239,7 @@ export default function AdminPage() {
                           {inv.school ? `${inv.school} · ` : ""}expires {new Date(inv.expires_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                         </span>
                       </span>
-                      <button className="bar-btn strong" onClick={() => navigator.clipboard?.writeText(inviteMessage(inv.code))}>
+                      <button className="bar-btn strong" onClick={() => navigator.clipboard?.writeText(inviteMessage(inv.code, inv.school))}>
                         Copy
                       </button>
                       <button className="bar-btn danger-text" onClick={() => cancelInvite(inv)}>
