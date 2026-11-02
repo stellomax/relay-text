@@ -435,3 +435,8 @@ i.rep { background: #1f9e89; }
   .lp-dash-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .lp-lang-row { grid-template-columns: 74px 1fr 28px; }
 }
+
+/* hero copy sits a little higher, near the top of the phones (wide screens only) */
+@media (min-width: 981px) {
+  .lp-hero-copy { align-self: start; padding-top: clamp(8px, 2vw, 28px); }
+}
