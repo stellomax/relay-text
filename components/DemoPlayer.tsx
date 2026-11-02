@@ -208,7 +208,7 @@ export default function DemoPlayer() {
             </>
           ) : (
             <button type="button" className="lp-btn dm-next" onClick={next}>
-              {idx === 0 ? "Start ›" : cur && phase !== "done" ? "Skip ahead ›" : "Next message ›"}
+              {idx === 0 ? "Start conversation ›" : "Next message ›"}
             </button>
           )}
         </div>

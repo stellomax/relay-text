@@ -8,7 +8,7 @@ const display = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["600", "700", "
 const body = Figtree({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--lp-body" });
 
 export const metadata: Metadata = {
-  title: "Relay demo",
+  title: "See Relay in action",
   description:
     "Click through a real conversation: a teacher writes in English, a parent reads and replies in Spanish, and Relay translates both ways over plain text messages.",
 };
@@ -17,7 +17,7 @@ export default function DemoPage() {
   return (
     <div className={`lp ${display.variable} ${body.variable}`}>
       <main className="dm-page">
-        <h1 className="dm-title">Demo</h1>
+        <h1 className="dm-title">See Relay in action</h1>
         <DemoPlayer />
       </main>
     </div>
