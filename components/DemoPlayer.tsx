@@ -186,25 +186,24 @@ export default function DemoPlayer() {
 
   return (
     <div className="dm">
-      {/* title and controls on one row */}
-      <div className="dm-top">
-        <h1>Demo</h1>
-        <div className="dm-btns">
-          <button type="button" className="dm-back-btn" onClick={back} disabled={idx === 0}>
-            ‹ Back
-          </button>
-          <div className="dm-progress" aria-hidden>
-            {SCRIPT.map((m, i) => (
-              <i key={i} className={`${i < idx ? "on" : ""} ${m.from}`} />
-            ))}
+      {/* the two screens */}
+      <div className="dm-stage" onClick={next} role="button" tabIndex={-1} aria-label="Play the next message">
+        {/* the people, with the button between them */}
+        <div className="dm-person tp">
+          <Avatar who={TEACHER} size={84} />
+          <div>
+            <b>{TEACHER.name}</b>
+            <span>{TEACHER.role}</span>
           </div>
+        </div>
+        <div className="dm-ctl" onClick={(e) => e.stopPropagation()}>
           {finished ? (
             <>
-              <button type="button" className="lp-btn ghost dm-again" onClick={restart}>
+              <button type="button" className="lp-btn dm-next" onClick={restart}>
                 ↺ Watch again
               </button>
-              <a className="lp-btn dm-next" href="/contact">
-                Bring Relay to your school
+              <a className="dm-cta" href="/contact">
+                Bring Relay to your school ›
               </a>
             </>
           ) : (
@@ -213,19 +212,16 @@ export default function DemoPlayer() {
             </button>
           )}
         </div>
-      </div>
+        <div className="dm-person pp">
+          <Avatar who={PARENT} size={84} />
+          <div>
+            <b>{PARENT.name}</b>
+            <span>{PARENT.role}</span>
+          </div>
+        </div>
 
-      {/* the two screens */}
-      <div className="dm-stage" onClick={next} role="button" tabIndex={-1} aria-label="Play the next message">
         {/* teacher's computer */}
         <div className="dm-screen-col">
-          <div className="dm-person">
-            <Avatar who={TEACHER} size={84} />
-            <div>
-              <b>{TEACHER.name}</b>
-              <span>{TEACHER.role}</span>
-            </div>
-          </div>
           <div className="dm-desk">
             <div className="lp-window-bar">
               <i />
@@ -320,13 +316,6 @@ export default function DemoPlayer() {
 
         {/* parent's phone */}
         <div className="dm-screen-col phone">
-          <div className="dm-person">
-            <Avatar who={PARENT} size={84} />
-            <div>
-              <b>{PARENT.name}</b>
-              <span>{PARENT.role}</span>
-            </div>
-          </div>
           <div className="dm-phone">
             <div className="dm-island" />
             <div className="dm-status">

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Figtree } from "next/font/google";
-import { BRAND, COMPANY } from "@/lib/brand";
 import DemoPlayer from "@/components/DemoPlayer";
 import "../landing.css";
 import "./demo.css";
@@ -17,35 +16,10 @@ export const metadata: Metadata = {
 export default function DemoPage() {
   return (
     <div className={`lp ${display.variable} ${body.variable}`}>
-      <header className="lp-nav">
-        <a href="/" className="lp-logo" aria-label={BRAND}>
-          <img src="/relay-text-logo.png" alt="RelayText" />
-        </a>
-        <nav className="lp-nav-actions" aria-label="Account">
-          <a className="lp-link" href="/login">
-            Teacher Login
-          </a>
-          <a className="lp-btn small" href="/contact">
-            <span className="dm-wide">Bring Relay to your school</span>
-            <span className="dm-narrow">Contact us</span>
-          </a>
-        </nav>
-      </header>
-
       <main className="dm-page">
+        <h1 className="dm-title">Demo</h1>
         <DemoPlayer />
       </main>
-
-      <footer className="lp-foot">
-        <span>
-          {BRAND} is a service of {COMPANY}.
-        </span>
-        <nav aria-label="Footer">
-          <a href="/join">Parents: sign up for texts</a>
-          <a href="/privacy">Privacy Policy</a>
-          <a href="/terms">Terms &amp; Conditions</a>
-        </nav>
-      </footer>
     </div>
   );
 }
