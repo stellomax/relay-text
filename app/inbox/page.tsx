@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Avatar from "@/components/Avatar";
 import Thread from "@/components/Thread";
 import NewThread from "@/components/NewThread";
+import GroupsSheet from "@/components/GroupsSheet";
 import ContactSheet from "@/components/ContactSheet";
 import DemoReply from "@/components/DemoReply";
 import { ChevronRight, Compose as ComposeIcon, Search } from "@/components/icons";
@@ -44,6 +45,7 @@ export default function Messages() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [composeGroup, setComposeGroup] = useState<string | null>(null);
   const [composing, setComposing] = useState(false);
+  const [groupsOpen, setGroupsOpen] = useState(false);
   const asRef = useRef<string | null>(null);
   const [me, setMe] = useState<Me | null>(null);
 
@@ -80,6 +82,12 @@ export default function Messages() {
     };
     sync();
     const p = new URLSearchParams(window.location.search);
+    if (p.get("groups")) {
+      setGroupsOpen(true);
+      p.delete("groups");
+      const rest = p.toString();
+      window.history.replaceState({}, "", rest ? `/inbox?${rest}` : "/inbox");
+    }
     if (p.get("compose") || p.get("group")) {
       setComposeGroup(p.get("group"));
       setComposing(true);
@@ -108,6 +116,14 @@ export default function Messages() {
     if (id !== selectedId) window.history.pushState({}, "", url(id, as));
     setSelectedId(id);
     setConvos((cs) => cs.map((c) => (c.contact.id === id && !readOnly ? { ...c, unread: 0 } : c)));
+  }
+  // Text Group (from My Groups): New Message with the group already chosen.
+  function textGroup(id: string) {
+    if (readOnly) return;
+    window.history.pushState({ compose: 1 }, "", url(null, as));
+    setSelectedId(null);
+    setComposeGroup(id);
+    setComposing(true);
   }
   function startNew() {
     if (readOnly) return;
@@ -183,7 +199,7 @@ export default function Messages() {
             )}
             {/* On phones the menu sits here; on wider screens it's at the top right of the conversation side. */}
             <span className="inbox-bar-menu">
-              <MainMenu me={me} />
+              <MainMenu me={me} onTextGroup={textGroup} />
             </span>
           </span>
         </div>
@@ -272,7 +288,7 @@ export default function Messages() {
             key={composeGroup || "new"}
             initialGroupId={composeGroup}
             onBack={back}
-            headerRight={<MainMenu me={me} />}
+            headerRight={<MainMenu me={me} onTextGroup={textGroup} />}
             onSent={async (r) => {
               await load();
               if (r.count === 1 && r.contactIds[0]) open(r.contactIds[0]);
@@ -289,12 +305,12 @@ export default function Messages() {
             refreshKey={refreshKey}
             readOnly={readOnly}
             ownerLabel={currentInbox?.label}
-            headerRight={<MainMenu me={me} conversation={conversationActions} />}
+            headerRight={<MainMenu me={me} conversation={conversationActions} onTextGroup={textGroup} />}
           />
         ) : (
           <div className="pane-blank">
             <div className="pane-bar">
-              <MainMenu me={me} />
+              <MainMenu me={me} onTextGroup={textGroup} />
             </div>
             <div className="pane-empty">
               <img src="/icon-192.png" alt="" width={72} height={72} />
@@ -316,6 +332,15 @@ export default function Messages() {
         )}
       </main>
 
+      {groupsOpen && (
+        <GroupsSheet
+          onClose={() => setGroupsOpen(false)}
+          onTextGroup={(id) => {
+            setGroupsOpen(false);
+            textGroup(id);
+          }}
+        />
+      )}
       {sheet === "info" && selected && (
         <ContactSheet
           contact={selected}

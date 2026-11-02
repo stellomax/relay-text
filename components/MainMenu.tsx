@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Avatar from "./Avatar";
 import { Book, Bubble, Building, Gear, Home, Info, Link, People, PersonAdd, SignOut, Trash } from "./icons";
 import { api } from "@/lib/client";
+import GroupsSheet from "./GroupsSheet";
 
 export type Me = {
   id: string;
@@ -27,8 +28,17 @@ export type ConversationActions = {
 
 // The one menu in Relay, opened from your avatar at the top right.
 // Shows conversation actions when a conversation is open, then items for your role.
-export default function MainMenu({ me, conversation }: { me: Me | null; conversation?: ConversationActions | null }) {
+export default function MainMenu({
+  me,
+  conversation,
+  onTextGroup,
+}: {
+  me: Me | null;
+  conversation?: ConversationActions | null;
+  onTextGroup?: (groupId: string) => void;
+}) {
   const [open, setOpen] = useState(false);
+  const [groupsOpen, setGroupsOpen] = useState(false);
   const [toast, setToast] = useState("");
   const ref = useRef<HTMLDivElement>(null);
 
@@ -123,9 +133,9 @@ export default function MainMenu({ me, conversation }: { me: Me | null; conversa
             <a role="menuitem" href="/inbox">
               Messages <Bubble />
             </a>
-            <a role="menuitem" href="/groups">
+            <button role="menuitem" onClick={run(() => setGroupsOpen(true))}>
               My Groups <People />
-            </a>
+            </button>
           </div>
 
           {isAdmin && (
@@ -164,6 +174,18 @@ export default function MainMenu({ me, conversation }: { me: Me | null; conversa
       )}
 
       {toast && <div className="toast">{toast}</div>}
+      {groupsOpen && (
+        <GroupsSheet
+          onClose={() => setGroupsOpen(false)}
+          onTextGroup={
+            onTextGroup &&
+            ((id) => {
+              setGroupsOpen(false);
+              onTextGroup(id);
+            })
+          }
+        />
+      )}
     </div>
   );
 }

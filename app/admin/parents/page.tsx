@@ -36,7 +36,7 @@ export default function ParentsPage() {
     try {
       const d = await api<{ parents: Parent[]; schools?: School[]; mySchoolId: string | null; canManage: boolean }>("/api/parents");
       if (!d.canManage) {
-        window.location.href = "/groups";
+        window.location.href = "/inbox";
         return;
       }
       setParents(d.parents);
