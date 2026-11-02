@@ -324,75 +324,164 @@ export default function Landing() {
             </dl>
           </div>
 
-          <div className="lp-window" aria-label="The Relay inbox">
-            <div className="lp-window-bar">
-              <i />
-              <i />
-              <i />
-            </div>
-            <div className="lp-window-body">
-              <aside className="lp-wl">
-                <img src="/relay-text-logo.png" alt="" className="lp-wl-logo" />
-                {[
-                  ["OK", "Olena Kovalenko", "Perfect, thank you so much.", "3:24 PM", false, true],
-                  ["MH", "Maria Hernández", "Yes! We’ll be there at 5. Thank you.", "3:14 PM", true, false],
-                  ["AA", "Amina Abdi", "Thank you, Ayaan will bring the form tomorrow.", "2:02 PM", true, false],
-                  ["SA", "Samir Al-Masri", "Can we meet after school on Thursday?", "1:47 PM", false, false],
-                  ["TN", "Thanh Nguyen", "Reminder: picture day is Friday.", "Yesterday", false, false],
-                  ["JL", "Jean-Pierre Louis", "Thanks for letting us know about the field trip.", "Yesterday", false, false],
-                  ["LC", "Li Chen", "Early release Wednesday at 1:00 PM.", "Monday", false, false],
-                ].map(([i, n, m, t, u, sel]) => (
-                  <div className={`lp-wl-row ${sel ? "sel" : ""}`} key={n as string}>
-                    <span className={`lp-dot ${u ? "on" : ""}`} />
-                    <span className="lp-avatar gray sm">{i}</span>
-                    <span className="lp-wl-text">
-                      <span className="lp-wl-top">
-                        <b>{n}</b>
-                        <em>{t}</em>
+          {/* Switches back and forth: a teacher's inbox, then the principal's dashboard. */}
+          <div className="lp-swap">
+            <div className="lp-window lp-slide lp-slide-a" aria-label="The Relay inbox">
+              <div className="lp-window-bar">
+                <i />
+                <i />
+                <i />
+              </div>
+              <div className="lp-window-body">
+                <aside className="lp-wl">
+                  <img src="/relay-text-logo.png" alt="" className="lp-wl-logo" />
+                  {[
+                    ["OK", "Olena Kovalenko", "Perfect, thank you so much.", "3:24 PM", false, true],
+                    ["MH", "Maria Hernández", "Yes! We’ll be there at 5. Thank you.", "3:14 PM", true, false],
+                    ["AA", "Amina Abdi", "Thank you, Ayaan will bring the form tomorrow.", "2:02 PM", true, false],
+                    ["SA", "Samir Al-Masri", "Can we meet after school on Thursday?", "1:47 PM", false, false],
+                    ["TN", "Thanh Nguyen", "Reminder: picture day is Friday.", "Yesterday", false, false],
+                    ["JL", "Jean-Pierre Louis", "Thanks for letting us know about the field trip.", "Yesterday", false, false],
+                    ["LC", "Li Chen", "Early release Wednesday at 1:00 PM.", "Monday", false, false],
+                  ].map(([i, n, m, t, u, sel]) => (
+                    <div className={`lp-wl-row ${sel ? "sel" : ""}`} key={n as string}>
+                      <span className={`lp-dot ${u ? "on" : ""}`} />
+                      <span className="lp-avatar gray sm">{i}</span>
+                      <span className="lp-wl-text">
+                        <span className="lp-wl-top">
+                          <b>{n}</b>
+                          <em>{t}</em>
+                        </span>
+                        <span className="lp-wl-msg">{m}</span>
                       </span>
-                      <span className="lp-wl-msg">{m}</span>
+                    </div>
+                  ))}
+                </aside>
+                <div className="lp-wr">
+                  <div className="lp-wr-head">
+                    <span className="lp-avatar sm">OK</span>
+                    <span className="lp-who">Olena Kovalenko</span>
+                    <span className="lp-lang">Ukrainian</span>
+                  </div>
+                  <div className="lp-wr-msgs">
+                  <div className="lp-b in">
+                    Is there a bus on Monday?
+                    <span className="lp-tr" lang="uk">
+                      Original: Чи буде автобус у понеділок?
                     </span>
                   </div>
-                ))}
-              </aside>
-              <div className="lp-wr">
-                <div className="lp-wr-head">
-                  <span className="lp-avatar sm">OK</span>
-                  <span className="lp-who">Olena Kovalenko</span>
-                  <span className="lp-lang">Ukrainian</span>
-                </div>
-                <div className="lp-wr-msgs">
-                <div className="lp-b in">
-                  Is there a bus on Monday?
-                  <span className="lp-tr" lang="uk">
-                    Original: Чи буде автобус у понеділок?
-                  </span>
-                </div>
-                <div className="lp-b out">
-                  Yes, buses run on the normal schedule Monday.
-                  <span className="lp-tr">Sent in Ukrainian</span>
-                </div>
-                <div className="lp-b in">
-                  Thank you! Is the field trip form due Friday?
-                  <span className="lp-tr" lang="uk">
-                    Original: Дякую! Дозвіл на екскурсію треба здати до п’ятниці?
-                  </span>
-                </div>
-                <div className="lp-b out">
-                  Yes, by Friday. I’ll send a copy home with Sofia tomorrow.
-                  <span className="lp-tr">Sent in Ukrainian</span>
-                </div>
-                <div className="lp-b in">
-                  Perfect, thank you so much.
-                  <span className="lp-tr" lang="uk">
-                    Original: Чудово, дуже дякую.
-                  </span>
-                </div>
-                </div>
-                <div className="lp-wr-compose" aria-hidden>
-                  <span>Text Message</span>
+                  <div className="lp-b out">
+                    Yes, buses run on the normal schedule Monday.
+                    <span className="lp-tr">Sent in Ukrainian</span>
+                  </div>
+                  <div className="lp-b in">
+                    Thank you! Is the field trip form due Friday?
+                    <span className="lp-tr" lang="uk">
+                      Original: Дякую! Дозвіл на екскурсію треба здати до п’ятниці?
+                    </span>
+                  </div>
+                  <div className="lp-b out">
+                    Yes, by Friday. I’ll send a copy home with Sofia tomorrow.
+                    <span className="lp-tr">Sent in Ukrainian</span>
+                  </div>
+                  <div className="lp-b in">
+                    Perfect, thank you so much.
+                    <span className="lp-tr" lang="uk">
+                      Original: Чудово, дуже дякую.
+                    </span>
+                  </div>
+                  </div>
+                  <div className="lp-wr-compose" aria-hidden>
+                    <span>Text Message</span>
+                  </div>
                 </div>
               </div>
+            </div>
+            <div className="lp-window lp-slide lp-slide-b" aria-label="The principal's dashboard">
+              <div className="lp-window-bar">
+                <i />
+                <i />
+                <i />
+              </div>
+              <div className="lp-dash">
+                <div className="lp-dash-top">
+                  <img src="/relay-text-logo.png" alt="" className="lp-wl-logo" />
+                  <span className="lp-avatar sm">DP</span>
+                </div>
+                <div className="lp-dash-head">
+                  <div>
+                    <b>Hi, Dr. Patel</b>
+                    <span>Sagewood MS · last 30 days</span>
+                  </div>
+                  <span className="lp-dash-pick">Sagewood MS ▾</span>
+                </div>
+                <div className="lp-dash-kpis">
+                  {[
+                    ["Parents", "412", "389 can be texted"],
+                    ["Families reached", "348", "89% of the list"],
+                    ["Texts sent", "2,184", "1,061 replies"],
+                    ["Teachers texting", "23", "of 26 teachers"],
+                  ].map(([k, v, sub]) => (
+                    <div className="lp-kpi" key={k}>
+                      <span className="lp-kpi-k">{k}</span>
+                      <span className="lp-kpi-v">{v}</span>
+                      <span className="lp-kpi-s">{sub}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="lp-dash-row">
+                  <div className="lp-panel">
+                    <span className="lp-panel-h">Messages each week</span>
+                    <div className="lp-wk">
+                      {[
+                        [38, 16],
+                        [52, 24],
+                        [61, 30],
+                        [58, 33],
+                        [74, 39],
+                        [69, 41],
+                        [86, 47],
+                        [94, 55],
+                      ].map(([a, b], i) => (
+                        <span className="lp-wk-col" key={i}>
+                          <i className="sent" style={{ height: `${a}%` }} />
+                          <i className="rep" style={{ height: `${b}%` }} />
+                        </span>
+                      ))}
+                    </div>
+                    <span className="lp-legend">
+                      <i className="sent" /> Sent <i className="rep" /> Replies
+                    </span>
+                  </div>
+                  <div className="lp-panel">
+                    <span className="lp-panel-h">Languages families speak</span>
+                    {[
+                      ["Spanish", 214],
+                      ["Vietnamese", 52],
+                      ["Arabic", 41],
+                      ["Somali", 33],
+                      ["Ukrainian", 24],
+                      ["11 others", 48],
+                    ].map(([l, n]) => (
+                      <span className="lp-lang-row" key={l as string}>
+                        <span>{l}</span>
+                        <span className="lp-lang-track">
+                          <i style={{ width: `${((n as number) / 214) * 100}%` }} />
+                        </span>
+                        <b>{n}</b>
+                      </span>
+                    ))}
+                    <span className="lp-mini">
+                      <span><b>94%</b>delivered in their language</span>
+                      <span><b>41 min</b>typical reply time</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="lp-swap-labels" aria-hidden>
+              <span className="a">Teacher inbox</span>
+              <span className="b">Principal dashboard</span>
             </div>
           </div>
         </section>

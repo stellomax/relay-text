@@ -298,7 +298,8 @@
 @media (min-width: 981px) {
   .lp-schools { align-items: stretch; }
   /* height: 0 + min-height: 100% → the window takes the text column's height instead of setting it */
-  .lp-window { display: flex; flex-direction: column; align-self: stretch; height: 0; min-height: 100%; }
+  .lp-swap { align-self: stretch; height: 0; min-height: 100%; grid-template-rows: minmax(0, 1fr) auto; }
+  .lp-window { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
   .lp-window-body { flex: 1; min-height: 0; }
   .lp-wl { overflow: hidden; }
   .lp-wr { min-height: 0; }
@@ -375,4 +376,64 @@
 }
 @media (max-width: 520px) {
   .ct-row { grid-template-columns: 1fr; }
+}
+
+/* "Simple for teachers. Clear for principals.": the inbox and the dashboard take turns */
+.lp-swap { display: grid; min-width: 0; }
+.lp-swap > .lp-slide { grid-area: 1 / 1; }
+.lp-slide-a { animation: lp-swap-a 14s infinite; }
+.lp-slide-b { animation: lp-swap-b 14s infinite; }
+@keyframes lp-swap-a { 0%, 44% { opacity: 1; visibility: visible; } 50%, 94% { opacity: 0; visibility: hidden; } 100% { opacity: 1; visibility: visible; } }
+@keyframes lp-swap-b { 0%, 44% { opacity: 0; visibility: hidden; } 50%, 94% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } }
+.lp-swap-labels { grid-area: 2 / 1; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 16px; font-size: 13px; font-weight: 700; }
+.lp-swap-labels span { padding: 5px 12px; border-radius: 999px; color: var(--ink-2); background: transparent; }
+.lp-swap-labels .a { animation: lp-pill-a 14s infinite; }
+.lp-swap-labels .b { animation: lp-pill-b 14s infinite; }
+@keyframes lp-pill-a { 0%, 44% { background: var(--lilac-2); color: var(--purple); } 50%, 94% { background: transparent; color: var(--ink-2); } 100% { background: var(--lilac-2); color: var(--purple); } }
+@keyframes lp-pill-b { 0%, 44% { background: transparent; color: var(--ink-2); } 50%, 94% { background: var(--lilac-2); color: var(--purple); } 100% { background: transparent; color: var(--ink-2); } }
+@media (prefers-reduced-motion: reduce) {
+  .lp-slide-a, .lp-slide-b, .lp-swap-labels span { animation: none; }
+  .lp-slide-b { opacity: 0; visibility: hidden; }
+  .lp-swap-labels { display: none; }
+}
+
+/* the dashboard mockup */
+.lp-dash { background: #f4f2f7; padding: 10px 14px 14px; font-size: 12px; color: #241133; height: 100%; display: flex; flex-direction: column; gap: 10px; }
+.lp-dash-top { display: flex; justify-content: space-between; align-items: center; }
+.lp-dash-top .lp-wl-logo { margin: 0; }
+.lp-dash-head { display: flex; justify-content: space-between; align-items: flex-end; }
+.lp-dash-head b { display: block; font-size: 17px; letter-spacing: -0.3px; }
+.lp-dash-head span { color: #7a7086; font-size: 11px; }
+.lp-dash-pick { background: #fff; border: 1px solid #e3dfe8; border-radius: 7px; padding: 4px 9px; color: #241133 !important; font-weight: 600; }
+.lp-dash-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+.lp-kpi { background: #fff; border: 1px solid #e8e4ed; border-radius: 9px; padding: 7px 9px; display: flex; flex-direction: column; min-width: 0; }
+.lp-kpi-k { font-size: 9.5px; font-weight: 600; color: #8a8094; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lp-kpi-v { font-size: 19px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.2; }
+.lp-kpi-s { font-size: 9.5px; color: #5c5367; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lp-dash-row { display: grid; grid-template-columns: 1.15fr 1fr; gap: 7px; flex: 1; }
+.lp-panel { background: #fff; border: 1px solid #e8e4ed; border-radius: 9px; padding: 8px 10px; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.lp-panel-h { font-weight: 700; font-size: 11px; }
+.lp-wk { flex: 1; min-height: 92px; display: flex; align-items: flex-end; gap: 4px; border-bottom: 1px solid #e3dfe8; padding-top: 4px; }
+.lp-wk-col { flex: 1; height: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 1.5px; }
+.lp-wk-col i { width: 40%; border-radius: 2px 2px 0 0; }
+i.sent { background: #7a2bb8; }
+i.rep { background: #1f9e89; }
+.lp-legend { display: flex; align-items: center; gap: 4px; font-size: 9.5px; color: #5c5367; }
+.lp-legend i { width: 7px; height: 7px; border-radius: 2px; display: inline-block; }
+.lp-legend i.rep { margin-left: 6px; }
+.lp-lang-row { display: grid; grid-template-columns: 62px 1fr 24px; align-items: center; gap: 6px; font-size: 10.5px; color: #4e4458; }
+.lp-lang-row b { text-align: right; color: #241133; font-variant-numeric: tabular-nums; }
+.lp-lang-track i { display: block; height: 8px; background: #7a2bb8; border-radius: 0 3px 3px 0; min-width: 3px; }
+.lp-mini { margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding-top: 6px; }
+.lp-mini > span { background: #f6f3f9; border-radius: 7px; padding: 6px 8px; font-size: 9.5px; color: #5c5367; line-height: 1.25; }
+.lp-mini b { display: block; font-size: 15px; font-weight: 800; color: #241133; letter-spacing: -0.3px; }
+@media (max-width: 980px) {
+  .lp-swap > .lp-slide { align-self: start; grid-area: 2 / 1; }
+  .lp-swap-labels { grid-area: 1 / 1; margin: 0 0 14px; }
+  .lp-dash-row { grid-template-columns: 1fr; flex: none; }
+  .lp-wk { flex: none; height: 130px; }
+}
+@media (max-width: 560px) {
+  .lp-dash-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lp-lang-row { grid-template-columns: 74px 1fr 28px; }
 }
