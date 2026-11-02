@@ -75,8 +75,13 @@ async function importRows(me: Staff, body: Record<string, unknown>) {
     else {
       // The same number twice in one file: keep one entry and combine the students.
       const prev = byPhone.get(c.row.phone);
-      if (prev) for (const st of c.row.students) if (!prev.students.some((x) => x.toLowerCase() === st.toLowerCase())) prev.students.push(st);
-      else byPhone.set(c.row.phone, c.row);
+      if (!prev) {
+        byPhone.set(c.row.phone, c.row);
+      } else {
+        for (const st of c.row.students) {
+          if (!prev.students.some((x) => x.toLowerCase() === st.toLowerCase())) prev.students.push(st);
+        }
+      }
     }
   });
 
