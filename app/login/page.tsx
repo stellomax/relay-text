@@ -52,6 +52,9 @@ export default function LoginPage() {
         <button className="ios-button" disabled={busy}>
           {busy ? "Signing In…" : "Sign In"}
         </button>
+        <p className="forgot-link">
+          <a href="/forgot">Forgot password?</a>
+        </p>
       </form>
       <p className="login-links">
         Teachers: <a href="/signup">create an account</a>
