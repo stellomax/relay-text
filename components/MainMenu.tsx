@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Avatar from "./Avatar";
-import { Book, Bubble, Building, Gear, Home, Info, Link, People, PersonAdd, SignOut, Trash } from "./icons";
+import { Book, Bubble, Building, Gear, Home, Info, People, PersonAdd, SignOut, Trash } from "./icons";
 import { api } from "@/lib/client";
 import GroupsSheet from "./GroupsSheet";
 
@@ -39,7 +39,6 @@ export default function MainMenu({
 }) {
   const [open, setOpen] = useState(false);
   const [groupsOpen, setGroupsOpen] = useState(false);
-  const [toast, setToast] = useState("");
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -63,17 +62,7 @@ export default function MainMenu({
     fn();
   };
 
-  async function copyLink() {
-    setOpen(false);
-    if (!me?.join_link) return;
-    try {
-      await navigator.clipboard.writeText(me.join_link);
-      setToast("Parent sign-up link copied");
-    } catch {
-      setToast(me.join_link);
-    }
-    setTimeout(() => setToast(""), 2200);
-  }
+
 
   async function signOut() {
     await api("/api/auth/logout", { method: "POST" }).catch(() => {});
@@ -153,11 +142,6 @@ export default function MainMenu({
           </div>
 
           <div className="menu-group">
-            {me?.join_link && (
-              <button role="menuitem" onClick={copyLink}>
-                Copy Parent Sign-up Link <Link />
-              </button>
-            )}
             <a role="menuitem" href="/setup">
               Settings <Gear size={20} />
             </a>
@@ -171,7 +155,6 @@ export default function MainMenu({
         </div>
       )}
 
-      {toast && <div className="toast">{toast}</div>}
       {groupsOpen && (
         <GroupsSheet
           onClose={() => setGroupsOpen(false)}
