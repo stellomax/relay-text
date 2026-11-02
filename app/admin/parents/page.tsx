@@ -7,7 +7,7 @@ import { Check, ChevronLeft, Plus, Upload } from "@/components/icons";
 import { api } from "@/lib/client";
 import { languageName, parseLanguage, rememberLanguages, type Language } from "@/lib/languages";
 import { formatPhoneInput, prettyPhone, toE164 } from "@/lib/phone";
-import { mapColumns, parseCsv, SAMPLE_CSV } from "@/lib/csv";
+import { mapColumns, parseCsv } from "@/lib/csv";
 import type { Parent } from "@/lib/parents";
 
 type School = { id: string; name: string };
@@ -490,7 +490,7 @@ function ImportSheet({ schools, defaultSchool, onClose }: { schools: School[]; d
     setRows(null);
     setFileName(file.name);
     if (/\.(xlsx?|numbers)$/i.test(file.name)) {
-      setError("That's a spreadsheet file, not a CSV. In Excel choose File → Save As → CSV; in Google Sheets choose File → Download → CSV. Then upload that file.");
+      setError("That's the Excel file. Save it as CSV first: in Excel choose File → Save As → “CSV UTF-8”; in Google Sheets choose File → Download → CSV. Then upload that file.");
       return;
     }
     const text = await file.text();
@@ -557,14 +557,7 @@ function ImportSheet({ schools, defaultSchool, onClose }: { schools: School[]; d
     }
   }
 
-  function sample() {
-    const url = URL.createObjectURL(new Blob([SAMPLE_CSV], { type: "text/csv" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "relay-parents-sample.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
+
 
   if (done) {
     return (
@@ -599,12 +592,18 @@ function ImportSheet({ schools, defaultSchool, onClose }: { schools: School[]; d
     <Sheet title="Upload Parents" onCancel={() => onClose(false)}>
       {!rows && (
         <>
+          <a className="template-card" href="/relay-parents-template.xlsx" download>
+            <span className="template-icon">XLSX</span>
+            <span>
+              <strong>Download the Excel template</strong>
+              <span className="ios-row-hint">
+                Columns are ready to fill in, with a dropdown of languages. When you’re done, save it as CSV and upload it here.
+              </span>
+            </span>
+          </a>
           <p className="ios-footnote top">
-            Upload a CSV file with one parent per row and these columns: <strong>Parent Name</strong>, <strong>Student Name</strong>,{" "}
-            <strong>Phone</strong>, <strong>Language</strong>. Column order doesn’t matter.{" "}
-            <button className="link-btn" onClick={sample}>
-              Download a sample file
-            </button>
+            Using your own file? It needs one parent per row and these columns: <strong>Parent Name</strong>, <strong>Student Name</strong>,{" "}
+            <strong>Phone</strong>, <strong>Language</strong>. Column order doesn’t matter.
           </p>
           {schools.length > 0 && (
             <div className="ios-group">
@@ -624,7 +623,7 @@ function ImportSheet({ schools, defaultSchool, onClose }: { schools: School[]; d
           <label className="drop-zone">
             <Upload size={30} />
             <span className="drop-title">{fileName || "Choose a CSV file"}</span>
-            <span className="drop-sub">From Excel or Google Sheets: save or download as CSV</span>
+            <span className="drop-sub">In Excel: File → Save As → “CSV UTF-8”. In Google Sheets: File → Download → CSV.</span>
             <input
               type="file"
               accept=".csv,.txt,text/csv"

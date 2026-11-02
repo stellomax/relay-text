@@ -859,3 +859,7 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .save-group-form input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(106, 2, 160, 0.15); }
 .save-group-form .pill-btn { height: 40px; padding: 0 16px; font-size: 15px; }
 .save-group-form .sheet-error { flex-basis: 100%; margin: 0; }
+.template-card { display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid #e3e3e8; border-radius: 14px; padding: 14px 16px; margin: 6px 0 8px; color: var(--label); }
+.template-card:hover { border-color: rgba(106, 2, 160, 0.4); box-shadow: 0 4px 14px rgba(106, 2, 160, 0.1); }
+.template-card strong { color: var(--brand); font-size: 16px; display: block; }
+.template-icon { flex: none; width: 46px; height: 54px; border-radius: 8px; background: #1d7a45; color: #fff; font-size: 12px; font-weight: 800; display: grid; place-items: center; letter-spacing: 0.5px; }
