@@ -75,7 +75,7 @@ async function importRows(me: Staff, body: Record<string, unknown>) {
     else {
       // The same number twice in one file: keep one entry and combine the students.
       const prev = byPhone.get(c.row.phone);
-      if (prev) prev.students = [...new Set([...prev.students, ...c.row.students])];
+      if (prev) for (const st of c.row.students) if (!prev.students.some((x) => x.toLowerCase() === st.toLowerCase())) prev.students.push(st);
       else byPhone.set(c.row.phone, c.row);
     }
   });
@@ -99,7 +99,11 @@ async function importRows(me: Staff, body: Record<string, unknown>) {
   for (const row of byPhone.values()) {
     const old = have.get(row.phone);
     if (old) {
-      updates.push({ ...old, ...row, consent_at: old.consent_at || now, consent_source: old.consent_source || consent_source });
+      // Already on the list: take the new name and language, and add any new students (a parent may appear
+      // in several uploads, e.g. one per class, with a different child each time).
+      const students = [...old.students];
+      for (const st of row.students) if (!students.some((x) => x.toLowerCase() === st.toLowerCase())) students.push(st);
+      updates.push({ ...old, ...row, students, consent_at: old.consent_at || now, consent_source: old.consent_source || consent_source });
     } else {
       inserts.push({ ...row, school_id, created_by: me.id, consent_at: now, consent_source });
     }
