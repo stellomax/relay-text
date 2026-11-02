@@ -7,9 +7,9 @@ const display = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["600", "700", "
 const body = Figtree({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--lp-body" });
 
 export const metadata: Metadata = {
-  title: "Relay · Every family. Every language. One conversation.",
+  title: "Relay · Text any parent, in their language.",
   description:
-    "Relay helps schools reach every family. Teachers simply text, Relay handles the language barrier, and parents reply in their own language. No parent app.",
+    "Relay is two-way texting with built-in translation. Teachers write in English, and parents read and reply in their own language. No parent app.",
 };
 
 const HELLOS = [
@@ -203,11 +203,11 @@ export default function Landing() {
         <section className="lp-hero">
           <div className="lp-hero-copy">
             <h1>
-              <span>Every family.</span> <span>Every language.</span> <span>One conversation.</span>
+              <span>Text any parent,</span> <span>in their language.</span>
             </h1>
             <p className="lp-lede">
-              Relay lets every teacher reach every family, and hear back. Teachers simply text. Relay handles the language
-              barrier, and parents reply in their own language from the phone they already have.
+              Relay is two-way texting with built-in translation. Teachers write in English, and parents read and reply in their
+              own language.
             </p>
             <div className="lp-ctas">
               <a className="lp-btn" href={CONTACT}>
