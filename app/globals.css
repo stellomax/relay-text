@@ -925,3 +925,5 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
   background-repeat: no-repeat; background-position: right 16px center; background-size: 14px 14px;
 }
 .signup-note { text-align: center; color: var(--label-3); font-size: 15px; line-height: 1.4; max-width: 340px; margin: -6px auto 20px; }
+/* Copyable messages: wrap between words (the copied text is the same either way) */
+.copy-block { word-break: normal; overflow-wrap: anywhere; font-family: var(--font); font-size: 16px; line-height: 1.45; }
