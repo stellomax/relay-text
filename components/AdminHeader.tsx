@@ -34,16 +34,8 @@ export function useSavedSchool(fallback: () => string | null) {
   return [school, pick] as const;
 }
 
-// Top bar for admin pages: logo on the left; the school picker and the avatar menu on the right.
-export default function AdminHeader({
-  schools,
-  school,
-  onSchool,
-}: {
-  schools?: { id: string; name: string }[];
-  school?: string | null;
-  onSchool?: (id: string) => void;
-}) {
+// Top bar for admin pages: logo on the left, avatar menu on the right.
+export default function AdminHeader() {
   const [me, setMe] = useState<Me | null>(null);
   useEffect(() => {
     api<{ me: Me }>("/api/me")
@@ -60,33 +52,62 @@ export default function AdminHeader({
         <img className="inbox-logo" src="/relay-text-logo.png" alt="Relay" />
       </a>
       <span className="home-bar-right">
-        {schools && schools.length > 1 && onSchool && (
-          <select className="admin-select school-pick" value={school || "all"} onChange={(e) => onSchool(e.target.value)} aria-label="School">
-            <option value="all">All schools</option>
-            {schools.map((x) => (
-              <option key={x.id} value={x.id}>
-                {x.name}
-              </option>
-            ))}
-          </select>
-        )}
         <MainMenu me={me} />
       </span>
     </header>
   );
 }
 
-// Big page title under the bar, like "Hi, Dave" on the dashboard.
-export function AdminTitle({ title, sub, back = true }: { title: string; sub?: string; back?: boolean }) {
+// Which school is shown. Sits at the right of the page title. Hidden when there's only one school.
+export function SchoolPicker({
+  schools,
+  school,
+  onSchool,
+}: {
+  schools?: { id: string; name: string }[];
+  school?: string | null;
+  onSchool: (id: string) => void;
+}) {
+  if (!schools || schools.length <= 1) return null;
   return (
-    <div className="dash-head">
-      <h1 className="home-title">{title}</h1>
-      {sub && <p className="home-sub">{sub}</p>}
-      {back && (
-        <a className="title-back" href="/admin">
-          ‹ Back to Dashboard
-        </a>
-      )}
+    <label className="title-picker">
+      <span>School</span>
+      <select className="admin-select" value={school || "all"} onChange={(e) => onSchool(e.target.value)}>
+        <option value="all">All schools</option>
+        {schools.map((x) => (
+          <option key={x.id} value={x.id}>
+            {x.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+// Big page title under the bar, like "Hi, Dave" on the dashboard; the school picker sits on the right.
+export function AdminTitle({
+  title,
+  picker,
+  sub,
+  back = true,
+}: {
+  title: string;
+  picker?: React.ReactNode;
+  sub?: string;
+  back?: boolean;
+}) {
+  return (
+    <div className="dash-head title-row">
+      <div className="title-main">
+        <h1 className="home-title">{title}</h1>
+        {sub && <p className="home-sub">{sub}</p>}
+        {back && (
+          <a className="title-back" href="/admin">
+            ‹ Back to Dashboard
+          </a>
+        )}
+      </div>
+      {picker}
     </div>
   );
 }

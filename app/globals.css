@@ -897,3 +897,13 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .title-back { display: inline-block; font-size: 16px; font-weight: 600; margin-top: 8px; }
 .admin-page { min-height: 100vh; background: var(--grouped-bg); }
 .admin-page .dash { padding-top: 24px; }
+/* School picker at the right of admin page titles */
+.title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; }
+.title-main { min-width: 0; }
+.title-picker { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.title-picker span { font-size: 12px; font-weight: 600; color: var(--label-3); text-transform: uppercase; letter-spacing: 0.4px; }
+.title-picker .admin-select { min-width: 240px; max-width: 320px; height: 42px; font-size: 16px; }
+@media (max-width: 560px) {
+  .title-picker { width: 100%; margin-top: 0; }
+  .title-picker .admin-select { width: 100%; max-width: none; }
+}

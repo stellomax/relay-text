@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { type Me } from "@/components/MainMenu";
-import AdminHeader, { savedSchool, saveSchool } from "@/components/AdminHeader";
+import AdminHeader, { SchoolPicker, savedSchool, saveSchool } from "@/components/AdminHeader";
 import { Book, ChevronRight, Compose, PersonAdd } from "@/components/icons";
 import { api } from "@/lib/client";
 import { languageName } from "@/lib/languages";
@@ -64,19 +64,24 @@ export default function AdminDashboard() {
 
   return (
     <div className="home">
-      <AdminHeader
-        schools={s?.schools}
-        school={s?.schoolId}
-        onSchool={(id) => {
-          saveSchool(id);
-          load(id);
-        }}
-      />
+      <AdminHeader />
 
       <main className="dash">
-        <div className="dash-head">
-          <h1 className="home-title">{first ? `Hi, ${first}` : "Welcome"}</h1>
-          <p className="home-sub">{s ? `${s.school?.name || "All schools"} · here’s the last 30 days` : " "}</p>
+        <div className="dash-head title-row">
+          <div className="title-main">
+            <h1 className="home-title">{first ? `Hi, ${first}` : "Welcome"}</h1>
+            <p className="home-sub">{s ? `${s.school?.name || "All schools"} · here’s the last 30 days` : " "}</p>
+          </div>
+          {s && (
+            <SchoolPicker
+              schools={s.schools}
+              school={s.schoolId}
+              onSchool={(id) => {
+                saveSchool(id);
+                load(id);
+              }}
+            />
+          )}
         </div>
         {error && <p className="sheet-error">{error}</p>}
 
