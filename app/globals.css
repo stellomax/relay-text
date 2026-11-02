@@ -819,3 +819,27 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 }
 
 .staff-table .tag-admin { white-space: nowrap; }
+
+/* ---------- New Message in the right-hand window ---------- */
+.new-bar { align-items: center; }
+.new-title { text-align: center; font-weight: 600; font-size: 17px; padding-top: 4px; }
+.new-bar .thread-bar-right { margin-top: 0; }
+.to-line { display: flex; align-items: flex-start; gap: 8px; padding: 10px 16px; border-bottom: 0.5px solid var(--separator); background: var(--bg); flex-shrink: 0; }
+.to-line .to-label { padding-top: 5px; color: var(--label-3); }
+.to-chips { flex: 1; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 32px; }
+.to-hint { color: var(--label-4); color: #b0b0b5; font-size: 16px; }
+.to-chip { display: inline-flex; align-items: center; gap: 4px; background: rgba(106, 2, 160, 0.1); color: var(--brand); font-size: 15px; font-weight: 600; border-radius: 999px; padding: 4px 6px 4px 12px; }
+.to-chip button { appearance: none; border: 0; background: none; color: var(--brand); font-size: 18px; line-height: 1; cursor: pointer; padding: 0 4px; opacity: 0.7; }
+.to-chip button:hover { opacity: 1; }
+.to-more, .to-clear { font-size: 15px; font-weight: 600; }
+.to-clear { margin-left: auto; color: var(--label-3); }
+.new-scroller { background: var(--grouped-bg); }
+.new-scroller > :first-child { margin-top: 0; }
+.new-pick, .new-done { width: 100%; max-width: 640px; margin: 0 auto; padding: 8px 0 12px; }
+.new-help { font-size: 16px; color: var(--label-2); margin: 6px 4px 14px; line-height: 1.4; }
+.new-done { text-align: center; padding-top: 40px; }
+.new-done .ios-button.big { max-width: 320px; margin-top: 18px; }
+.new-thread .thread-note { background: var(--bg); padding-top: 8px; }
+.error-note { color: var(--red) !important; }
+.new-thread .composer { border-top: 0.5px solid var(--separator); padding-top: 9px; }
+.pill textarea:disabled { background: transparent; cursor: not-allowed; }
