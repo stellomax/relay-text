@@ -149,3 +149,9 @@ export const Upload = ({ size = 20, className }: P) => (
     <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
   </svg>
 );
+export const Inbox = ({ size = 20, className }: P) => (
+  <svg {...base(size)} className={className}>
+    <path d="M3 13h5l1.5 3h5L16 13h5" />
+    <path d="M5.5 5h13L21 13v6H3v-6z" />
+  </svg>
+);

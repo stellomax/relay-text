@@ -927,3 +927,9 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .signup-note { text-align: center; color: var(--label-3); font-size: 15px; line-height: 1.4; max-width: 340px; margin: -6px auto 20px; }
 /* Copyable messages: wrap between words (the copied text is the same either way) */
 .copy-block { word-break: normal; overflow-wrap: anywhere; font-family: var(--font); font-size: 16px; line-height: 1.45; }
+.req-table { min-width: 860px; }
+.req-table tbody tr { cursor: default; }
+.req-table td { vertical-align: top; }
+.req-msg { max-width: 360px; white-space: pre-wrap; color: var(--label-2); }
+.req-table a.cell-sub { color: var(--tint); }
+.req-toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: var(--label-2); margin-bottom: 12px; cursor: pointer; }

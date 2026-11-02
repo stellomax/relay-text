@@ -333,3 +333,46 @@
   background-size: 14px 14px; background-position: center; background-repeat: no-repeat;
 }
 @media (max-width: 760px) { .lp-checks li { font-size: 16px; } }
+
+/* contact page: Bring Relay to your school */
+.ct {
+  max-width: 1180px; margin: 0 auto; padding: clamp(28px, 5vw, 64px) clamp(16px, 4vw, 48px) clamp(56px, 8vw, 96px);
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 520px); gap: clamp(28px, 5vw, 72px); align-items: start;
+}
+.ct-pitch h1 { font-size: clamp(34px, 4vw, 52px); line-height: 1.08; letter-spacing: -0.03em; margin: 0; }
+.ct-pitch .lp-lede { margin-top: 18px; }
+.ct-alt { margin-top: 26px; color: var(--ink-2); font-size: 16px; }
+.ct-alt a { color: var(--purple); font-weight: 600; }
+.ct-card {
+  background: #fff; border: 1px solid var(--lilac-2); border-radius: 24px; padding: clamp(20px, 3vw, 32px);
+  box-shadow: 0 30px 60px -36px rgba(36, 17, 51, 0.35); display: flex; flex-direction: column; gap: 14px;
+}
+.ct-card h2 { margin: 0 0 4px; font-size: 24px; }
+.ct-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.ct-card label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 14px; color: var(--plum); }
+.ct-card input, .ct-card select, .ct-card textarea {
+  font: inherit; font-weight: 400; font-size: 16px; color: var(--plum); background: #fff;
+  border: 1px solid #d9d0e2; border-radius: 12px; padding: 11px 13px; outline: none; width: 100%;
+}
+.ct-card select {
+  appearance: none; -webkit-appearance: none; padding-right: 40px; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23241133' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center;
+}
+.ct-card textarea { resize: vertical; }
+.ct-card input:focus, .ct-card select:focus, .ct-card textarea:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(106, 2, 160, 0.15); }
+.ct-req { color: var(--purple); margin-left: 2px; }
+.ct-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.ct-error { color: #c62828; font-weight: 600; margin: 0; }
+.ct-submit { width: 100%; justify-content: center; margin-top: 4px; }
+.ct-submit:disabled { opacity: 0.6; }
+.ct-fine { margin: 0; font-size: 13px; color: var(--ink-2); text-align: center; }
+.ct-done { align-items: center; text-align: center; padding: 48px 32px; }
+.ct-check { width: 64px; height: 64px; border-radius: 50%; background: var(--purple); color: #fff; font-size: 32px; font-weight: 800; display: grid; place-items: center; }
+.ct-done p { color: var(--ink-2); margin: 0 0 8px; }
+@media (max-width: 900px) {
+  .ct { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  .ct-row { grid-template-columns: 1fr; }
+}

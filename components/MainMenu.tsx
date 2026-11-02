@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Avatar from "./Avatar";
-import { Book, Bubble, Building, Gear, Home, Info, People, PersonAdd, SignOut, Trash } from "./icons";
+import { Book, Bubble, Building, Gear, Home, Inbox, Info, People, PersonAdd, SignOut, Trash } from "./icons";
 import { api } from "@/lib/client";
 import GroupsSheet from "./GroupsSheet";
 
@@ -127,6 +127,11 @@ export default function MainMenu({
               {me?.is_super && (
                 <a role="menuitem" href="/admin/schools">
                   Manage Schools <Building />
+                </a>
+              )}
+              {me?.is_super && (
+                <a role="menuitem" href="/admin/requests">
+                  School Requests <Inbox />
                 </a>
               )}
             </div>
