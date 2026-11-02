@@ -894,3 +894,6 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 }
 .forgot-link { text-align: center; margin: 14px 0 0; font-size: 16px; }
 .forgot-help { text-align: center; color: var(--label-2); font-size: 16px; line-height: 1.45; margin: -6px 8px 18px; }
+.title-back { display: inline-block; font-size: 16px; font-weight: 600; margin-top: 8px; }
+.admin-page { min-height: 100vh; background: var(--grouped-bg); }
+.admin-page .dash { padding-top: 24px; }

@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Sheet from "@/components/Sheet";
 import LanguageSelect from "@/components/LanguageSelect";
-import { Check, ChevronLeft, ChevronRight, Plus, Upload } from "@/components/icons";
+import { Check, ChevronRight, Plus, Upload } from "@/components/icons";
+import AdminHeader, { AdminTitle, useSavedSchool } from "@/components/AdminHeader";
 import { api } from "@/lib/client";
 import { languageName, parseLanguage, rememberLanguages, type Language } from "@/lib/languages";
 import { formatPhoneInput, prettyPhone, toE164 } from "@/lib/phone";
@@ -24,7 +25,8 @@ export default function ParentsPage() {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
-  const [schoolFilter, setSchoolFilter] = useState("");
+  const [pickedSchool, setPickedSchool] = useSavedSchool(() => null);
+  const schoolFilter = !pickedSchool || pickedSchool === "all" ? "" : pickedSchool;
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState<Parent | Partial<Parent> | null>(null);
   const [importing, setImporting] = useState(false);
@@ -147,16 +149,14 @@ export default function ParentsPage() {
   ];
 
   return (
-    <div className="settings">
-      <header className="settings-bar">
-        <a className="back-btn text" href="/admin">
-          <ChevronLeft /> Home
-        </a>
-        <div className="settings-title">Parents</div>
-        <span />
-      </header>
+    <div className="admin-page">
+      <AdminHeader schools={schools} school={pickedSchool} onSchool={setPickedSchool} />
 
       <div className="settings-body admin-wide">
+        <AdminTitle
+          title="Manage Parents"
+          sub={loaded ? `${schools.find((x) => x.id === schoolFilter)?.name || "All schools"} · ${rows.length.toLocaleString()} ${rows.length === 1 ? "parent" : "parents"}` : undefined}
+        />
         {error && <p className="sheet-error">{error}</p>}
         {!loaded && <p className="ios-footnote top">Loading…</p>}
 
@@ -191,17 +191,6 @@ export default function ParentsPage() {
                 onChange={(e) => setSearch(e.target.value)}
                 aria-label="Search parents"
               />
-              {schools.length > 1 && (
-                <select className="admin-select" value={schoolFilter} onChange={(e) => setSchoolFilter(e.target.value)} aria-label="Filter by school">
-                  <option value="">All schools</option>
-                  {schools.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                  <option value="none">No school</option>
-                </select>
-              )}
               <span className="toolbar-actions">
                 <button className="pill-btn ghost add-pill" onClick={() => setImporting(true)}>
                   <Upload size={16} /> Upload CSV
