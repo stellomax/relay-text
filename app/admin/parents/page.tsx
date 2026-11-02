@@ -573,8 +573,9 @@ function ImportSheet({ schools, defaultSchool, onClose }: { schools: School[]; d
             {done.added} added{done.updated ? ` · ${done.updated} updated` : ""}
           </p>
           <p className="ios-footnote center-text">
-            {done.updated ? "Parents whose number was already on the list were updated with the new details. " : ""}
-            Teachers can text them now.
+            {done.added + done.updated === 0
+              ? "Nothing was saved. Please try again, and if it keeps happening, contact relay@stellomark.com."
+              : `${done.updated ? "Parents whose number was already on the list were updated with the new details. " : ""}Teachers can text them now.`}
           </p>
           {done.problems.length > 0 && (
             <ul className="fam-errors">
