@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import ParentPicker, { canText, type GroupLite } from "./ParentPicker";
+import Sheet from "./Sheet";
 import { ArrowUp, Check, ChevronLeft } from "./icons";
 import { api } from "@/lib/client";
 import { languageName } from "@/lib/languages";
@@ -30,6 +31,7 @@ export default function NewThread({
   const [error, setError] = useState("");
   const [done, setDone] = useState<{ summary: Summary; count: number } | null>(null);
   const [showAllTo, setShowAllTo] = useState(false);
+  const [picking, setPicking] = useState(!initialGroupId);
   const input = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function NewThread({
           const ok = new Set(p.parents.filter(canText).map((x) => x.id));
           setSelected(new Set(start.parentIds.filter((id) => ok.has(id))));
           setTimeout(() => input.current?.focus(), 50);
-        }
+        } else setPicking(true);
       })
       .catch((e) => setError(e.message));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -63,6 +65,12 @@ export default function NewThread({
     recipients.forEach((p) => m.set(p.language, (m.get(p.language) || 0) + 1));
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
   }, [recipients]);
+
+  // Close the chooser and go straight to typing.
+  const donePicking = () => {
+    setPicking(false);
+    setTimeout(() => input.current?.focus(), 60);
+  };
 
   const remove = (id: string) => {
     const s = new Set(selected);
@@ -105,30 +113,47 @@ export default function NewThread({
       </header>
 
       {!done && (
-      <div className="to-line">
-        <span className="to-label">To:</span>
-        <span className="to-chips">
-          {n === 0 && <span className="to-hint">Choose parents below</span>}
-          {shown.map((p) => (
-            <span key={p.id} className="to-chip">
-              {p.parent_name}
-              <button onClick={() => remove(p.id)} aria-label={`Remove ${p.parent_name}`}>
-                ×
+        <div
+          className="to-line clickable"
+          role="button"
+          tabIndex={0}
+          onClick={() => setPicking(true)}
+          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), setPicking(true))}
+          aria-label="Choose recipients"
+        >
+          <span className="to-label">To:</span>
+          <span className="to-chips">
+            {n === 0 && <span className="to-hint">Tap here to choose parents</span>}
+            {shown.map((p) => (
+              <span key={p.id} className="to-chip">
+                {p.parent_name}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    remove(p.id);
+                  }}
+                  aria-label={`Remove ${p.parent_name}`}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+            {!showAllTo && n > shown.length && (
+              <button
+                className="link-btn to-more"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowAllTo(true);
+                }}
+              >
+                +{n - shown.length} more
               </button>
-            </span>
-          ))}
-          {!showAllTo && n > shown.length && (
-            <button className="link-btn to-more" onClick={() => setShowAllTo(true)}>
-              +{n - shown.length} more
-            </button>
-          )}
-          {n > 1 && (
-            <button className="link-btn to-clear" onClick={() => setSelected(new Set())}>
-              Clear
-            </button>
-          )}
-        </span>
-      </div>
+            )}
+          </span>
+          <span className="to-add" aria-hidden>
+            {n ? "Change" : "Choose"}
+          </span>
+        </div>
       )}
 
       <div className="scroller new-scroller">
@@ -158,16 +183,19 @@ export default function NewThread({
             </button>
           </div>
         ) : (
-          <div className="new-pick">
-            {parents === null && !error && <p className="ios-footnote top">Loading parents…</p>}
-            {parents && (
+          <div className="thread-empty new-empty">
+            {n === 0 ? (
               <>
-                <p className="new-help">
-                  <strong>Tick the parents</strong> you want to text, or a whole group. Then type your message at the bottom in English.
-                </p>
-                <ParentPicker parents={parents} selected={selected} onChange={setSelected} groups={groups} onlyTextable autoFocus />
-                {parents.length === 0 && <p className="ios-footnote">Your school’s Parents list is empty. An admin adds parents to the list.</p>}
+                <p>Start by choosing who to text.</p>
+                <button className="ios-button big" onClick={() => setPicking(true)}>
+                  Choose Parents
+                </button>
               </>
+            ) : (
+              <p>
+                Type your message below in English. {n === 1 ? `${recipients[0].parent_name} gets` : "Each parent gets"} a regular text in
+                their own language, and replies come back to you in English.
+              </p>
             )}
           </div>
         )}
@@ -186,7 +214,8 @@ export default function NewThread({
               ref={input}
               rows={1}
               value={draft}
-              disabled={!n}
+              readOnly={!n}
+              onFocus={() => !n && setPicking(true)}
               placeholder={n ? `Text Message to ${n} ${n === 1 ? "parent" : "parents"}` : "Choose parents first"}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => {
@@ -204,6 +233,28 @@ export default function NewThread({
             )}
           </div>
         </footer>
+      )}
+
+      {picking && !done && (
+        <Sheet
+          title={n ? `${n} ${n === 1 ? "Parent" : "Parents"} Chosen` : "Choose Parents"}
+          cancelLabel=""
+          onCancel={donePicking}
+          action={{ label: "Done", onClick: donePicking }}
+        >
+          {parents === null && !error && <p className="ios-footnote top">Loading parents…</p>}
+          {parents && (
+            <>
+              <ParentPicker parents={parents} selected={selected} onChange={setSelected} groups={groups} onlyTextable autoFocus />
+              {parents.length === 0 && <p className="ios-footnote">Your school’s Parents list is empty. An admin adds parents to the list.</p>}
+            </>
+          )}
+          <div className="compose-foot">
+            <button className="ios-button big" onClick={donePicking}>
+              {n ? `Done: Write Message (${n})` : "Done"}
+            </button>
+          </div>
+        </Sheet>
       )}
     </section>
   );
