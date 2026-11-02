@@ -21,7 +21,7 @@
 .dm-person.pp { grid-area: pp; justify-self: center; }
 .dm-bridge { grid-area: br; }
 .dm-ctl { grid-area: ctl; display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 4px; cursor: default; }
-.dm-ctl .dm-next { min-width: 0; width: 100%; }
+.dm-ctl .dm-next { min-width: 220px; width: max-content; white-space: nowrap; }
 .dm-cta { font-weight: 700; font-size: 15px; color: var(--purple); }
 .dm-screen-col.phone { align-items: flex-start; }
 
