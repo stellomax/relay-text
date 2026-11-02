@@ -3,11 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Avatar from "@/components/Avatar";
 import Thread from "@/components/Thread";
-import NewMessage from "@/components/NewMessage";
-import GroupMessage from "@/components/GroupMessage";
+import Compose from "@/components/Compose";
 import ContactSheet from "@/components/ContactSheet";
 import DemoReply from "@/components/DemoReply";
-import { ChevronRight, Compose, Search } from "@/components/icons";
+import { ChevronRight, Compose as ComposeIcon, Search } from "@/components/icons";
 import MainMenu, { type Me, type ConversationActions } from "@/components/MainMenu";
 import { api } from "@/lib/client";
 import { listTime } from "@/lib/format";
@@ -16,7 +15,7 @@ import type { Contact, Message } from "@/lib/db";
 
 type Conversation = { contact: Contact; last: Partial<Message> | null; unread: number };
 type Inbox = { id: string; label: string; sub?: string };
-type SheetKind = "new" | "group" | "info" | "demo" | null;
+type SheetKind = "new" | "info" | "demo" | null;
 
 function readParams() {
   if (typeof window === "undefined") return { c: null as string | null, as: null as string | null };
@@ -43,6 +42,7 @@ export default function Messages() {
   const [query, setQuery] = useState("");
   const [sheet, setSheet] = useState<SheetKind>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [composeGroup, setComposeGroup] = useState<string | null>(null);
   const asRef = useRef<string | null>(null);
   const [me, setMe] = useState<Me | null>(null);
 
@@ -78,6 +78,15 @@ export default function Messages() {
       setSelectedId(p.c);
     };
     sync();
+    const p = new URLSearchParams(window.location.search);
+    if (p.get("compose") || p.get("group")) {
+      setComposeGroup(p.get("group"));
+      setSheet("new");
+      p.delete("compose");
+      p.delete("group");
+      const rest = p.toString();
+      window.history.replaceState({}, "", rest ? `/inbox?${rest}` : "/inbox");
+    }
     const onPop = () => {
       sync();
       load();
@@ -116,7 +125,7 @@ export default function Messages() {
   const selected = convos.find((c) => c.contact.id === selectedId)?.contact || null;
 
   async function deleteConversation(c: Contact) {
-    if (!confirm(`Delete the conversation with ${c.parent_name}? This removes the family and all messages, and can't be undone.`)) return;
+    if (!confirm(`Delete the conversation with ${c.parent_name}? All messages are removed. This can't be undone.`)) return;
     try {
       await api(`/api/contacts?id=${c.id}`, { method: "DELETE" });
       back();
@@ -156,8 +165,8 @@ export default function Messages() {
           <img className="inbox-logo" src="/relay-text-logo.png" alt="RelayText" />
           <span className="inbox-bar-actions">
             {!readOnly && (
-              <button className="icon-btn" onClick={() => setSheet("new")} aria-label="New message" title="New message">
-                <Compose />
+              <button className="new-msg-btn" onClick={() => setSheet("new")}>
+                <ComposeIcon size={18} /> New Message
               </button>
             )}
             {/* On phones the menu sits here; on wider screens it's at the top right of the conversation side. */}
@@ -200,9 +209,16 @@ export default function Messages() {
               <p>No conversations yet.</p>
             ) : (
               <>
-                <p className="inbox-empty-title">No Messages</p>
-                <p>Tap the compose button to text a family in their own language.</p>
-                <button className="ios-button small" onClick={() => setSheet("new")}>
+                <p className="inbox-empty-title">No messages yet</p>
+                <ol className="how-steps">
+                  <li>
+                    Tap <strong>New Message</strong>
+                  </li>
+                  <li>Choose a parent, a group, or everyone</li>
+                  <li>Write in English and tap Send</li>
+                </ol>
+                <p>Each parent gets the text in their own language. Their replies show up here in English.</p>
+                <button className="ios-button big" onClick={() => setSheet("new")}>
                   New Message
                 </button>
               </>
@@ -278,24 +294,13 @@ export default function Messages() {
       </main>
 
       {sheet === "new" && !readOnly && (
-        <NewMessage
-          contacts={convos.map((c) => c.contact)}
-          createUrl={`/api/contacts${asQuery}`}
-          onGroup={() => setSheet("group")}
-          onCancel={() => setSheet(null)}
-          onPick={async (id) => {
+        <Compose
+          initialGroupId={composeGroup}
+          onClose={async (r) => {
             setSheet(null);
-            await load();
-            open(id);
-          }}
-        />
-      )}
-      {sheet === "group" && !readOnly && (
-        <GroupMessage
-          contacts={convos.map((c) => c.contact)}
-          onClose={(sent) => {
-            setSheet(null);
-            if (sent) load();
+            setComposeGroup(null);
+            if (r?.sent) await load();
+            if (r?.openContactId) open(r.openContactId);
           }}
         />
       )}
@@ -303,6 +308,7 @@ export default function Messages() {
         <ContactSheet
           contact={selected}
           readOnly={readOnly}
+          isAdmin={me?.role === "admin"}
           moveOptions={
             inboxes
               ? inboxes.map((i) => ({
@@ -316,10 +322,6 @@ export default function Messages() {
             back();
           }}
           onClose={() => setSheet(null)}
-          onSaved={() => {
-            setSheet(null);
-            load();
-          }}
           onDeleted={() => {
             setSheet(null);
             back();

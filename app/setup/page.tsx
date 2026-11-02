@@ -134,8 +134,12 @@ export default function SetupPage() {
               <>
                 <p className="ios-section">Admin</p>
                 <div className="ios-group">
-                  <a className="ios-row nav-row" href="/admin">
+                  <a className="ios-row nav-row" href="/admin/teachers">
                     Manage Teachers
+                    <ChevronRight size={13} className="row-chev" />
+                  </a>
+                  <a className="ios-row nav-row" href="/admin/parents">
+                    Manage Parents
                     <ChevronRight size={13} className="row-chev" />
                   </a>
                 </div>

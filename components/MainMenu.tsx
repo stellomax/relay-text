@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Avatar from "./Avatar";
-import { Book, Bubble, Building, Gear, Info, Link, People, SignOut, Trash } from "./icons";
+import { Book, Bubble, Building, Gear, Home, Info, Link, People, PersonAdd, SignOut, Trash } from "./icons";
 import { api } from "@/lib/client";
 
 export type Me = {
@@ -99,7 +99,7 @@ export default function MainMenu({ me, conversation }: { me: Me | null; conversa
           {conversation && (
             <div className="menu-group">
               <button role="menuitem" onClick={run(conversation.onInfo)}>
-                Family Info <Info />
+                Parent Info <Info />
               </button>
               {!conversation.readOnly && (
                 <>
@@ -115,24 +115,36 @@ export default function MainMenu({ me, conversation }: { me: Me | null; conversa
           )}
 
           <div className="menu-group">
-            <a role="menuitem" href="/families">
-              Families <Book />
+            {isAdmin && (
+              <a role="menuitem" href="/admin">
+                Home <Home />
+              </a>
+            )}
+            <a role="menuitem" href="/inbox">
+              Messages <Bubble />
+            </a>
+            <a role="menuitem" href="/groups">
+              My Groups <People />
             </a>
           </div>
 
-          <div className="menu-group">
-            {isAdmin && (
-              <>
-                <a role="menuitem" href="/admin">
-                  Manage Teachers <People />
+          {isAdmin && (
+            <div className="menu-group">
+              <a role="menuitem" href="/admin/teachers">
+                Manage Teachers <PersonAdd />
+              </a>
+              <a role="menuitem" href="/admin/parents">
+                Manage Parents <Book />
+              </a>
+              {me?.is_super && (
+                <a role="menuitem" href="/admin/schools">
+                  Schools <Building />
                 </a>
-                {me?.is_super && (
-                  <a role="menuitem" href="/admin/schools">
-                    Schools <Building />
-                  </a>
-                )}
-              </>
-            )}
+              )}
+            </div>
+          )}
+
+          <div className="menu-group">
             {me?.join_link && (
               <button role="menuitem" onClick={copyLink}>
                 Copy Parent Sign-up Link <Link />

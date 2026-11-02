@@ -136,3 +136,16 @@ export const Book = ({ size = 20, className }: P) => (
     <path d="M8.2 16.6c.8-1.7 2.2-2.6 3.8-2.6s3 .9 3.8 2.6M3 7h2M3 12h2M3 17h2" />
   </svg>
 );
+export const Home = ({ size = 20, className }: P) => (
+  <svg {...base(size)} className={className}>
+    <path d="M3 10.5 12 3l9 7.5" />
+    <path d="M5 9.5V20h5v-6h4v6h5V9.5" />
+  </svg>
+);
+export const Upload = ({ size = 20, className }: P) => (
+  <svg {...base(size)} className={className}>
+    <path d="M12 16V4" />
+    <path d="m7 9 5-5 5 5" />
+    <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+  </svg>
+);

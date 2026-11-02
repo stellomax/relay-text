@@ -3,66 +3,44 @@
 import { useState } from "react";
 import Sheet from "./Sheet";
 import Avatar from "./Avatar";
-import ContactFields, { ContactForm } from "./ContactFields";
 import { api } from "@/lib/client";
+import { languageName } from "@/lib/languages";
 import { prettyPhone } from "@/lib/phone";
 import type { Contact } from "@/lib/db";
 
-// Tap the name at the top of a conversation: view and edit the family's details.
+// Tap the name at the top of a conversation: who this parent is. Details come from the Parents list,
+// which admins edit; admins get a link straight to it.
 export default function ContactSheet({
   contact,
   readOnly = false,
+  isAdmin = false,
   onClose,
-  onSaved,
   onDeleted,
-  groupOptions,
   moveOptions,
   onMoved,
 }: {
-  moveOptions?: { id: string | null; label: string }[];
-  onMoved?: () => void;
-  groupOptions?: string[];
   contact: Contact;
   readOnly?: boolean;
+  isAdmin?: boolean;
+  moveOptions?: { id: string | null; label: string }[];
+  onMoved?: () => void;
   onClose: () => void;
-  onSaved: () => void;
   onDeleted: () => void;
 }) {
-  const [form, setForm] = useState<ContactForm>({
-    parent_name: contact.parent_name.startsWith("Unknown ") ? "" : contact.parent_name,
-    child_name: contact.child_name || "",
-    phone: prettyPhone(contact.phone),
-    language: contact.language,
-    groups: (contact.groups || []).join(", "),
-    consent: false,
-  });
-  const [optedOut, setOptedOut] = useState(contact.opted_out);
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-
-  async function save() {
-    setBusy(true);
-    setError("");
-    try {
-      const d = await api<{ warning?: string }>("/api/contacts", { method: "PATCH", body: { id: contact.id, ...form, opted_out: optedOut } });
-      if (d.warning) alert(d.warning);
-      onSaved();
-    } catch (e: any) {
-      setError(e.message);
-      setBusy(false);
-    }
-  }
+  const unknown = contact.parent_name.startsWith("Unknown ");
+  const name = unknown ? prettyPhone(contact.phone) : contact.parent_name;
 
   const [moveTo, setMoveTo] = useState<string>(contact.staff_id || "");
   const [moving, setMoving] = useState(false);
   async function move() {
     const label = moveOptions?.find((o) => (o.id || "") === moveTo)?.label || "the main number";
-    if (!confirm(`Move ${contact.parent_name} and their conversation to ${label}?`)) return;
+    if (!confirm(`Move the conversation with ${name} to ${label}?`)) return;
     setMoving(true);
     setError("");
     try {
       await api("/api/contacts", { method: "PATCH", body: { action: "move", id: contact.id, staff_id: moveTo || null } });
-      (onMoved || onSaved)();
+      onMoved?.();
     } catch (e: any) {
       setError(e.message);
       setMoving(false);
@@ -70,7 +48,7 @@ export default function ContactSheet({
   }
 
   async function remove() {
-    if (!confirm(`Delete ${form.parent_name || "this family"} and the whole conversation? This can't be undone.`)) return;
+    if (!confirm(`Delete your conversation with ${name}? The messages are removed. ${unknown ? "" : "They stay on the Parents list."}`)) return;
     try {
       await api(`/api/contacts?id=${contact.id}`, { method: "DELETE" });
       onDeleted();
@@ -79,35 +57,47 @@ export default function ContactSheet({
     }
   }
 
+  const addLink = `/admin/parents?add=1&phone=${encodeURIComponent(contact.phone)}&language=${encodeURIComponent(contact.language)}`;
+
   return (
-    <Sheet
-      title="Family Info"
-      onCancel={onClose}
-      action={readOnly ? undefined : { label: "Done", onClick: save, busy, disabled: !form.parent_name.trim() || !form.phone.trim() }}
-    >
+    <Sheet title="Parent Info" onCancel={onClose} cancelLabel="Close">
       <div className="info-head">
-        <Avatar name={form.parent_name || contact.parent_name} size={76} />
+        <Avatar name={contact.parent_name} size={76} />
       </div>
-      <fieldset className="plain-fieldset" disabled={readOnly}>
-        <ContactFields value={form} onChange={setForm} groupOptions={groupOptions} askConsent={!contact.consent_at && !readOnly} />
-      </fieldset>
-      {contact.consent_at && (
+      <p className="info-name">{name}</p>
+      <div className="ios-group">
+        {contact.child_name && (
+          <div className="ios-row">
+            <span className="ios-row-label">student</span>
+            <span>{contact.child_name}</span>
+          </div>
+        )}
+        <div className="ios-row">
+          <span className="ios-row-label">mobile</span>
+          <span>{prettyPhone(contact.phone)}</span>
+        </div>
+        <div className="ios-row">
+          <span className="ios-row-label">language</span>
+          <span>{languageName(contact.language)}</span>
+        </div>
+      </div>
+      {contact.opted_out && (
+        <p className="ios-footnote">This parent replied STOP, so they can’t be texted until they reply START.</p>
+      )}
+      {isAdmin ? (
+        <div className="ios-group">
+          <a className="ios-row action-row" href={contact.parent_id ? `/admin/parents?edit=${contact.parent_id}` : addLink}>
+            {contact.parent_id ? "Edit on Parents List" : "Add to Parents List"}
+          </a>
+        </div>
+      ) : (
         <p className="ios-footnote">
-          Agreed to texts {new Date(contact.consent_at).toLocaleDateString()}
-          {contact.consent_source ? ` · ${contact.consent_source.replace(/ \(parent gave number to school\)/, "")}` : ""}
+          {unknown || !contact.parent_id
+            ? "This number isn’t on the Parents list. Ask your admin to add it."
+            : "To change a name, number or language, ask your admin. They keep the Parents list up to date."}
         </p>
       )}
-      {optedOut && (
-        <div className="ios-group">
-          <label className="ios-row switch-row">
-            <span>
-              Opted out of texts
-              <span className="ios-row-hint">They replied STOP. Texts to them are blocked by the carrier until they reply START.</span>
-            </span>
-            <input type="checkbox" className="ios-switch" checked={optedOut} onChange={(e) => setOptedOut(e.target.checked)} />
-          </label>
-        </div>
-      )}
+
       {moveOptions && moveOptions.length > 0 && (
         <>
           <p className="ios-section">Teacher</p>
@@ -124,11 +114,11 @@ export default function ContactSheet({
             </label>
             {moveTo !== (contact.staff_id || "") && (
               <button className="ios-row action-row" onClick={move} disabled={moving}>
-                {moving ? "Moving…" : "Move Family"}
+                {moving ? "Moving…" : "Move Conversation"}
               </button>
             )}
           </div>
-          <p className="ios-footnote">Admins only. The family and their whole conversation move to that teacher’s inbox.</p>
+          <p className="ios-footnote">Admins only. The whole conversation moves to that teacher’s Messages.</p>
         </>
       )}
       {!readOnly && (

@@ -24,6 +24,7 @@ export type Contact = {
   language: string;
   opted_out: boolean;
   staff_id: string | null;
+  parent_id?: string | null;
   groups?: string[] | null;
   consent_at?: string | null;
   consent_source?: string | null;

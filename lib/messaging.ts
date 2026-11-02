@@ -4,6 +4,7 @@ import { sendSms } from "./twilio";
 import { translate, toEnglish, sameLang } from "./translate";
 import { errorMessage } from "./http";
 import { senderNumber } from "./numbers";
+import { conversationFor, findParentByPhone } from "./parents";
 
 const STOP_WORDS = ["STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT", "REVOKE", "OPTOUT"];
 const START_WORDS = ["START", "UNSTOP", "YES", "OPTIN"];
@@ -175,6 +176,13 @@ export async function receiveInbound(params: {
     const { data } = await q.maybeSingle();
     contact = (data as Contact) || null;
 
+    // A parent on the Parents list texting this teacher for the first time: start their conversation.
+    if (!contact && staffId) {
+      const { data: owner } = await supa.from("staff").select("*").eq("id", staffId).maybeSingle();
+      const listed = await findParentByPhone((owner as Staff | null)?.school_id || null, params.from);
+      if (listed) contact = await conversationFor(staffId, listed);
+    }
+
     // Unknown number: create a contact so the reply is never lost.
     if (!contact) {
       let lang = "es";
@@ -204,8 +212,10 @@ export async function receiveInbound(params: {
   const keyword = text.toUpperCase().replace(/[^A-Z]/g, "");
   if (STOP_WORDS.includes(keyword)) {
     await supa.from("contacts").update({ opted_out: true }).eq("phone", c.phone);
+    await supa.from("parents").update({ opted_out: true }).eq("phone", c.phone);
   } else if (START_WORDS.includes(keyword)) {
     await supa.from("contacts").update({ opted_out: false }).eq("phone", c.phone);
+    await supa.from("parents").update({ opted_out: false }).eq("phone", c.phone);
   }
 
   let english = text;
