@@ -337,8 +337,9 @@
 
 /* contact page: Bring Relay to your school */
 .ct {
-  max-width: 1180px; margin: 0 auto; padding: clamp(28px, 5vw, 64px) clamp(16px, 4vw, 48px) clamp(56px, 8vw, 96px);
-  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 520px); gap: clamp(28px, 5vw, 72px); align-items: start;
+  /* one column: the pitch on top, the form below it */
+  max-width: 760px; margin: 0 auto; padding: clamp(28px, 5vw, 64px) clamp(16px, 4vw, 48px) clamp(56px, 8vw, 96px);
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(28px, 4vw, 44px); align-items: start;
 }
 .ct-pitch h1 { font-size: clamp(34px, 4vw, 52px); line-height: 1.08; letter-spacing: -0.03em; margin: 0; }
 .ct-pitch .lp-lede { margin-top: 18px; }
@@ -371,9 +372,6 @@
 .ct-done { align-items: center; text-align: center; padding: 48px 32px; }
 .ct-check { width: 64px; height: 64px; border-radius: 50%; background: var(--purple); color: #fff; font-size: 32px; font-weight: 800; display: grid; place-items: center; }
 .ct-done p { color: var(--ink-2); margin: 0 0 8px; }
-@media (max-width: 900px) {
-  .ct { grid-template-columns: 1fr; }
-}
 @media (max-width: 520px) {
   .ct-row { grid-template-columns: 1fr; }
 }
