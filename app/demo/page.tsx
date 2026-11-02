@@ -9,7 +9,7 @@ const display = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["600", "700", "
 const body = Figtree({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--lp-body" });
 
 export const metadata: Metadata = {
-  title: "See Relay in action",
+  title: "Relay demo",
   description:
     "Click through a real conversation: a teacher writes in English, a parent reads and replies in Spanish, and Relay translates both ways over plain text messages.",
 };
@@ -33,12 +33,6 @@ export default function DemoPage() {
       </header>
 
       <main className="dm-page">
-        <div className="dm-intro">
-          <h1>See Relay in action</h1>
-          <p className="lp-lede">
-            A teacher and a parent who don’t share a language. Click through their conversation, one text at a time.
-          </p>
-        </div>
         <DemoPlayer />
       </main>
 

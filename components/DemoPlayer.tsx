@@ -6,20 +6,18 @@ import { useEffect, useRef, useState } from "react";
 const TEACHER = {
   name: "Mrs. Anton",
   role: "6th grade science · Sagewood MS",
-  speaks: "Writes in English",
-  photo: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=240&h=240&q=80&auto=format&fit=crop&crop=faces",
+  photo: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=320&h=320&q=80&auto=format&fit=crop&crop=faces",
   initials: "MA",
 };
 const PARENT = {
   name: "Ms. Rivera",
   role: "Sofia's mom",
-  speaks: "Reads and replies in Spanish",
-  photo: "https://images.unsplash.com/photo-1489278353717-f64c6ee8a4d2?w=240&h=240&q=80&auto=format&fit=crop&crop=faces",
+  photo: "https://images.unsplash.com/photo-1700190828755-2965e99a7604?w=320&h=320&q=80&auto=format&fit=crop&crop=faces",
   initials: "LR",
 };
 
 /* ---------- the conversation ---------- */
-type Msg = { from: "teacher" | "parent"; en: string; es: string; caption: string; time: string };
+type Msg = { from: "teacher" | "parent"; en: string; es: string; time: string };
 
 const DISCLOSURE =
   "Enviado por Mrs. Anton, Sagewood MS vía Relay. Reply STOP to opt out or HELP for help. Pueden aplicarse tarifas de mensajes y datos.";
@@ -30,55 +28,44 @@ const SCRIPT: Msg[] = [
     time: "3:24 PM",
     en: "Hi Ms. Rivera, this is Mrs. Anton, Sofia's science teacher. Sofia presented her volcano project today and did a wonderful job!",
     es: "Hola, Sra. Rivera, soy la Sra. Anton, la maestra de ciencias de Sofía. ¡Sofía presentó hoy su proyecto del volcán y lo hizo de maravilla!",
-    caption:
-      "Mrs. Anton types in English, just like any text. Relay translates it into Spanish and sends it from her Relay number, so her personal cell stays private.",
   },
   {
     from: "parent",
     time: "3:31 PM",
     es: "¡Qué alegría! Gracias por avisarme. Trabajó muchísimo en ese volcán 😊",
     en: "How wonderful! Thank you for letting me know. She worked so hard on that volcano 😊",
-    caption: "Ms. Rivera answers in Spanish from the Messages app already on her phone. Nothing to download, no account to make.",
   },
   {
     from: "parent",
     time: "3:32 PM",
     es: "¿Cómo le va en matemáticas? Dice que las fracciones le cuestan.",
     en: "How is she doing in math? She says fractions are hard for her.",
-    caption: "Mrs. Anton reads every reply in English, with Ms. Rivera’s original Spanish right underneath.",
   },
   {
     from: "teacher",
     time: "3:40 PM",
     en: "Fractions are tricky for lots of students! We have free tutoring on Tuesdays at 3:30 in Room 12. Sofia is welcome to come.",
     es: "¡Las fracciones son difíciles para muchos estudiantes! Tenemos tutoría gratuita los martes a las 3:30 en el salón 12. Sofía es bienvenida.",
-    caption: "A real question gets a real answer. This is the conversation that used to need an interpreter, a phone call, or never happened at all.",
   },
   {
     from: "parent",
     time: "3:46 PM",
     es: "Perfecto, ahí estará. ¿Puedo recogerla a las 4:30?",
     en: "Perfect, she’ll be there. Can I pick her up at 4:30?",
-    caption: "Back and forth, as fast as texting, because it is texting.",
   },
   {
     from: "teacher",
     time: "3:48 PM",
     en: "Of course! I’ll walk her to the front office at 4:30. See you Tuesday!",
     es: "¡Por supuesto! La acompañaré a la oficina principal a las 4:30. ¡Nos vemos el martes!",
-    caption: "Mrs. Anton never had to switch apps, find a translator, or share her personal number.",
   },
   {
     from: "parent",
     time: "3:49 PM",
     es: "¡Muchas gracias, Sra. Anton! ❤️",
     en: "Thank you so much, Mrs. Anton! ❤️",
-    caption: "Two languages, one conversation, and a parent who now knows her daughter’s teacher.",
   },
 ];
-
-const INTRO =
-  "Mrs. Anton speaks English. Ms. Rivera speaks Spanish. Until now, a quick note home meant a translator, a phone call, or nothing at all. Click Next to watch them text.";
 
 type Phase = "typing" | "sending" | "done";
 
@@ -109,7 +96,6 @@ export default function DemoPlayer() {
   const [idx, setIdx] = useState(0); // how many messages have started
   const [phase, setPhase] = useState<Phase>("done");
   const [typed, setTyped] = useState(0);
-  const [gloss, setGloss] = useState(false);
   const deskRef = useRef<HTMLDivElement>(null);
   const phoneRef = useRef<HTMLDivElement>(null);
 
@@ -141,7 +127,7 @@ export default function DemoPlayer() {
       const el = r.current;
       if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     }
-  }, [idx, phase, gloss]);
+  }, [idx, phase]);
 
   function next() {
     if (cur && phase !== "done") {
@@ -197,35 +183,35 @@ export default function DemoPlayer() {
     if (stateOf(i) === "both" || (m.from === "teacher" && stateOf(i) === "sender")) lastSeen = m.en;
   });
 
-  const caption = finished ? null : cur ? cur.caption : INTRO;
-  const stepLabel = idx === 0 ? "Start" : `Message ${idx} of ${SCRIPT.length}`;
 
   return (
     <div className="dm">
-      {/* who's who */}
-      <div className="dm-cast">
-        <div className="dm-person">
-          <Avatar who={TEACHER} size={64} />
-          <div>
-            <b>{TEACHER.name}</b>
-            <span>{TEACHER.role}</span>
-            <em>🇺🇸 {TEACHER.speaks}</em>
+      {/* title and controls on one row */}
+      <div className="dm-top">
+        <h1>Demo</h1>
+        <div className="dm-btns">
+          <button type="button" className="dm-back-btn" onClick={back} disabled={idx === 0}>
+            ‹ Back
+          </button>
+          <div className="dm-progress" aria-hidden>
+            {SCRIPT.map((m, i) => (
+              <i key={i} className={`${i < idx ? "on" : ""} ${m.from}`} />
+            ))}
           </div>
-        </div>
-        <div className="dm-cast-mid" aria-hidden>
-          <span>English</span>
-          <svg viewBox="0 0 60 16" width="60" height="16">
-            <path d="M2 5h52l-5-4M58 11H6l5 4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <span>Español</span>
-        </div>
-        <div className="dm-person right">
-          <div>
-            <b>{PARENT.name}</b>
-            <span>{PARENT.role}</span>
-            <em>🇲🇽 {PARENT.speaks}</em>
-          </div>
-          <Avatar who={PARENT} size={64} />
+          {finished ? (
+            <>
+              <button type="button" className="lp-btn ghost dm-again" onClick={restart}>
+                ↺ Watch again
+              </button>
+              <a className="lp-btn dm-next" href="/contact">
+                Bring Relay to your school
+              </a>
+            </>
+          ) : (
+            <button type="button" className="lp-btn dm-next" onClick={next}>
+              {idx === 0 ? "Start ›" : cur && phase !== "done" ? "Skip ahead ›" : "Next message ›"}
+            </button>
+          )}
         </div>
       </div>
 
@@ -233,7 +219,13 @@ export default function DemoPlayer() {
       <div className="dm-stage" onClick={next} role="button" tabIndex={-1} aria-label="Play the next message">
         {/* teacher's computer */}
         <div className="dm-screen-col">
-          <div className="dm-label">What Mrs. Anton sees on her computer</div>
+          <div className="dm-person">
+            <Avatar who={TEACHER} size={84} />
+            <div>
+              <b>{TEACHER.name}</b>
+              <span>{TEACHER.role}</span>
+            </div>
+          </div>
           <div className="dm-desk">
             <div className="lp-window-bar">
               <i />
@@ -328,7 +320,13 @@ export default function DemoPlayer() {
 
         {/* parent's phone */}
         <div className="dm-screen-col phone">
-          <div className="dm-label">What Ms. Rivera sees on her phone</div>
+          <div className="dm-person">
+            <Avatar who={PARENT} size={84} />
+            <div>
+              <b>{PARENT.name}</b>
+              <span>{PARENT.role}</span>
+            </div>
+          </div>
           <div className="dm-phone">
             <div className="dm-island" />
             <div className="dm-status">
@@ -365,7 +363,6 @@ export default function DemoPlayer() {
                   return (
                     <div className="dm-sms out dm-in" key={i}>
                       {m.es}
-                      {gloss && <small>{m.en}</small>}
                     </div>
                   );
                 }
@@ -380,7 +377,6 @@ export default function DemoPlayer() {
                   <div className="dm-sms in dm-in" key={i}>
                     {m.es}
                     {i === 0 && <span className="dm-disc">{DISCLOSURE}</span>}
-                    {gloss && <small>{m.en}</small>}
                   </div>
                 );
               })}
@@ -392,58 +388,15 @@ export default function DemoPlayer() {
             <div className="dm-ph-compose">
               <span className="dm-plus">+</span>
               <span className={`dm-ph-box${parentTyping ? " live" : ""}`}>
-                {parentTyping || <span className="ph">Text Message · SMS</span>}
+                {parentTyping || <span className="ph">Text Message</span>}
                 {parentTyping && <span className="dm-up">↑</span>}
               </span>
             </div>
             <div className="dm-home" />
           </div>
-          <label className="dm-gloss" onClick={(e) => e.stopPropagation()}>
-            <input type="checkbox" checked={gloss} onChange={(e) => setGloss(e.target.checked)} />
-            Show me the English on her phone
-          </label>
         </div>
       </div>
 
-      {/* narration + controls */}
-      <div className="dm-controls">
-        {finished ? (
-          <div className="dm-final">
-            <p>
-              <b>That’s Relay.</b> Two languages, one conversation, and no app for parents to download.
-            </p>
-            <div className="dm-final-btns">
-              <a className="lp-btn" href="/contact">
-                Bring Relay to your school
-              </a>
-              <button type="button" className="lp-btn ghost" onClick={restart}>
-                ↺ Watch again
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            <p className="dm-caption" aria-live="polite">
-              <span className="dm-step">{stepLabel}</span>
-              {caption}
-            </p>
-            <div className="dm-btns">
-              <button type="button" className="dm-back-btn" onClick={back} disabled={idx === 0}>
-                ‹ Back
-              </button>
-              <div className="dm-progress" aria-hidden>
-                {SCRIPT.map((m, i) => (
-                  <i key={i} className={`${i < idx ? "on" : ""} ${m.from}`} />
-                ))}
-              </div>
-              <button type="button" className="lp-btn dm-next" onClick={next}>
-                {idx === 0 ? "Start the conversation ›" : cur && phase !== "done" ? "Skip ahead ›" : "Next message ›"}
-              </button>
-            </div>
-            <p className="dm-hint">Tip: click anywhere on the screens, or press the → key.</p>
-          </>
-        )}
-      </div>
     </div>
   );
 }
