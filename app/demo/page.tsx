@@ -17,7 +17,6 @@ export default function DemoPage() {
   return (
     <div className={`lp ${display.variable} ${body.variable}`}>
       <main className="dm-page">
-        <h1 className="dm-title">See Relay in action</h1>
         <DemoPlayer />
       </main>
     </div>
