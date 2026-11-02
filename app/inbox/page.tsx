@@ -45,6 +45,7 @@ export default function Messages() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [composeGroup, setComposeGroup] = useState<string | null>(null);
   const [composing, setComposing] = useState(false);
+  const [pickedInbox, setPickedInbox] = useState(false);
   const [groupsOpen, setGroupsOpen] = useState(false);
   const asRef = useRef<string | null>(null);
   const [me, setMe] = useState<Me | null>(null);
@@ -140,6 +141,7 @@ export default function Messages() {
     load();
   }
   function switchInbox(id: string) {
+    setPickedInbox(true);
     const next = !inboxes || id === inboxes[0]?.id ? null : id;
     asRef.current = next;
     setAs(next);
@@ -206,8 +208,12 @@ export default function Messages() {
 
         {inboxes && inboxes.length > 1 && (
           <label className="inbox-picker">
-            <span className="inbox-picker-label">Inbox</span>
-            <select value={as || inboxes[0].id} onChange={(e) => switchInbox(e.target.value)}>
+            <span className="inbox-picker-label">View inboxes</span>
+            {/* Starts on "Select…" while showing your own messages, so it's clear you can pick any teacher's inbox. */}
+            <select value={as || (pickedInbox ? inboxes[0].id : "")} onChange={(e) => switchInbox(e.target.value)} aria-label="View inboxes">
+              <option value="" disabled hidden>
+                Select…
+              </option>
               {inboxes.map((i) => (
                 <option key={i.id} value={i.id}>
                   {i.label}
