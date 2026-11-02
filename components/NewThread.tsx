@@ -263,6 +263,13 @@ export default function NewThread({
             </>
           )}
           <div className="compose-foot">
+            {n >= 2 && (
+              <SaveAsGroup
+                parentIds={recipients.map((p) => p.id)}
+                groups={groups}
+                onSaved={(list) => setGroups(list)}
+              />
+            )}
             <button className="ios-button big" onClick={donePicking}>
               {n ? `Done: Write Message (${n})` : "Done"}
             </button>
@@ -270,5 +277,75 @@ export default function NewThread({
         </Sheet>
       )}
     </section>
+  );
+}
+
+// "Save these parents as a group": turn what's ticked into one of the teacher's groups, without leaving the chooser.
+function SaveAsGroup({ parentIds, groups, onSaved }: { parentIds: string[]; groups: GroupLite[]; onSaved: (groups: GroupLite[]) => void }) {
+  const [naming, setNaming] = useState(false);
+  const [name, setName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [saved, setSaved] = useState("");
+
+  // Nothing to offer if these exact parents are already a group.
+  const key = [...parentIds].sort().join(",");
+  const already = groups.find((g) => [...g.parentIds].sort().join(",") === key);
+  if (saved && already) return <p className="save-group done">✓ Saved as “{saved}”. It’s in My Groups now.</p>;
+  if (already) return null;
+
+  async function save() {
+    const n = name.trim();
+    if (!n || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const d = await api<{ groups: GroupLite[] }>("/api/groups", { body: { name: n, parentIds } });
+      setSaved(n);
+      setNaming(false);
+      setName("");
+      onSaved(d.groups);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!naming) {
+    return (
+      <button className="link-btn save-group" onClick={() => setNaming(true)}>
+        + Save these {parentIds.length} parents as a group
+      </button>
+    );
+  }
+  return (
+    <div className="save-group-form">
+      <input
+        autoFocus
+        value={name}
+        placeholder="Group name, e.g. Period 2"
+        maxLength={60}
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            save();
+          }
+          if (e.key === "Escape") {
+            e.stopPropagation();
+            setNaming(false);
+          }
+        }}
+        aria-label="Group name"
+      />
+      <button className="pill-btn" disabled={!name.trim() || busy} onClick={save}>
+        {busy ? "Saving…" : "Save Group"}
+      </button>
+      <button className="link-btn" onClick={() => setNaming(false)}>
+        Cancel
+      </button>
+      {error && <p className="sheet-error">{error}</p>}
+    </div>
   );
 }

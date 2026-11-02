@@ -852,3 +852,10 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .new-empty .ios-button.big { max-width: 260px; margin-top: 14px; }
 .new-thread .new-scroller { background: var(--bg); }
 .pill textarea[readonly] { cursor: pointer; }
+.save-group { display: block; width: 100%; text-align: center; font-size: 16px; font-weight: 600; margin: 0 0 12px; }
+.save-group.done { color: #1f7a3d; font-weight: 600; font-size: 15px; }
+.save-group-form { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 12px; }
+.save-group-form input { flex: 1 1 200px; min-width: 0; height: 40px; border: 1px solid #d1d1d6; border-radius: 10px; padding: 0 12px; font-size: 16px; background: #fff; outline: none; }
+.save-group-form input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(106, 2, 160, 0.15); }
+.save-group-form .pill-btn { height: 40px; padding: 0 16px; font-size: 15px; }
+.save-group-form .sheet-error { flex-basis: 100%; margin: 0; }
