@@ -863,3 +863,32 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .template-card:hover { border-color: rgba(106, 2, 160, 0.4); box-shadow: 0 4px 14px rgba(106, 2, 160, 0.1); }
 .template-card strong { color: var(--brand); font-size: 16px; display: block; }
 .template-icon { flex: none; width: 46px; height: 54px; border-radius: 8px; background: #1d7a45; color: #fff; font-size: 12px; font-weight: 800; display: grid; place-items: center; letter-spacing: 0.5px; }
+
+/* How to bulk upload */
+.help-link-card { display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid #e3e3e8; border-radius: 14px; padding: 14px 16px; margin: 6px 0 10px; color: var(--label); }
+.help-link-card:hover { border-color: rgba(106, 2, 160, 0.4); box-shadow: 0 4px 14px rgba(106, 2, 160, 0.1); }
+.help-link-card > span:nth-child(2) { flex: 1; }
+.help-link-card strong { color: var(--brand); font-size: 17px; display: block; }
+.help-link-icon { flex: none; width: 40px; height: 40px; border-radius: 50%; background: rgba(106, 2, 160, 0.1); color: var(--brand); font-weight: 800; font-size: 20px; display: grid; place-items: center; }
+.help-body { max-width: 760px; }
+.help-title { font-size: 30px; letter-spacing: -0.6px; margin: 8px 0 6px; }
+.help-lead { font-size: 18px; color: var(--label-2); margin: 0 0 26px; line-height: 1.45; }
+.help-step { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 16px; background: #fff; border: 1px solid #e6e6eb; border-radius: 16px; padding: 20px 20px 22px; margin-bottom: 16px; }
+.help-num { width: 36px; height: 36px; border-radius: 50%; background: var(--brand); color: #fff; font-weight: 700; font-size: 18px; display: grid; place-items: center; }
+.help-step h2, .help-faq h2 { font-size: 20px; margin: 4px 0 6px; letter-spacing: -0.3px; }
+.help-step p, .help-faq p { font-size: 16px; line-height: 1.5; color: var(--label-2); margin: 0 0 10px; }
+.help-list { margin: 6px 0 12px; padding-left: 22px; font-size: 16px; line-height: 1.55; color: var(--label-2); }
+.help-list li + li { margin-top: 8px; }
+.help-note { background: #f5effa; border-radius: 10px; padding: 10px 14px; font-size: 15px !important; }
+.help-table { min-width: 0; font-size: 15px; }
+.help-table tbody tr { cursor: default; }
+.help-table td { vertical-align: top; }
+.help-more { margin-top: 12px; font-size: 15px; color: var(--label-2); }
+.help-more summary { cursor: pointer; color: var(--tint); font-weight: 600; }
+.help-more p { margin-top: 8px; font-size: 15px; }
+.help-cta { display: flex; align-items: center; justify-content: center; max-width: 280px; text-decoration: none; color: #fff; margin-top: 6px; }
+.help-faq { padding: 6px 4px 20px; }
+@media (max-width: 560px) {
+  .help-step { grid-template-columns: 1fr; gap: 8px; padding: 16px; }
+  .help-title { font-size: 25px; }
+}

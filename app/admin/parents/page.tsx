@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Sheet from "@/components/Sheet";
 import LanguageSelect from "@/components/LanguageSelect";
-import { Check, ChevronLeft, Plus, Upload } from "@/components/icons";
+import { Check, ChevronLeft, ChevronRight, Plus, Upload } from "@/components/icons";
 import { api } from "@/lib/client";
 import { languageName, parseLanguage, rememberLanguages, type Language } from "@/lib/languages";
 import { formatPhoneInput, prettyPhone, toE164 } from "@/lib/phone";
@@ -175,6 +175,9 @@ export default function ParentsPage() {
                 <Plus size={18} /> Add One Parent
               </button>
             </div>
+            <p style={{ marginTop: 16 }}>
+              <a href="/admin/parents/upload-help">How to bulk upload →</a>
+            </p>
           </div>
         )}
 
@@ -592,14 +595,13 @@ function ImportSheet({ schools, defaultSchool, onClose }: { schools: School[]; d
     <Sheet title="Upload Parents" onCancel={() => onClose(false)}>
       {!rows && (
         <>
-          <a className="template-card" href="/relay-parents-template.xlsx" download>
-            <span className="template-icon">XLSX</span>
+          <a className="help-link-card" href="/admin/parents/upload-help">
+            <span className="help-link-icon">?</span>
             <span>
-              <strong>Download the Excel template</strong>
-              <span className="ios-row-hint">
-                Columns are ready to fill in, with a dropdown of languages. When you’re done, save it as CSV and upload it here.
-              </span>
+              <strong>How to bulk upload</strong>
+              <span className="ios-row-hint">Download the Excel template, fill it in, save it as CSV, and upload it here.</span>
             </span>
+            <ChevronRight size={14} className="row-chev" />
           </a>
           <p className="ios-footnote top">
             Using your own file? It needs one parent per row and these columns: <strong>Parent Name</strong>, <strong>Student Name</strong>,{" "}
