@@ -50,7 +50,7 @@ export default function SchoolsPage() {
   }
 
   function inviteText(s: School) {
-    return `Join ${s.name} on Relay: go to ${signupUrl} and enter sign-up code ${s.signup_code}.`;
+    return `Join ${s.name} on Relay. Relay is the app ${s.name} uses to text parents in their own language. You write in English, each parent gets a regular text in their language, and their replies come back to you in English. Parents don't need an app, and your personal cell number is never shared.\n\nTo create your account, go to ${signupUrl} and enter sign-up code ${s.signup_code}.`;
   }
 
   async function save() {
