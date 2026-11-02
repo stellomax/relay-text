@@ -303,7 +303,7 @@ export default function Landing() {
 
         <section className="lp-schools" aria-labelledby="schools">
           <div className="lp-schools-copy">
-            <h2 id="schools">Simple for teachers. Clear for principals.</h2>
+            <h2 id="schools">Simple for teachers. Clear for admin.</h2>
             <dl>
               <div>
                 <dt>Teachers just text</dt>
@@ -314,7 +314,7 @@ export default function Landing() {
                 <dd>Parents reply in their own language. Teachers read it in English and answer naturally.</dd>
               </div>
               <div>
-                <dt>Principals can see it working</dt>
+                <dt>Administrators can see it working</dt>
                 <dd>Add teachers with a school sign-up code and view any conversation, read-only, in one place.</dd>
               </div>
               <div>
@@ -324,7 +324,7 @@ export default function Landing() {
             </dl>
           </div>
 
-          {/* Switches back and forth: a teacher's inbox, then the principal's dashboard. */}
+          {/* Switches back and forth: a teacher's inbox, then the administrator dashboard. */}
           <div className="lp-swap">
             <div className="lp-window lp-slide lp-slide-a" aria-label="The Relay inbox">
               <div className="lp-window-bar">
@@ -397,7 +397,7 @@ export default function Landing() {
                 </div>
               </div>
             </div>
-            <div className="lp-window lp-slide lp-slide-b" aria-label="The principal's dashboard">
+            <div className="lp-window lp-slide lp-slide-b" aria-label="The administrator dashboard">
               <div className="lp-window-bar">
                 <i />
                 <i />
@@ -481,7 +481,7 @@ export default function Landing() {
             </div>
             <div className="lp-swap-labels" aria-hidden>
               <span className="a">Teacher inbox</span>
-              <span className="b">Principal dashboard</span>
+              <span className="b">Administrator dashboard</span>
             </div>
           </div>
         </section>
