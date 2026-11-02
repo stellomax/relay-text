@@ -453,7 +453,7 @@ a { color: var(--tint); text-decoration: none; }
 }
 
 /* logo at the top of the conversation list, compose on the right */
-.inbox-bar { justify-content: space-between; align-items: center; padding: 10px 12px 10px 16px; }
+.inbox-bar { justify-content: space-between; align-items: center; padding: 10px 12px 18px 16px; }
 .inbox-logo { height: 30px; width: auto; display: block; }
 .inbox-bar-actions { display: flex; align-items: center; gap: 4px; }
 
