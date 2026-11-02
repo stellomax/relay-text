@@ -31,7 +31,13 @@ export default function NewThread({
   const [error, setError] = useState("");
   const [done, setDone] = useState<{ summary: Summary; count: number } | null>(null);
   const [showAllTo, setShowAllTo] = useState(false);
-  const [picking, setPicking] = useState(!initialGroupId);
+  const [picking, setPickingState] = useState(!initialGroupId);
+  // What was chosen when the pop-up opened, so Cancel can put it back.
+  const before = useRef<Set<string>>(new Set());
+  const setPicking = (open: boolean) => {
+    if (open) before.current = new Set(selected);
+    setPickingState(open);
+  };
   const input = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -70,6 +76,13 @@ export default function NewThread({
   const donePicking = () => {
     setPicking(false);
     setTimeout(() => input.current?.focus(), 60);
+  };
+  // Cancel: undo changes made in the pop-up. If nobody is chosen and nothing is typed, leave New Message.
+  const cancelPicking = () => {
+    const restored = before.current || new Set<string>();
+    setSelected(new Set(restored));
+    setPickingState(false);
+    if (!restored.size && !draft.trim()) onBack();
   };
 
   const remove = (id: string) => {
@@ -238,8 +251,8 @@ export default function NewThread({
       {picking && !done && (
         <Sheet
           title={n ? `${n} ${n === 1 ? "Parent" : "Parents"} Chosen` : "Choose Parents"}
-          cancelLabel=""
-          onCancel={donePicking}
+          cancelLabel="Cancel"
+          onCancel={cancelPicking}
           action={{ label: "Done", onClick: donePicking }}
         >
           {parents === null && !error && <p className="ios-footnote top">Loading parents…</p>}
