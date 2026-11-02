@@ -36,7 +36,7 @@ export default function ContactPage() {
             Tell us a little about your school or district, and we’ll get back to you within one business day to set up a short demo and
             pilot pricing.
           </p>
-          <ul className="lp-checks">
+          <ul className="lp-hero-checks">
             <li>A 20-minute demo for you and your team</li>
             <li>Pilot pricing for one school or a whole district</li>
             <li>Help loading your parent list and inviting teachers</li>
