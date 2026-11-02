@@ -269,7 +269,7 @@ export default function Landing() {
             </figcaption>
           </figure>
           <div className="lp-noapp-copy">
-            <h2>Every family can reach their child’s teacher.</h2>
+            <h2>Families can reach their child’s teacher, no app required.</h2>
             <p>
               Whatever language a family speaks and whatever phone they have, they can read their teacher’s messages and
               answer in their own words. Texts arrive in the app already on their phone. There’s nothing to install, no
