@@ -116,7 +116,7 @@ export default function MainMenu({
           {isAdmin && (
             <div className="menu-group">
               <a role="menuitem" href="/admin">
-                Home <Home />
+                Dashboard <Home />
               </a>
               <a role="menuitem" href="/admin/teachers">
                 Manage Teachers <PersonAdd />
