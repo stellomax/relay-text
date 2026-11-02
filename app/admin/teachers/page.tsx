@@ -280,7 +280,7 @@ export default function AdminPage() {
               <div className="ios-group">
                 <a className="ios-row nav-row" href="/admin/schools">
                   <span>
-                    Schools
+                    Manage Schools
                     <span className="ios-row-hint">
                       {data.schools.length} {data.schools.length === 1 ? "school" : "schools"} · create schools and their sign-up codes
                     </span>

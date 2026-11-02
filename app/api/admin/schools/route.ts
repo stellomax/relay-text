@@ -2,23 +2,27 @@ import { baseUrlFromRequest } from "@/lib/config";
 import { db } from "@/lib/db";
 import { json, withAdmin, withSuper } from "@/lib/http";
 import { codeIsFree, newFreeCode, School } from "@/lib/schools";
-import { cleanAreaCode } from "@/lib/staff";
+import { cleanAreaCode, isSuperAdmin } from "@/lib/staff";
 
 export const dynamic = "force-dynamic";
 
 // All schools with teacher counts. Admins use this for school dropdowns; super admins manage it.
-export const GET = withAdmin(async (req) => {
+export const GET = withAdmin(async (req, me) => {
   const supa = db();
-  const [{ data: schools, error }, { data: staff }] = await Promise.all([
+  const [{ data: schools, error }, { data: staff }, { data: parents }] = await Promise.all([
     supa.from("schools").select("*").order("name"),
     supa.from("staff").select("school_id, status"),
+    supa.from("parents").select("school_id").limit(100000),
   ]);
   if (error) throw new Error(error.message);
   const counts = new Map<string, number>();
   (staff || []).forEach((s) => s.school_id && s.status !== "disabled" && counts.set(s.school_id, (counts.get(s.school_id) || 0) + 1));
+  const parentCounts = new Map<string, number>();
+  (parents || []).forEach((p) => p.school_id && parentCounts.set(p.school_id, (parentCounts.get(p.school_id) || 0) + 1));
   return json({
     signupUrl: `${baseUrlFromRequest(req)}/signup`,
-    schools: ((schools || []) as School[]).map((s) => ({ ...s, teachers: counts.get(s.id) || 0 })),
+    viewerIsSuper: isSuperAdmin(me.email),
+    schools: ((schools || []) as School[]).map((s) => ({ ...s, teachers: counts.get(s.id) || 0, parents: parentCounts.get(s.id) || 0 })),
   });
 });
 
