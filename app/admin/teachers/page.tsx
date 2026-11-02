@@ -136,10 +136,10 @@ export default function AdminPage() {
 
   // What Relay is, in one line, for the start of messages sent to new teachers.
   const ABOUT = (school?: string | null) =>
-    `Relay is the app ${school || "our school"} uses to text parents in their own language. You write in English, each parent gets a regular text in their language, and their replies come back to you in English. Parents don't need an app, and your personal cell number is never shared.`;
+    `${school || "Our school"} uses Relay to text parents in their own language. You write and read in English.`;
 
   function inviteMessage(code: string, school?: string | null) {
-    return `You're invited to Relay. ${ABOUT(school)}\n\nTo create your account, go to ${data?.signupUrl || "relaytext.io/signup"} and enter sign-up code ${code}. The code works once and expires in 30 days.`;
+    return `You're invited to Relay. ${ABOUT(school)}\n\nSign up at ${data?.signupUrl || "relaytext.io/signup"} with code ${code} (works once, expires in 30 days).`;
   }
 
   async function createCode() {
