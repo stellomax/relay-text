@@ -209,10 +209,10 @@ export default function Messages() {
         {inboxes && inboxes.length > 1 && (
           <label className="inbox-picker">
             <span className="inbox-picker-label">View inboxes</span>
-            {/* Starts on "Select…" while showing your own messages, so it's clear you can pick any teacher's inbox. */}
+            {/* Starts on "Select Here" while showing your own messages, so it's clear you can pick any teacher's inbox. */}
             <select value={as || (pickedInbox ? inboxes[0].id : "")} onChange={(e) => switchInbox(e.target.value)} aria-label="View inboxes">
               <option value="" disabled hidden>
-                Select…
+                Select Here
               </option>
               {inboxes.map((i) => (
                 <option key={i.id} value={i.id}>
