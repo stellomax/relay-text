@@ -82,7 +82,6 @@ const STORY = [
   },
 ];
 
-const PROOF = ["No parent app", "Real-time translation", "Two-way texting", "192 languages", "Simple for teachers", "Secure & private"];
 
 const CONTACT = "mailto:relay@stellomark.com?subject=Bringing%20Relay%20to%20our%20school";
 
@@ -236,11 +235,6 @@ export default function Landing() {
           </div>
         </section>
 
-        <ul className="lp-proof" aria-label="What schools get with Relay">
-          {PROOF.map((x) => (
-            <li key={x}>{x}</li>
-          ))}
-        </ul>
 
         <section className="lp-noapp">
           <figure className="lp-photo">
