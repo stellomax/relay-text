@@ -116,7 +116,7 @@ export default function Thread({
     input.current?.focus();
     try {
       const d = await api("/api/send", { body: { text, contactIds: [contact.id] } });
-      if (d.summary.skipped) setSendError("This family opted out of texts (they replied STOP).");
+      if (d.summary.skipped) setSendError("This parent opted out of texts (they replied STOP).");
       const fresh = await api<{ messages: Message[] }>(`/api/messages?contactId=${contact.id}`);
       setMessages((prev) => [...fresh.messages, ...prev.filter((m) => m.pending && m.id !== temp.id)]);
       onChanged();

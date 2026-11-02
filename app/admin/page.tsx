@@ -1,711 +1,404 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Avatar from "@/components/Avatar";
-import Sheet from "@/components/Sheet";
-import { ChevronLeft, ChevronRight, Plus } from "@/components/icons";
+import MainMenu, { type Me } from "@/components/MainMenu";
+import { Book, ChevronRight, Compose, PersonAdd } from "@/components/icons";
 import { api } from "@/lib/client";
-import { prettyPhone } from "@/lib/phone";
+import { languageName } from "@/lib/languages";
 import { listTime } from "@/lib/format";
 
-type Person = {
-  id: string;
-  email: string;
+type Week = { start: string; sent: number; replies: number };
+type Summary = {
   name: string;
-  school: string | null;
-  school_id: string | null;
-  role: "admin" | "teacher";
-  status: "pending" | "active" | "disabled";
-  area_code: string | null;
-  phone_number: string | null;
-  phone_placeholder: boolean;
-  join_link: string | null;
-  builtInAdmin: boolean;
-  superAdmin: boolean;
-  families: number;
-  messages30d: number;
-  last_seen_at: string | null;
-  created_at: string;
+  isSuper: boolean;
+  school: { id: string; name: string } | null;
+  schoolId: string;
+  schools: { id: string; name: string }[];
+  unread: number;
+  parentsReady: boolean;
+  parents: { total: number; canText: number; needsConsent: number; optedOut: number; reached30: number };
+  languages: { code: string; count: number }[];
+  teachers: {
+    total: number;
+    pending: number;
+    texting30: number;
+    list: { id: string; name: string; role: string; texts30: number; parents30: number; last_seen_at: string | null }[];
+  };
+  messages: { sent30: number; replies30: number; weeks: Week[] };
 };
-type Invite = { id: string; code: string; name: string; school: string | null; area_code: string | null; role: string; expires_at: string };
-type SchoolOpt = { id: string; name: string; district: string | null; area_code: string | null; active: boolean };
-type Data = {
-  staff: Person[];
-  autoBuy: boolean;
-  unassignedFamilies: number;
-  invites: Invite[];
-  signupUrl: string;
-  schools: SchoolOpt[];
-  viewerIsSuper: boolean;
-};
-type Notice = { title: string; lines: string[]; copy?: string; big?: string } | null;
 
-type SortKey = "name" | "school" | "role" | "number" | "families" | "messages30d" | "last_seen_at" | "status";
-const COLUMNS: { key: SortKey; label: string; num?: boolean }[] = [
-  { key: "name", label: "Teacher" },
-  { key: "school", label: "School" },
-  { key: "role", label: "Role" },
-  { key: "number", label: "Texting number" },
-  { key: "families", label: "Families", num: true },
-  { key: "messages30d", label: "Texts (30 days)", num: true },
-  { key: "last_seen_at", label: "Last active" },
-  { key: "status", label: "Status" },
-];
+const fmt = (n: number) => n.toLocaleString();
+const pct = (a: number, b: number) => (b ? Math.round((a / b) * 100) : 0);
+const plural = (n: number, one: string, many: string) => `${fmt(n)} ${n === 1 ? one : many}`;
 
-function sortValue(p: Person, key: SortKey): string | number {
-  switch (key) {
-    case "families":
-      return p.families;
-    case "messages30d":
-      return p.messages30d;
-    case "last_seen_at":
-      return p.last_seen_at ? new Date(p.last_seen_at).getTime() : 0;
-    case "role":
-      return p.superAdmin ? "0" : p.role === "admin" ? "1" : "2";
-    case "number":
-      return p.phone_number || "~";
-    case "school":
-      return (p.school || "~").toLowerCase();
-    case "status":
-      return p.status;
-    default:
-      return p.name.toLowerCase();
-  }
-}
-
-const EMPTY_NEW = { mode: "code" as "code" | "direct", name: "", email: "", school_id: "", area_code: "", admin: false };
-
-// Admin: create sign-up codes for new teachers, and manage teachers, admins and their texting numbers.
-export default function AdminPage() {
-  const [data, setData] = useState<Data | null>(null);
+// Admin home: the three things an admin does, then how the school is doing at a glance.
+export default function AdminDashboard() {
+  const [me, setMe] = useState<Me | null>(null);
+  const [s, setS] = useState<Summary | null>(null);
   const [error, setError] = useState("");
-  const [open, setOpen] = useState<Person | null>(null);
-  const [adding, setAdding] = useState<typeof EMPTY_NEW | null>(null);
-  const [busy, setBusy] = useState("");
-  const [notice, setNotice] = useState<Notice>(null);
-  const [schoolFilter, setSchoolFilter] = useState<string>("");
-  const [search, setSearch] = useState("");
-  const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: "name", dir: 1 });
 
-  const load = useCallback(async () => {
-    try {
-      const d = await api<Data>("/api/admin/staff");
-      setData(d);
-      setOpen((o) => (o ? d.staff.find((s) => s.id === o.id) || null : null));
-      setError("");
-    } catch (e: any) {
-      setError(e.message);
-    }
+  const load = useCallback((school?: string) => {
+    api<Summary>(`/api/admin/summary${school ? `?school=${encodeURIComponent(school)}` : ""}`)
+      .then((d) => {
+        setS(d);
+        setError("");
+      })
+      .catch((e) => setError(e.message));
   }, []);
+
   useEffect(() => {
-    load();
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("school")) setSchoolFilter(params.get("school")!);
-    // "Add Teacher" in the main menu opens straight to the add sheet.
-    if (params.get("add")) {
-      setAdding({ ...EMPTY_NEW });
-      window.history.replaceState({}, "", "/admin");
-    }
+    api<{ me: Me }>("/api/me")
+      .then((d) => {
+        if (d.me.role !== "admin") window.location.href = "/inbox";
+        setMe(d.me);
+      })
+      .catch(() => {});
+    const saved = (() => {
+      try {
+        return localStorage.getItem("relay.dashSchool") || undefined;
+      } catch {
+        return undefined;
+      }
+    })();
+    load(saved);
   }, [load]);
 
-  async function act(p: Person, action: string, extra: Record<string, unknown> = {}) {
-    setBusy(action);
-    setError("");
+  function pickSchool(id: string) {
     try {
-      const r = await api("/api/admin/staff", { method: "PATCH", body: { id: p.id, action, ...extra } });
-      if (r.tempPassword) {
-        setNotice({
-          title: "Temporary Password",
-          lines: [`Give this to ${p.name}. They can change it in Settings after signing in.`],
-          copy: `Sign in to Relay at relaytext.io with ${p.email}\nTemporary password: ${r.tempPassword}`,
-        });
-      } else if (r.number?.note || r.numberError) {
-        setNotice({ title: "Number", lines: [r.numberError ? `Couldn't assign a number: ${r.numberError}` : r.number.note] });
-      }
-      if (action === "update" || action === "delete") setOpen(null);
-      await load();
-    } catch (e: any) {
-      setError(e.message);
-      if (open) alert(e.message);
-    } finally {
-      setBusy("");
-    }
+      localStorage.setItem("relay.dashSchool", id);
+    } catch {}
+    load(id);
   }
 
-  function inviteMessage(code: string) {
-    return `You're invited to Relay. Go to ${data?.signupUrl || "relaytext.io/signup"} and enter sign-up code ${code} to create your account. The code works once and expires in 30 days.`;
-  }
-
-  async function createCode() {
-    if (!adding) return;
-    setBusy("add");
-    setError("");
-    try {
-      const r = await api("/api/admin/staff", {
-        body: { ...adding, role: adding.admin ? "admin" : "teacher" },
-      });
-      if (adding.mode === "direct") {
-        const lines = [`${adding.name}'s account is ready. Send them these sign-in details; they can change the password in Settings.`];
-        if (r.number?.phone) lines.push(`Texting number: ${prettyPhone(r.number.phone)}${r.number.placeholder ? " (demo)" : ""}`);
-        if (r.numberError) lines.push(`Number not assigned yet: ${r.numberError}`);
-        setNotice({
-          title: "Teacher Added",
-          lines,
-          copy: `Your Relay account is ready. Sign in at relaytext.io with ${r.email}\nTemporary password: ${r.tempPassword}\nYou can change your password in Settings.`,
-        });
-        setAdding(null);
-        await load();
-        return;
-      }
-      setNotice({
-        title: "Sign-up Code",
-        big: r.invite.code,
-        lines: [`Give this code to ${adding.name}. They enter it at relaytext.io/signup to create their account and get their own texting number.`],
-        copy: inviteMessage(r.invite.code),
-      });
-      setAdding(null);
-      await load();
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setBusy("");
-    }
-  }
-
-  async function cancelInvite(inv: Invite) {
-    if (!confirm(`Cancel sign-up code ${inv.code} for ${inv.name}?`)) return;
-    try {
-      await api(`/api/admin/staff?invite=${inv.id}`, { method: "DELETE" });
-      await load();
-    } catch (e: any) {
-      setError(e.message);
-    }
-  }
-
-  const pending = data?.staff.filter((s) => s.status === "pending") || [];
-  const q = search.trim().toLowerCase();
-  const people = (data?.staff.filter((s) => s.status !== "pending") || [])
-    .filter((s) => !schoolFilter || (schoolFilter === "none" ? !s.school_id : s.school_id === schoolFilter))
-    .filter((s) => !q || [s.name, s.email, s.school || "", s.phone_number || ""].join(" ").toLowerCase().includes(q))
-    .sort((a, b) => {
-      const va = sortValue(a, sort.key);
-      const vb = sortValue(b, sort.key);
-      return (va < vb ? -1 : va > vb ? 1 : 0) * sort.dir;
-    });
-  const toggleSort = (key: SortKey) =>
-    setSort((s) => (s.key === key ? { key, dir: s.dir === 1 ? -1 : 1 } : { key, dir: key === "families" || key === "messages30d" || key === "last_seen_at" ? -1 : 1 }));
+  const first = (s?.name || me?.name || "").split(" ")[0];
+  const p = s?.parents;
 
   return (
-    <div className="settings">
-      <header className="settings-bar">
-        <a className="back-btn text" href="/inbox">
-          <ChevronLeft /> Messages
-        </a>
-        <div className="settings-title">Teachers</div>
-        <button
-          className="icon-btn add-btn"
-          onClick={() => setAdding({ ...EMPTY_NEW, school_id: schoolFilter && schoolFilter !== "none" ? schoolFilter : "" })}
-          aria-label="Add teacher"
-          title="Add teacher"
-        >
-          <Plus size={20} />
-        </button>
+    <div className="home">
+      <header className="home-bar">
+        <img className="inbox-logo" src="/relay-text-logo.png" alt="Relay" />
+        <span className="home-bar-right">
+          {s && s.schools.length > 1 && (
+            <select className="admin-select school-pick" value={s.schoolId} onChange={(e) => pickSchool(e.target.value)} aria-label="School">
+              <option value="all">All schools</option>
+              {s.schools.map((x) => (
+                <option key={x.id} value={x.id}>
+                  {x.name}
+                </option>
+              ))}
+            </select>
+          )}
+          <MainMenu me={me} />
+        </span>
       </header>
 
-      <div className="settings-body admin-wide">
+      <main className="dash">
+        <div className="dash-head">
+          <h1 className="home-title">{first ? `Hi, ${first}` : "Welcome"}</h1>
+          <p className="home-sub">{s ? `${s.school?.name || "All schools"} · here’s the last 30 days` : " "}</p>
+        </div>
         {error && <p className="sheet-error">{error}</p>}
-        {!data && !error && <p className="ios-footnote top">Loading…</p>}
 
-        {data && (
+        {/* The three things an admin does */}
+        <div className="dash-actions">
+          <a className="home-card primary" href="/inbox?compose=1">
+            <span className="home-icon">
+              <Compose size={26} />
+            </span>
+            <span className="home-card-text">
+              <span className="home-card-title">Send a Message</span>
+              <span className="home-card-desc">To one parent, a group, or everyone</span>
+            </span>
+            <ChevronRight size={16} className="home-chev" />
+          </a>
+          <a className="home-card" href="/admin/teachers">
+            <span className="home-icon">
+              <PersonAdd size={26} />
+            </span>
+            <span className="home-card-text">
+              <span className="home-card-title">Manage Teachers</span>
+              <span className="home-card-desc">
+                Add, edit or remove
+                {s && s.teachers.pending > 0 && <span className="home-badge">{s.teachers.pending} waiting</span>}
+              </span>
+            </span>
+            <ChevronRight size={16} className="home-chev" />
+          </a>
+          <a className="home-card" href="/admin/parents">
+            <span className="home-icon">
+              <Book size={26} />
+            </span>
+            <span className="home-card-text">
+              <span className="home-card-title">Manage Parents</span>
+              <span className="home-card-desc">Upload a spreadsheet, add or remove</span>
+            </span>
+            <ChevronRight size={16} className="home-chev" />
+          </a>
+        </div>
+
+        {s && p && (
           <>
-
-            <div className={`admin-banner ${data.autoBuy ? "live" : ""}`}>
-              {data.autoBuy
-                ? "Live: approving a teacher buys them a real local number in their area code."
-                : "Demo: approved teachers get demo numbers. After Twilio approval, set TWILIO_AUTO_BUY_NUMBERS=true in Vercel, then tap “Get Real Number” for each teacher."}
+            {/* Headline numbers */}
+            <div className="kpis">
+              <a className="kpi" href="/admin/parents">
+                <span className="kpi-label">Parents on the list</span>
+                <span className="kpi-value">{fmt(p.total)}</span>
+                <span className="kpi-sub">{p.total ? `${fmt(p.canText)} can be texted` : "Upload your list to start"}</span>
+              </a>
+              <div className="kpi">
+                <span className="kpi-label">Families reached</span>
+                <span className="kpi-value">{fmt(p.reached30)}</span>
+                <span className="kpi-sub">{p.canText ? `${pct(p.reached30, p.canText)}% of parents who can be texted` : "in the last 30 days"}</span>
+              </div>
+              <a className="kpi" href="/inbox">
+                <span className="kpi-label">Texts sent</span>
+                <span className="kpi-value">{fmt(s.messages.sent30)}</span>
+                <span className="kpi-sub">
+                  {plural(s.messages.replies30, "reply", "replies")} from parents
+                  {s.unread > 0 && <span className="home-badge">{s.unread} unread for you</span>}
+                </span>
+              </a>
+              <a className="kpi" href="/admin/teachers">
+                <span className="kpi-label">Teachers texting</span>
+                <span className="kpi-value">
+                  {fmt(s.teachers.texting30)}
+                  <span className="kpi-of"> of {fmt(s.teachers.total)}</span>
+                </span>
+                <span className="kpi-sub">sent at least one text</span>
+              </a>
             </div>
 
-            {data.invites.length > 0 && (
-              <>
-                <p className="ios-section">Sign-up codes not used yet</p>
-                <div className="ios-group">
-                  {data.invites.map((inv) => (
-                    <div key={inv.id} className="ios-row invite-row">
-                      <span className="invite-code">{inv.code}</span>
-                      <span className="person-main">
-                        <span className="person-name">
-                          {inv.name}
-                          {inv.role === "admin" && <span className="tag-admin">Admin</span>}
-                        </span>
-                        <span className="ios-row-hint">
-                          {inv.school ? `${inv.school} · ` : ""}expires {new Date(inv.expires_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                        </span>
-                      </span>
-                      <button className="bar-btn strong" onClick={() => navigator.clipboard?.writeText(inviteMessage(inv.code))}>
-                        Copy
-                      </button>
-                      <button className="bar-btn danger-text" onClick={() => cancelInvite(inv)}>
-                        Cancel
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {pending.length > 0 && (
-              <>
-                <p className="ios-section">Waiting for approval</p>
-                <div className="ios-group">
-                  {pending.map((p) => (
-                    <div key={p.id} className="ios-row person-row pending">
-                      <Avatar name={p.name} size={38} />
-                      <span className="person-main">
-                        <span className="person-name">{p.name}</span>
-                        <span className="ios-row-hint">
-                          {p.email}
-                          {p.school ? ` · ${p.school}` : ""}
-                          {p.area_code ? ` · ${p.area_code}` : ""}
-                        </span>
-                      </span>
-                      <span className="pending-actions">
-                        <button className="pill-btn" disabled={!!busy} onClick={() => act(p, "approve")}>
-                          {busy === "approve" ? "Approving…" : "Approve"}
-                        </button>
-                        <button className="pill-btn ghost" disabled={!!busy} onClick={() => act(p, "disable")}>
-                          Decline
-                        </button>
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {data.viewerIsSuper && (
-              <div className="ios-group">
-                <a className="ios-row nav-row" href="/admin/schools">
-                  <span>
-                    Schools
-                    <span className="ios-row-hint">
-                      {data.schools.length} {data.schools.length === 1 ? "school" : "schools"} · create schools and their sign-up codes
+            <div className="dash-grid">
+              <section className="panel wide">
+                <div className="panel-head">
+                  <h2>Messages each week</h2>
+                  <span className="legend">
+                    <span className="key">
+                      <i className="sw sent" /> Sent by teachers
+                    </span>
+                    <span className="key">
+                      <i className="sw replies" /> Replies from parents
                     </span>
                   </span>
-                  <ChevronRight size={13} className="row-chev" />
-                </a>
-              </div>
-            )}
+                </div>
+                <WeekChart weeks={s.messages.weeks} />
+              </section>
 
-            <div className="admin-toolbar">
-              <input
-                className="admin-search"
-                placeholder="Search name, email or number"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                aria-label="Search teachers"
-              />
-              {data.schools.length > 0 && (
-                <select className="admin-select" value={schoolFilter} onChange={(e) => setSchoolFilter(e.target.value)} aria-label="Filter by school">
-                  <option value="">All schools</option>
-                  {data.schools.map((sc) => (
-                    <option key={sc.id} value={sc.id}>
-                      {sc.name}
-                    </option>
-                  ))}
-                  <option value="none">No school</option>
-                </select>
-              )}
-              <button
-                className="pill-btn add-pill"
-                onClick={() => setAdding({ ...EMPTY_NEW, school_id: schoolFilter && schoolFilter !== "none" ? schoolFilter : "" })}
-              >
-                <Plus size={16} /> Add Teacher
-              </button>
-            </div>
+              <section className="panel">
+                <div className="panel-head">
+                  <h2>Languages families speak</h2>
+                </div>
+                <Languages langs={s.languages} total={p.total} />
+              </section>
 
-            <div className="table-wrap">
-              <table className="staff-table">
-                <thead>
-                  <tr>
-                    {COLUMNS.map((c) => (
-                      <th key={c.key} className={c.num ? "num" : ""} aria-sort={sort.key === c.key ? (sort.dir === 1 ? "ascending" : "descending") : "none"}>
-                        <button onClick={() => toggleSort(c.key)}>
-                          {c.label}
-                          <span className="sort-ind" aria-hidden>
-                            {sort.key === c.key ? (sort.dir === 1 ? "▲" : "▼") : ""}
-                          </span>
-                        </button>
-                      </th>
-                    ))}
-                    <th aria-label="Edit" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {people.map((p) => (
-                    <tr
-                      key={p.id}
-                      className={p.status === "disabled" ? "off" : ""}
-                      onClick={() => setOpen(p)}
-                      tabIndex={0}
-                      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), setOpen(p))}
-                    >
-                      <td>
-                        <span className="cell-person">
-                          <Avatar name={p.name} size={32} />
-                          <span>
-                            <span className="cell-name">{p.name}</span>
-                            <span className="cell-sub">{p.email}</span>
-                          </span>
-                        </span>
-                      </td>
-                      <td>{p.school || <span className="muted">—</span>}</td>
-                      <td>
-                        {p.role === "admin" ? <span className="tag-admin">{p.superAdmin ? "Super Admin" : "Admin"}</span> : "Teacher"}
-                      </td>
-                      <td className="nowrap">
-                        {p.phone_number ? prettyPhone(p.phone_number) : <span className="muted">None</span>}
-                        {p.phone_placeholder && <span className="tag-demo">Demo</span>}
-                      </td>
-                      <td className="num">{p.families}</td>
-                      <td className="num">{p.messages30d}</td>
-                      <td className="nowrap">{p.last_seen_at ? listTime(p.last_seen_at) : <span className="muted">Never</span>}</td>
-                      <td>
-                        <span className={`status-pill ${p.status}`}>{p.status === "active" ? "Active" : "Off"}</span>
-                      </td>
-                      <td className="cell-edit">
-                        <button
-                          className="pill-btn ghost"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpen(p);
-                          }}
-                        >
-                          Edit
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {people.length === 0 && (
-                    <tr className="empty-row">
-                      <td colSpan={COLUMNS.length + 1}>{q || schoolFilter ? "No teachers match." : "No teachers yet. Use Add Teacher to invite one."}</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+              <section className="panel">
+                <div className="panel-head">
+                  <h2>Parents list</h2>
+                  <a className="panel-link" href="/admin/parents">
+                    Open
+                  </a>
+                </div>
+                <ListHealth p={p} />
+              </section>
+
+              <section className="panel wide">
+                <div className="panel-head">
+                  <h2>Teachers · last 30 days</h2>
+                  <a className="panel-link" href="/admin/teachers">
+                    Manage
+                  </a>
+                </div>
+                <TeacherList s={s} />
+              </section>
             </div>
-            <p className="ios-footnote table-foot">
-              {people.length} {people.length === 1 ? "person" : "people"} · Click Edit (or a row) to change details, manage their number or reset their password.
-            </p>
-            {data.unassignedFamilies > 0 && (
-              <p className="ios-footnote">
-                {data.unassignedFamilies} {data.unassignedFamilies === 1 ? "family is" : "families are"} on the main number
-                without a teacher. Admins can see them in the inbox picker under “Main number.”
-              </p>
-            )}
-            <p className="ios-footnote">
-              To add a teacher, tap + to create a sign-up code. They use it at relaytext.io/signup.
-            </p>
           </>
         )}
-      </div>
+        {!s && !error && <p className="ios-footnote top">Loading…</p>}
+      </main>
+    </div>
+  );
+}
 
-      {open && (
-        <PersonSheet
-          person={open}
-          schools={data?.schools || []}
-          autoBuy={!!data?.autoBuy}
-          busy={busy}
-          viewerIsSuper={!!data?.viewerIsSuper}
-          onClose={() => setOpen(null)}
-          onAct={(action, extra) => act(open, action, extra)}
-        />
-      )}
-
-      {adding && (
-        <Sheet
-          title="Add Teacher"
-          onCancel={() => setAdding(null)}
-          action={{
-            label: adding.mode === "direct" ? "Add" : "Create Code",
-            onClick: createCode,
-            busy: busy === "add",
-            disabled: !adding.name.trim() || (adding.mode === "direct" && !adding.email.trim()),
-          }}
-        >
-          <div className="segmented" role="tablist">
-            <button
-              role="tab"
-              aria-selected={adding.mode === "code"}
-              className={adding.mode === "code" ? "on" : ""}
-              onClick={() => setAdding({ ...adding, mode: "code" })}
-            >
-              Sign-up Code
-            </button>
-            <button
-              role="tab"
-              aria-selected={adding.mode === "direct"}
-              className={adding.mode === "direct" ? "on" : ""}
-              onClick={() => setAdding({ ...adding, mode: "direct" })}
-            >
-              Add Directly
-            </button>
-          </div>
-          <p className="ios-footnote top">
-            {adding.mode === "code"
-              ? "Creates a 5-digit sign-up code. The teacher enters it at relaytext.io/signup with their school email and a password, and gets their own texting number right away."
-              : "Creates the account now with a temporary password you send them. They get their own texting number right away."}
-          </p>
-          <div className="ios-group">
-            <input placeholder="Teacher's name" value={adding.name} onChange={(e) => setAdding({ ...adding, name: e.target.value })} autoFocus />
-            {adding.mode === "direct" && (
-              <input
-                type="email"
-                placeholder="School email"
-                value={adding.email}
-                onChange={(e) => setAdding({ ...adding, email: e.target.value })}
-              />
-            )}
-            <label className="ios-row select-row">
-              <span className="ios-row-label">school</span>
-              <select value={adding.school_id} onChange={(e) => setAdding({ ...adding, school_id: e.target.value })}>
-                <option value="">No school</option>
-                {(data?.schools || []).map((sc) => (
-                  <option key={sc.id} value={sc.id}>
-                    {sc.name}
-                    {sc.district ? ` · ${sc.district}` : ""}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <div className="ios-group">
-            <label className="ios-row switch-row">
-              <span>
-                Admin
-                <span className="ios-row-hint">Admins can manage teachers and view every inbox.</span>
-              </span>
-              <input
-                type="checkbox"
-                className="ios-switch"
-                checked={adding.admin}
-                onChange={(e) => setAdding({ ...adding, admin: e.target.checked })}
-              />
-            </label>
-          </div>
-        </Sheet>
-      )}
-
-      {notice && (
-        <Sheet title={notice.title} onCancel={() => setNotice(null)}>
-          {notice.big && <div className="big-code">{notice.big}</div>}
-          {notice.lines.map((l) => (
-            <p key={l} className="ios-footnote top">
-              {l}
-            </p>
+// Grouped columns: sent and replies for each of the last 8 weeks, with a hover tooltip.
+function WeekChart({ weeks }: { weeks: Week[] }) {
+  const [hover, setHover] = useState<number | null>(null);
+  const max = Math.max(1, ...weeks.flatMap((w) => [w.sent, w.replies]));
+  const step = niceStep(max);
+  const top = Math.ceil(max / step) * step;
+  const ticks = Array.from({ length: Math.round(top / step) + 1 }, (_, i) => i * step);
+  const label = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const empty = weeks.every((w) => !w.sent && !w.replies);
+  return (
+    <div className="wk">
+      <div className="wk-plot">
+        <div className="wk-axis">
+          {!empty && ticks.map((t) => (
+            <span key={t} style={{ bottom: `${(t / top) * 100}%` }}>
+              {fmt(t)}
+            </span>
           ))}
-          {notice.copy && (
-            <>
-              <div className="ios-group">
-                <pre className="copy-block">{notice.copy}</pre>
+        </div>
+        <div className="wk-area">
+          {ticks.map((t) => (
+            <i key={t} className="wk-grid" style={{ bottom: `${(t / top) * 100}%` }} />
+          ))}
+          <div className="wk-cols">
+            {weeks.map((w, i) => (
+              <div
+                key={w.start}
+                className={`wk-col ${hover === i ? "on" : ""}`}
+                onMouseEnter={() => setHover(i)}
+                onMouseLeave={() => setHover(null)}
+                onFocus={() => setHover(i)}
+                onBlur={() => setHover(null)}
+                tabIndex={0}
+                aria-label={`Week of ${label(w.start)}: ${w.sent} sent, ${w.replies} replies`}
+              >
+                <span className="wk-bar sent" style={{ height: `${(w.sent / top) * 100}%` }} />
+                <span className="wk-bar replies" style={{ height: `${(w.replies / top) * 100}%` }} />
+                {hover === i && (
+                  <span className="tip">
+                    <strong>Week of {label(w.start)}</strong>
+                    <span>
+                      <i className="sw sent" /> {fmt(w.sent)} sent
+                    </span>
+                    <span>
+                      <i className="sw replies" /> {fmt(w.replies)} {w.replies === 1 ? "reply" : "replies"}
+                    </span>
+                  </span>
+                )}
               </div>
-              <button className="ios-button" onClick={() => navigator.clipboard?.writeText(notice.copy!)}>
-                Copy
-              </button>
-              {!notice.big && (
-                <p className="ios-footnote top" style={{ marginTop: 12 }}>
-                  This password is shown only once. If it’s lost, use Reset Password on their page.
-                </p>
-              )}
-            </>
-          )}
-        </Sheet>
+            ))}
+          </div>
+          {empty && <p className="wk-empty">No texts yet. Once teachers start texting, each week shows here.</p>}
+        </div>
+      </div>
+      <div className="wk-x">
+        {weeks.map((w, i) => (
+          <span key={w.start}>{i % 2 === 1 || weeks.length <= 6 ? label(w.start) : ""}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function niceStep(max: number) {
+  const raw = max / 4;
+  const pow = Math.pow(10, Math.floor(Math.log10(raw || 1)));
+  const n = raw / pow;
+  return Math.max(1, (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * pow);
+}
+
+// Horizontal bars: how many parents speak each language (top 6, the rest as "Other").
+function Languages({ langs, total }: { langs: { code: string; count: number }[]; total: number }) {
+  if (!total) return <p className="panel-empty">Languages appear here once parents are on the list.</p>;
+  const top = langs.slice(0, 6);
+  const rest = langs.slice(6).reduce((a, l) => a + l.count, 0);
+  const rows = [...top.map((l) => ({ name: languageName(l.code), count: l.count })), ...(rest ? [{ name: `${langs.length - 6} other languages`, count: rest }] : [])];
+  const max = Math.max(...rows.map((r) => r.count));
+  return (
+    <div className="langs">
+      {rows.map((r) => (
+        <div key={r.name} className="lang-row" title={`${r.name}: ${fmt(r.count)} ${r.count === 1 ? "parent" : "parents"} (${pct(r.count, total)}%)`}>
+          <span className="lang-name">{r.name}</span>
+          <span className="lang-track">
+            <span className="lang-bar" style={{ width: `${(r.count / max) * 100}%` }} />
+            <span className="lang-val">{fmt(r.count)}</span>
+          </span>
+        </div>
+      ))}
+      <p className="panel-foot">{plural(langs.length, "language", "languages")} in all</p>
+    </div>
+  );
+}
+
+// One segmented bar: who can be texted, who needs consent, who opted out.
+function ListHealth({ p }: { p: Summary["parents"] }) {
+  if (!p.total)
+    return (
+      <div className="panel-empty">
+        <p>No parents yet.</p>
+        <a className="pill-btn" href="/admin/parents?upload=1">
+          Upload a Spreadsheet
+        </a>
+      </div>
+    );
+  const segs = [
+    { key: "ok", label: "Can be texted", n: p.canText },
+    { key: "consent", label: "Need consent", n: p.needsConsent },
+    { key: "out", label: "Opted out", n: p.optedOut },
+  ].filter((x) => x.n > 0);
+  return (
+    <div className="health">
+      <div className="health-big">
+        {pct(p.canText, p.total)}%<span> can be texted</span>
+      </div>
+      <div className="seg" role="img" aria-label={segs.map((x) => `${x.label}: ${x.n}`).join(", ")}>
+        {segs.map((x) => (
+          <span key={x.key} className={`seg-part ${x.key}`} style={{ flexGrow: x.n }} title={`${x.label}: ${fmt(x.n)}`} />
+        ))}
+      </div>
+      <ul className="health-keys">
+        {[
+          { key: "ok", label: "Can be texted", n: p.canText },
+          { key: "consent", label: "Need consent", n: p.needsConsent },
+          { key: "out", label: "Opted out (replied STOP)", n: p.optedOut },
+        ].map((x) => (
+          <li key={x.key}>
+            <i className={`sw ${x.key}`} /> {x.label}
+            <strong>{fmt(x.n)}</strong>
+          </li>
+        ))}
+      </ul>
+      {p.needsConsent > 0 && (
+        <a className="health-fix" href="/admin/parents?status=consent">
+          Confirm consent for {plural(p.needsConsent, "parent", "parents")} →
+        </a>
       )}
     </div>
   );
 }
 
-function PersonSheet({
-  person: p,
-  schools,
-  autoBuy,
-  busy,
-  viewerIsSuper,
-  onClose,
-  onAct,
-}: {
-  viewerIsSuper: boolean;
-  person: Person;
-  schools: SchoolOpt[];
-  autoBuy: boolean;
-  busy: string;
-  onClose: () => void;
-  onAct: (action: string, extra?: Record<string, unknown>) => void;
-}) {
-  const [f, setF] = useState({
-    name: p.name,
-    email: p.email,
-    school_id: p.school_id || "",
-    admin: p.role === "admin",
-  });
-  const emailChanged = f.email.trim().toLowerCase() !== p.email;
-  const changed =
-    f.name !== p.name ||
-    emailChanged ||
-    f.school_id !== (p.school_id || "") ||
-    f.admin !== (p.role === "admin");
-  const canEditEmail = viewerIsSuper && !p.builtInAdmin;
-
+function TeacherList({ s }: { s: Summary }) {
+  const list = s.teachers.list;
+  if (!list.length) return <p className="panel-empty">No teachers yet. Use Manage Teachers to add them.</p>;
+  const max = Math.max(1, ...list.map((t) => t.texts30));
   return (
-    <Sheet
-      title={p.name}
-      onCancel={onClose}
-      action={
-        changed
-          ? {
-              label: "Save",
-              busy: busy === "update",
-              disabled: !f.name.trim(),
-              onClick: () => {
-                if (emailChanged && !confirm(`Change ${p.name}'s email to ${f.email.trim()}? They'll sign in with the new email from now on.`)) return;
-                onAct("update", {
-                  name: f.name,
-                  school_id: f.school_id,
-                  role: f.admin ? "admin" : "teacher",
-                  ...(emailChanged ? { email: f.email } : {}),
-                });
-              },
-            }
-          : undefined
-      }
-    >
-      <div className="info-head">
-        <Avatar name={f.name || p.name} size={64} />
-      </div>
-      <p className="ios-footnote top center-text">
-        {canEditEmail ? "" : p.email}
-        {p.status === "disabled" ? `${canEditEmail ? "" : " · "}Turned off` : ""}
-      </p>
-
-      <div className="ios-group">
-        <label className="ios-row">
-          <span className="ios-row-label">name</span>
-          <input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
-        </label>
-        {canEditEmail && (
-          <label className="ios-row">
-            <span className="ios-row-label">email</span>
-            <input type="email" autoComplete="off" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} />
-          </label>
-        )}
-        <label className="ios-row">
-          <span className="ios-row-label">school</span>
-          <select value={f.school_id} onChange={(e) => setF({ ...f, school_id: e.target.value })}>
-            <option value="">{p.school && !p.school_id ? `${p.school} (not linked)` : "No school"}</option>
-            {schools.map((sc) => (
-              <option key={sc.id} value={sc.id}>
-                {sc.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        
-        <label className="ios-row switch-row">
-          <span>Admin</span>
-          <input
-            type="checkbox"
-            className="ios-switch"
-            checked={f.admin}
-            disabled={p.builtInAdmin}
-            onChange={(e) => setF({ ...f, admin: e.target.checked })}
-          />
-        </label>
-      </div>
-
-      <p className="ios-section">Texting number</p>
-      <div className="ios-group">
-        <div className="ios-row number-row">
-          <span className="big-number">{p.phone_number ? prettyPhone(p.phone_number) : "None"}</span>
-          {p.phone_placeholder && <span className="tag-demo">Demo</span>}
-        </div>
-        {(!p.phone_number || (p.phone_placeholder && autoBuy)) && p.status === "active" && (
-          <button className="ios-row action-row" disabled={!!busy} onClick={() => onAct("assign_number")}>
-            {busy === "assign_number" ? "Working…" : p.phone_placeholder ? "Get Real Number" : "Assign Number"}
-          </button>
-        )}
-        {p.phone_number && (
-          <button
-            className="ios-row danger"
-            disabled={!!busy}
-            onClick={() =>
-              confirm(
-                p.phone_placeholder
-                  ? "Remove this demo number?"
-                  : "Release this number? Families texting it will no longer reach Relay, and the number may not be recoverable."
-              ) && onAct("release_number")
-            }
-          >
-            {p.phone_placeholder ? "Remove Demo Number" : "Release Number"}
-          </button>
-        )}
-      </div>
-
-      {p.join_link && (
-        <>
-          <p className="ios-section">Parent sign-up link</p>
-          <div className="ios-group">
-            <div className="ios-row copy-row">
-              <code>{p.join_link}</code>
-              <button className="bar-btn strong" onClick={() => navigator.clipboard?.writeText(p.join_link!)}>
-                Copy
-              </button>
-            </div>
-          </div>
-        </>
-      )}
-
-      <div className="ios-group">
-        <a className="ios-row nav-row" href={`/inbox?as=${p.id}`}>
-          View Inbox
-          <ChevronRight size={13} className="row-chev" />
+    <>
+      <table className="dash-table">
+        <thead>
+          <tr>
+            <th>Teacher</th>
+            <th className="num">Texts sent</th>
+            <th className="num">Parents texted</th>
+            <th>Last signed in</th>
+          </tr>
+        </thead>
+        <tbody>
+          {list.map((t) => (
+            <tr key={t.id}>
+              <td>
+                {t.name}
+                {t.role === "admin" && <span className="tag-admin">Admin</span>}
+              </td>
+              <td className="num">
+                <span className="mini">
+                  {t.texts30 > 0 && <span className="mini-bar" style={{ width: `${(t.texts30 / max) * 100}%` }} />}
+                </span>
+                {fmt(t.texts30)}
+              </td>
+              <td className="num">{fmt(t.parents30)}</td>
+              <td className="muted">{t.last_seen_at ? listTime(t.last_seen_at) : "Never"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {s.teachers.total > list.length && <p className="panel-foot">Top {list.length} of {s.teachers.total} teachers by texts sent.</p>}
+      {s.teachers.pending > 0 && (
+        <a className="health-fix" href="/admin/teachers">
+          {plural(s.teachers.pending, "teacher is", "teachers are")} waiting for approval →
         </a>
-        <button className="ios-row action-row" disabled={!!busy} onClick={() => onAct("reset_password")}>
-          {busy === "reset_password" ? "Working…" : "Reset Password"}
-        </button>
-        {p.status === "disabled" ? (
-          <button className="ios-row action-row" disabled={!!busy} onClick={() => onAct("enable")}>
-            Turn On Account
-          </button>
-        ) : (
-          !p.builtInAdmin && (
-            <button
-              className="ios-row danger"
-              disabled={!!busy}
-              onClick={() => confirm(`Turn off ${p.name}'s account? They won't be able to sign in.`) && onAct("disable")}
-            >
-              Turn Off Account
-            </button>
-          )
-        )}
-      </div>
-
-      {viewerIsSuper && !p.builtInAdmin && (
-        <>
-          <div className="ios-group">
-            <button
-              className="ios-row danger"
-              disabled={!!busy}
-              onClick={() =>
-                confirm(
-                  `Delete ${p.name}? Their login is removed and their texting number is released. Their families and conversations move to the main number, where admins can still see them. This can't be undone.`
-                ) && onAct("delete")
-              }
-            >
-              {busy === "delete" ? "Deleting…" : "Delete Teacher"}
-            </button>
-          </div>
-          <p className="ios-footnote">Super admins only. To pause someone instead, use Turn Off Account.</p>
-        </>
       )}
-    </Sheet>
+    </>
   );
 }

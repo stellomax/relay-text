@@ -7,6 +7,7 @@ import { OPT_IN_CONFIRMATION } from "@/lib/brand";
 import { sendSms } from "@/lib/twilio";
 import type { Staff } from "@/lib/db";
 import { senderNumber } from "@/lib/numbers";
+import { findParentByPhone } from "@/lib/parents";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,23 @@ export async function POST(req: Request) {
     const staffId = teacher.id;
     const source = teacher ? `web form: /join?t=${code}` : "web form: /join";
     consent.consent_source = source;
+
+    // Parents who sign up through a teacher's link join that school's Parents list (or update their entry).
+    const listed = await findParentByPhone(teacher.school_id || null, phone);
+    const parentFields = { parent_name, language, opted_out: false, consent_at: consent.consent_at, consent_source: source };
+    let parentId: string | null = listed?.id || null;
+    if (listed) {
+      const students = child_name && !listed.students.some((s) => s.toLowerCase() === child_name.toLowerCase()) ? [...listed.students, child_name] : listed.students;
+      await supa.from("parents").update({ ...parentFields, students, updated_at: new Date().toISOString() }).eq("id", listed.id);
+    } else {
+      const { data: p } = await supa
+        .from("parents")
+        .insert({ ...parentFields, phone, students: child_name ? [child_name] : [], school_id: teacher.school_id || null })
+        .select("id")
+        .single();
+      parentId = p?.id || null;
+    }
+    if (parentId) consent.parent_id = parentId;
 
     let lookup = supa.from("contacts").select("id").eq("phone", phone);
     lookup = staffId ? lookup.eq("staff_id", staffId) : lookup.is("staff_id", null);

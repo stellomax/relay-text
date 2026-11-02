@@ -90,7 +90,7 @@ export default function SchoolsPage() {
     <div className="settings">
       <header className="settings-bar">
         <a className="back-btn text" href="/admin">
-          <ChevronLeft /> Teachers
+          <ChevronLeft /> Home
         </a>
         <div className="settings-title">Schools</div>
         <button className="icon-btn add-btn" onClick={() => setForm({ ...EMPTY })} aria-label="Add school" title="Add school">
@@ -221,7 +221,7 @@ export default function SchoolsPage() {
 
           {form.id && (
             <div className="ios-group">
-              <a className="ios-row nav-row" href={`/admin?school=${form.id}`}>
+              <a className="ios-row nav-row" href={`/admin/teachers?school=${form.id}`}>
                 View Teachers
                 <ChevronRight size={13} className="row-chev" />
               </a>

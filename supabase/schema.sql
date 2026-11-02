@@ -124,3 +124,83 @@ alter table public.invites  enable row level security;
 alter table public.schools  enable row level security;
 alter table public.contacts enable row level security;
 alter table public.messages enable row level security;
+
+-- ============================================================================
+-- Parents list (Nov 2026). Admins keep one list of parents for each school;
+-- teachers and admins choose recipients from it and can't add new numbers themselves.
+-- A conversation (contacts row) links to the parent it came from.
+-- ============================================================================
+create table if not exists public.parents (
+  id              uuid primary key default gen_random_uuid(),
+  parent_name     text not null,
+  students        text[] not null default '{}',   -- student names
+  phone           text not null,                   -- E.164
+  language        text not null default 'es',      -- Google Translate language code
+  school_id       uuid references public.schools(id) on delete set null,
+  opted_out       boolean not null default false,
+  consent_at      timestamptz,
+  consent_source  text,
+  created_by      uuid references public.staff(id) on delete set null,
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now()
+);
+-- One entry per phone number in each school.
+create unique index if not exists parents_school_phone_idx
+  on public.parents (coalesce(school_id, '00000000-0000-0000-0000-000000000000'::uuid), phone);
+create index if not exists parents_phone_idx on public.parents (phone);
+
+alter table public.contacts add column if not exists parent_id uuid references public.parents(id) on delete set null;
+create index if not exists contacts_parent_idx on public.contacts (parent_id);
+
+-- Groups belong to one teacher (or admin) and aren't shared.
+create table if not exists public.parent_groups (
+  id          uuid primary key default gen_random_uuid(),
+  staff_id    uuid not null references public.staff(id) on delete cascade,
+  name        text not null,
+  created_at  timestamptz not null default now()
+);
+create unique index if not exists parent_groups_staff_name_idx on public.parent_groups (staff_id, lower(name));
+
+create table if not exists public.parent_group_members (
+  group_id   uuid not null references public.parent_groups(id) on delete cascade,
+  parent_id  uuid not null references public.parents(id) on delete cascade,
+  primary key (group_id, parent_id)
+);
+
+-- One-time move: put families already saved by teachers into the Parents list, and link their conversations.
+insert into public.parents (parent_name, students, phone, language, school_id, opted_out, consent_at, consent_source, created_at)
+select distinct on (coalesce(s.school_id, '00000000-0000-0000-0000-000000000000'::uuid), c.phone)
+  c.parent_name,
+  case when coalesce(trim(c.child_name), '') = '' then '{}'::text[] else array[trim(c.child_name)] end,
+  c.phone, c.language, s.school_id, c.opted_out, c.consent_at, c.consent_source, c.created_at
+from public.contacts c
+left join public.staff s on s.id = c.staff_id
+where c.parent_id is null and c.parent_name not like 'Unknown %'
+order by coalesce(s.school_id, '00000000-0000-0000-0000-000000000000'::uuid), c.phone, c.consent_at desc nulls last, c.created_at desc
+on conflict do nothing;
+
+update public.contacts c set parent_id = p.id
+from public.parents p
+where c.parent_id is null
+  and p.phone = c.phone
+  and coalesce(p.school_id, '00000000-0000-0000-0000-000000000000'::uuid)
+    = coalesce((select s.school_id from public.staff s where s.id = c.staff_id), '00000000-0000-0000-0000-000000000000'::uuid);
+
+-- Old address-book groups become that teacher's own groups.
+insert into public.parent_groups (staff_id, name)
+select distinct c.staff_id, g
+from public.contacts c, unnest(c.groups) g
+where c.staff_id is not null and trim(g) <> ''
+on conflict do nothing;
+
+insert into public.parent_group_members (group_id, parent_id)
+select distinct pg.id, c.parent_id
+from public.contacts c
+cross join unnest(c.groups) g
+join public.parent_groups pg on pg.staff_id = c.staff_id and lower(pg.name) = lower(g)
+where c.parent_id is not null
+on conflict do nothing;
+
+alter table public.parents              enable row level security;
+alter table public.parent_groups        enable row level security;
+alter table public.parent_group_members enable row level security;

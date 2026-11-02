@@ -76,3 +76,24 @@ export function nativeName(code: string): string | null {
 // Looks like a Google Translate language code (e.g. "es", "zh-CN", "hmn", "fa-AF").
 export const isLanguageCode = (code: unknown): code is string =>
   typeof code === "string" && /^[a-z]{2,3}(-[A-Za-z0-9]{2,4})?$/.test(code);
+
+// Read a language from a spreadsheet cell: a code ("es"), an English name ("Spanish") or the native name ("Español").
+// `extra` is Google's full list when it's been loaded.
+const ALIASES: Record<string, string> = {
+  chinese: "zh-CN", mandarin: "zh-CN", cantonese: "zh-TW", farsi: "fa", persian: "fa", creole: "ht",
+  "haitian": "ht", kurdish: "ckb", filipino: "tl", burmese: "my", dari: "fa-AF", "spanish (mexico)": "es",
+};
+export function parseLanguage(input: string, extra: Language[] = []): string | null {
+  const raw = (input || "").trim();
+  if (!raw) return null;
+  const v = raw.toLowerCase();
+  const all = [...LANGUAGES, ...extra];
+  const byCode = all.find((l) => l.code.toLowerCase() === v);
+  if (byCode) return byCode.code;
+  const byName = all.find((l) => l.name.toLowerCase() === v || (l.native || "").toLowerCase() === v);
+  if (byName) return byName.code;
+  if (ALIASES[v]) return ALIASES[v];
+  const starts = all.find((l) => l.name.toLowerCase().startsWith(v + " ") || l.name.toLowerCase().startsWith(v + " ("));
+  if (starts) return starts.code;
+  return isLanguageCode(raw) && raw.length <= 3 ? v : null;
+}
