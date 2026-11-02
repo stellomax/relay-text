@@ -280,19 +280,6 @@ export default function AdminPage() {
               </>
             )}
 
-            {data.viewerIsSuper && (
-              <div className="ios-group">
-                <a className="ios-row nav-row" href="/admin/schools">
-                  <span>
-                    Manage Schools
-                    <span className="ios-row-hint">
-                      {data.schools.length} {data.schools.length === 1 ? "school" : "schools"} · create schools and their sign-up codes
-                    </span>
-                  </span>
-                  <ChevronRight size={13} className="row-chev" />
-                </a>
-              </div>
-            )}
 
             <div className="admin-toolbar">
               <input

@@ -82,7 +82,7 @@ const STORY = [
   },
 ];
 
-const PROOF = ["No parent app", "Real-time translation", "Two-way texting", "Simple for teachers", "Secure & private"];
+const PROOF = ["No parent app", "Real-time translation", "Two-way texting", "192 languages", "Simple for teachers", "Secure & private"];
 
 const CONTACT = "mailto:relay@stellomark.com?subject=Bringing%20Relay%20to%20our%20school";
 
