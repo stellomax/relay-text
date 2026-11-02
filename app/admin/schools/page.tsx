@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Sheet from "@/components/Sheet";
-import { ChevronLeft, ChevronRight, Plus } from "@/components/icons";
+import { ChevronRight, Plus } from "@/components/icons";
+import AdminHeader, { AdminTitle } from "@/components/AdminHeader";
 import { api } from "@/lib/client";
 
 type School = {
@@ -13,6 +14,7 @@ type School = {
   signup_code: string | null;
   active: boolean;
   teachers: number;
+  parents: number;
 };
 type Form = { id?: string; name: string; district: string; area_code: string; signup_code: string; active: boolean };
 const EMPTY: Form = { name: "", district: "", area_code: "", signup_code: "", active: true };
@@ -25,12 +27,15 @@ export default function SchoolsPage() {
   const [form, setForm] = useState<Form | null>(null);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState("");
+  const [isSuper, setIsSuper] = useState(false);
+  const [search, setSearch] = useState("");
 
   const load = useCallback(async () => {
     try {
-      const d = await api<{ schools: School[]; signupUrl: string }>("/api/admin/schools");
+      const d = await api<{ schools: School[]; signupUrl: string; viewerIsSuper: boolean }>("/api/admin/schools");
       setSchools(d.schools);
       setSignupUrl(d.signupUrl);
+      setIsSuper(!!d.viewerIsSuper);
     } catch (e: any) {
       setError(e.message);
     }
@@ -75,72 +80,122 @@ export default function SchoolsPage() {
     }
   }
 
-  async function remove() {
-    if (!form?.id || !confirm(`Delete ${form.name}?`)) return;
+  async function remove(target?: { id?: string; name: string }) {
+    const t = target || form;
+    if (!t?.id || !confirm(`Delete ${t.name}? This can't be undone.`)) return;
     try {
-      await api(`/api/admin/schools?id=${form.id}`, { method: "DELETE" });
+      await api(`/api/admin/schools?id=${t.id}`, { method: "DELETE" });
       setForm(null);
+      flash(`Deleted ${t.name}`);
       await load();
     } catch (e: any) {
-      setError(e.message);
+      if (target) alert(e.message);
+      else setError(e.message);
     }
   }
 
-  return (
-    <div className="settings">
-      <header className="settings-bar">
-        <a className="back-btn text" href="/admin">
-          <ChevronLeft /> Home
-        </a>
-        <div className="settings-title">Schools</div>
-        <button className="icon-btn add-btn" onClick={() => setForm({ ...EMPTY })} aria-label="Add school" title="Add school">
-          <Plus size={20} />
-        </button>
-      </header>
+  const edit = (s: School) =>
+    setForm({
+      id: s.id,
+      name: s.name,
+      district: s.district || "",
+      area_code: s.area_code || "",
+      signup_code: s.signup_code || "",
+      active: s.active,
+    });
 
-      <div className="settings-body">
+  const q = search.trim().toLowerCase();
+  const shown = (schools || []).filter((s) => !q || [s.name, s.district || "", s.signup_code || "", s.area_code || ""].join(" ").toLowerCase().includes(q));
+
+  return (
+    <div className="admin-page">
+      <AdminHeader />
+
+      <div className="settings-body admin-wide">
+        <AdminTitle
+          title="Manage Schools"
+          sub={schools ? `${schools.length} ${schools.length === 1 ? "school" : "schools"} · each has a sign-up code teachers use to join` : undefined}
+        />
         {error && !form && <p className="sheet-error">{error}</p>}
         {!schools && !error && <p className="ios-footnote top">Loading…</p>}
         {schools && (
           <>
-            <p className="ios-footnote top">
-              Each school has a reusable sign-up code. Teachers who sign up at {signupUrl} with a school’s code join that
-              school automatically.
-            </p>
-            <p className="ios-section">Schools · {schools.length}</p>
-            <div className="ios-group">
-              {schools.map((s) => (
-                <button
-                  key={s.id}
-                  className={`ios-row person-row ${s.active ? "" : "off"}`}
-                  onClick={() =>
-                    setForm({
-                      id: s.id,
-                      name: s.name,
-                      district: s.district || "",
-                      area_code: s.area_code || "",
-                      signup_code: s.signup_code || "",
-                      active: s.active,
-                    })
-                  }
-                >
-                  <span className={`invite-code ${s.active && s.signup_code ? "" : "code-off"}`}>{s.signup_code || "—"}</span>
-                  <span className="person-main">
-                    <span className="person-name">
-                      {s.name}
-                      {!s.active && <span className="tag-off">Code off</span>}
-                    </span>
-                    <span className="ios-row-hint">
-                      {s.district ? `${s.district} · ` : ""}
-                      {s.teachers} {s.teachers === 1 ? "teacher" : "teachers"}
-                      {s.area_code ? ` · area ${s.area_code}` : ""}
-                    </span>
-                  </span>
-                  <ChevronRight size={13} className="row-chev" />
-                </button>
-              ))}
-              {schools.length === 0 && <div className="ios-row muted">No schools yet. Tap + to add one.</div>}
+            <div className="admin-toolbar">
+              <input
+                className="admin-search"
+                placeholder="Search school, district or code"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                aria-label="Search schools"
+              />
+              {isSuper && (
+                <span className="toolbar-actions">
+                  <button className="pill-btn add-pill" onClick={() => setForm({ ...EMPTY })}>
+                    <Plus size={16} /> Add School
+                  </button>
+                </span>
+              )}
             </div>
+
+            <div className="table-wrap">
+              <table className="staff-table schools-table">
+                <thead>
+                  <tr>
+                    <th><span className="th-plain">School</span></th>
+                    <th><span className="th-plain">Sign-up code</span></th>
+                    <th><span className="th-plain">Area code</span></th>
+                    <th className="num"><span className="th-plain">Teachers</span></th>
+                    <th className="num"><span className="th-plain">Parents</span></th>
+                    <th><span className="th-plain">Status</span></th>
+                    <th aria-label="Actions" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {shown.map((s) => (
+                    <tr key={s.id} className={s.active ? "" : "off"} onClick={() => isSuper && edit(s)}>
+                      <td>
+                        <span className="cell-name">{s.name}</span>
+                        {s.district && <span className="cell-sub">{s.district}</span>}
+                      </td>
+                      <td>
+                        <span className={`code-cell ${s.active && s.signup_code ? "" : "code-off"}`}>{s.signup_code || "—"}</span>
+                      </td>
+                      <td>{s.area_code || <span className="muted">—</span>}</td>
+                      <td className="num">
+                        <a href={`/admin/teachers?school=${s.id}`} onClick={(e) => e.stopPropagation()}>
+                          {s.teachers}
+                        </a>
+                      </td>
+                      <td className="num">{s.parents}</td>
+                      <td>
+                        <span className={`status-pill ${s.active ? "active" : "disabled"}`}>{s.active ? "Code on" : "Code off"}</span>
+                      </td>
+                      <td className="cell-edit" onClick={(e) => e.stopPropagation()}>
+                        {isSuper && (
+                          <>
+                            <button className="link-btn row-link" onClick={() => edit(s)}>
+                              Edit
+                            </button>
+                            <button className="link-btn row-link danger-text" onClick={() => remove(s)}>
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {shown.length === 0 && (
+                    <tr className="empty-row">
+                      <td colSpan={7}>{q ? "No schools match." : "No schools yet. Click Add School to create one."}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <p className="ios-footnote table-foot">
+              Teachers who sign up at {signupUrl} with a school’s code join that school automatically. A school can only be deleted when it
+              has no teachers; to stop new sign-ups, turn its code off instead.
+            </p>
           </>
         )}
       </div>
@@ -225,7 +280,7 @@ export default function SchoolsPage() {
                 View Teachers
                 <ChevronRight size={13} className="row-chev" />
               </a>
-              <button className="ios-row danger" onClick={remove}>
+              <button className="ios-row danger" onClick={() => remove()}>
                 Delete School
               </button>
             </div>

@@ -124,22 +124,11 @@ export default function MainMenu({
             </div>
           )}
 
-          <div className="menu-group">
-            {isAdmin && (
+          {isAdmin && (
+            <div className="menu-group">
               <a role="menuitem" href="/admin">
                 Home <Home />
               </a>
-            )}
-            <a role="menuitem" href="/inbox">
-              Messages <Bubble />
-            </a>
-            <button role="menuitem" onClick={run(() => setGroupsOpen(true))}>
-              My Groups <People />
-            </button>
-          </div>
-
-          {isAdmin && (
-            <div className="menu-group">
               <a role="menuitem" href="/admin/teachers">
                 Manage Teachers <PersonAdd />
               </a>
@@ -148,11 +137,20 @@ export default function MainMenu({
               </a>
               {me?.is_super && (
                 <a role="menuitem" href="/admin/schools">
-                  Schools <Building />
+                  Manage Schools <Building />
                 </a>
               )}
             </div>
           )}
+
+          <div className="menu-group">
+            <a role="menuitem" href="/inbox">
+              Messages <Bubble />
+            </a>
+            <button role="menuitem" onClick={run(() => setGroupsOpen(true))}>
+              My Groups <People />
+            </button>
+          </div>
 
           <div className="menu-group">
             {me?.join_link && (
