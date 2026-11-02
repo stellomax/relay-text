@@ -378,7 +378,7 @@
   .ct-row { grid-template-columns: 1fr; }
 }
 
-/* "Simple for teachers. Clear for principals.": the inbox and the dashboard take turns */
+/* "Simple for teachers. Clear for admin.": the inbox and the dashboard take turns */
 .lp-swap { display: grid; min-width: 0; }
 .lp-swap > .lp-slide { grid-area: 1 / 1; }
 .lp-slide-a { animation: lp-swap-a 14s infinite; }
