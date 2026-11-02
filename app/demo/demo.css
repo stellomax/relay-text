@@ -1,10 +1,7 @@
 /* /demo: a teacher's computer and a parent's iPhone, one text at a time. Scoped under .lp via the dm- prefix. */
-.dm-page { max-width: 1240px; margin: 0 auto; padding: 0 28px 40px; }
-.dm-top { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 14px; }
-.dm-top h1 { font-family: var(--lp-display); font-size: clamp(30px, 3.4vw, 42px); letter-spacing: -1px; line-height: 1.1; margin: 0; }
-.dm-btns { display: flex; align-items: center; gap: 16px; }
-.dm-next { font-size: 17px; padding: 12px 26px; min-width: 200px; justify-content: center; cursor: pointer; font-family: inherit; }
-.dm-again { font-size: 17px; padding: 12px 22px; cursor: pointer; font-family: inherit; }
+.dm-page { max-width: 1240px; margin: 0 auto; padding: 22px 28px 28px; }
+.lp .dm-title { font-family: var(--lp-display); font-size: clamp(28px, 3vw, 38px); letter-spacing: -1px; line-height: 1.1; margin: 0 0 6px; max-width: none; }
+.dm-next { font-size: 17px; padding: 13px 18px; min-width: 200px; justify-content: center; cursor: pointer; font-family: inherit; }
 
 /* the two people, each above their own screen */
 .dm-person { display: flex; align-items: center; gap: 14px; margin: 0 0 12px; }
@@ -16,8 +13,17 @@
 .dm-av-fallback { display: inline-flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; background: linear-gradient(#a9a1b3, #857c90); }
 
 /* --- the stage --- */
-.dm-stage { --h: clamp(380px, calc(100vh - 300px), 600px); display: grid; grid-template-columns: minmax(0, 1fr) 132px auto; align-items: start; gap: 0; cursor: pointer; outline: none; }
-.dm-screen-col { min-width: 0; display: flex; flex-direction: column; }
+.dm-stage {
+  --h: clamp(380px, calc(100vh - 240px), 640px); display: grid; grid-template-columns: minmax(0, 1fr) 220px auto;
+  grid-template-areas: "tp ctl pp" "desk br ph"; align-items: center; gap: 0; cursor: pointer; outline: none; }
+.dm-screen-col { min-width: 0; display: flex; flex-direction: column; grid-area: desk; align-self: start; }
+.dm-screen-col.phone { grid-area: ph; }
+.dm-person.tp { grid-area: tp; justify-self: center; }
+.dm-person.pp { grid-area: pp; justify-self: center; }
+.dm-bridge { grid-area: br; }
+.dm-ctl { grid-area: ctl; display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 12px; cursor: default; }
+.dm-ctl .dm-next { min-width: 0; width: 100%; }
+.dm-cta { font-weight: 700; font-size: 15px; color: var(--purple); }
 .dm-screen-col.phone { align-items: flex-start; }
 
 /* teacher's computer */
@@ -61,7 +67,7 @@
 @keyframes dm-caret { 50% { opacity: 0; } }
 
 /* the translation bridge */
-.dm-bridge { position: relative; align-self: stretch; margin-top: 96px; }
+.dm-bridge { position: relative; align-self: stretch; }
 .dm-wire { position: absolute; left: 8px; right: 8px; top: 50%; border-top: 2px dashed var(--lilac-2); }
 .dm-pill {
   position: absolute; top: calc(50% - 17px); left: 50%; white-space: nowrap; display: flex; gap: 6px; align-items: center;
@@ -125,12 +131,6 @@
 .dm-in { animation: dm-pop 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.25); }
 @keyframes dm-pop { from { opacity: 0; transform: translateY(8px) scale(0.94); } }
 
-.dm-back-btn { background: none; border: 0; font: inherit; font-weight: 700; color: var(--ink-2); cursor: pointer; padding: 10px; }
-.dm-back-btn:disabled { opacity: 0.35; cursor: default; }
-.dm-progress { display: flex; gap: 6px; }
-.dm-progress i { width: 10px; height: 10px; border-radius: 50%; background: #e3dfe8; transition: background 0.2s; }
-.dm-progress i.on.teacher { background: var(--purple); }
-.dm-progress i.on.parent { background: var(--sms-green); }
 
 /* --- smaller screens --- */
 @media (max-width: 1100px) {
@@ -138,17 +138,14 @@
   .dm-list { display: none; }
 }
 @media (max-width: 900px) {
-  .dm-page { padding: 8px 16px 48px; }
-  .dm-stage { --h: 440px; grid-template-columns: minmax(0, 1fr); }
+  .dm-page { padding: 14px 16px 40px; }
+  .dm-stage { --h: 440px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "ctl" "tp" "desk" "br" "pp" "ph"; }
   .dm-desk { height: 380px; }
+  .dm-ctl { position: sticky; top: 8px; z-index: 5; }
   .dm-bridge { height: 64px; margin: 0; }
   .dm-wire { left: 50%; right: auto; top: 6px; bottom: 6px; border-top: 0; border-left: 2px dashed var(--lilac-2); }
   .dm-pill { top: 15px; }
   .dm-pill.to-right, .dm-pill.to-left { animation: dm-drop 1.5s ease forwards; }
-  .dm-btns { flex-wrap: wrap; gap: 10px; width: 100%; }
-  .dm-progress { order: -1; width: 100%; }
-  .dm-next { min-width: 0; flex: 1; }
-  .dm-screen-col.phone .dm-person { align-self: flex-start; }
 }
 @keyframes dm-drop {
   0% { transform: translateX(-50%) scale(0.6); opacity: 0; }
