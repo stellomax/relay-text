@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 /* ---------- the cast ---------- */
 const TEACHER = {
@@ -98,6 +98,35 @@ export default function DemoPlayer() {
   const [typed, setTyped] = useState(0);
   const deskRef = useRef<HTMLDivElement>(null);
   const phoneRef = useRef<HTMLDivElement>(null);
+  const tpRef = useRef<HTMLDivElement>(null);
+  const ppRef = useRef<HTMLDivElement>(null);
+  const ctlRef = useRef<HTMLDivElement>(null);
+  const [shift, setShift] = useState(0);
+  const shiftRef = useRef(0);
+
+  // keep the button exactly halfway between Mrs. Anton and Ms. Rivera (wide screens only)
+  useLayoutEffect(() => {
+    function place() {
+      const tp = tpRef.current, pp = ppRef.current, ctl = ctlRef.current;
+      if (!tp || !pp || !ctl) return;
+      let next = 0;
+      if (window.innerWidth > 900) {
+        const a = tp.getBoundingClientRect(), b = pp.getBoundingClientRect(), c = ctl.getBoundingClientRect();
+        const home = c.left - (shiftRef.current ?? 0) + c.width / 2; // where the button sits with no shift
+        next = Math.round((a.right + b.left) / 2 - home);
+      }
+      shiftRef.current = next;
+      setShift(next);
+    }
+    place();
+    const ro = new ResizeObserver(place);
+    [tpRef, ppRef].forEach((r) => r.current && ro.observe(r.current));
+    window.addEventListener("resize", place);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", place);
+    };
+  }, []);
 
   const cur = idx > 0 ? SCRIPT[idx - 1] : null;
   const finished = idx === SCRIPT.length && phase === "done";
@@ -189,14 +218,14 @@ export default function DemoPlayer() {
       {/* the two screens */}
       <div className="dm-stage" onClick={next} role="button" tabIndex={-1} aria-label="Play the next message">
         {/* the people, with the button between them */}
-        <div className="dm-person tp">
+        <div className="dm-person tp" ref={tpRef}>
           <Avatar who={TEACHER} size={84} />
           <div>
             <b>{TEACHER.name}</b>
             <span>{TEACHER.role}</span>
           </div>
         </div>
-        <div className="dm-ctl" onClick={(e) => e.stopPropagation()}>
+        <div className="dm-ctl" ref={ctlRef} style={{ transform: shift ? `translateX(${shift}px)` : undefined }} onClick={(e) => e.stopPropagation()}>
           {finished ? (
             <>
               <button type="button" className="lp-btn dm-next" onClick={restart}>
@@ -212,7 +241,7 @@ export default function DemoPlayer() {
             </button>
           )}
         </div>
-        <div className="dm-person pp">
+        <div className="dm-person pp" ref={ppRef}>
           <Avatar who={PARENT} size={84} />
           <div>
             <b>{PARENT.name}</b>
