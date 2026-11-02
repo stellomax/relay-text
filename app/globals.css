@@ -892,3 +892,5 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
   .help-step { grid-template-columns: 1fr; gap: 8px; padding: 16px; }
   .help-title { font-size: 25px; }
 }
+.forgot-link { text-align: center; margin: 14px 0 0; font-size: 16px; }
+.forgot-help { text-align: center; color: var(--label-2); font-size: 16px; line-height: 1.45; margin: -6px 8px 18px; }
