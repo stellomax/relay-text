@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Avatar from "@/components/Avatar";
 import Sheet from "@/components/Sheet";
 import { ChevronRight, Plus } from "@/components/icons";
-import AdminHeader, { AdminTitle, useSavedSchool } from "@/components/AdminHeader";
+import AdminHeader, { AdminTitle, SchoolPicker, useSavedSchool } from "@/components/AdminHeader";
 import { api } from "@/lib/client";
 import { prettyPhone } from "@/lib/phone";
 import { listTime } from "@/lib/format";
@@ -199,11 +199,12 @@ export default function AdminPage() {
 
   return (
     <div className="admin-page">
-      <AdminHeader schools={data?.schools} school={pickedSchool} onSchool={setPickedSchool} />
+      <AdminHeader />
 
       <div className="settings-body admin-wide">
         <AdminTitle
           title="Manage Teachers"
+          picker={data ? <SchoolPicker schools={data.schools} school={pickedSchool} onSchool={setPickedSchool} /> : undefined}
           sub={data ? `${data.schools.find((x) => x.id === schoolFilter)?.name || "All schools"} · ${people.length} ${people.length === 1 ? "person" : "people"}` : undefined}
         />
         {error && <p className="sheet-error">{error}</p>}

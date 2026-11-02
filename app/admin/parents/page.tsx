@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Sheet from "@/components/Sheet";
 import LanguageSelect from "@/components/LanguageSelect";
 import { Check, ChevronRight, Plus, Upload } from "@/components/icons";
-import AdminHeader, { AdminTitle, useSavedSchool } from "@/components/AdminHeader";
+import AdminHeader, { AdminTitle, SchoolPicker, useSavedSchool } from "@/components/AdminHeader";
 import { api } from "@/lib/client";
 import { languageName, parseLanguage, rememberLanguages, type Language } from "@/lib/languages";
 import { formatPhoneInput, prettyPhone, toE164 } from "@/lib/phone";
@@ -150,11 +150,12 @@ export default function ParentsPage() {
 
   return (
     <div className="admin-page">
-      <AdminHeader schools={schools} school={pickedSchool} onSchool={setPickedSchool} />
+      <AdminHeader />
 
       <div className="settings-body admin-wide">
         <AdminTitle
           title="Manage Parents"
+          picker={loaded ? <SchoolPicker schools={schools} school={pickedSchool} onSchool={setPickedSchool} /> : undefined}
           sub={loaded ? `${schools.find((x) => x.id === schoolFilter)?.name || "All schools"} · ${rows.length.toLocaleString()} ${rows.length === 1 ? "parent" : "parents"}` : undefined}
         />
         {error && <p className="sheet-error">{error}</p>}
