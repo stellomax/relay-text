@@ -1,6 +1,6 @@
 /* /demo: a teacher's computer and a parent's iPhone, one text at a time. Scoped under .lp via the dm- prefix. */
 .dm-page { max-width: 1240px; margin: 0 auto; padding: 22px 28px 28px; }
-.lp .dm-title { font-family: var(--lp-display); font-size: clamp(28px, 3vw, 38px); letter-spacing: -1px; line-height: 1.1; margin: 0 0 6px; max-width: none; }
+.lp .dm-title { font-family: var(--lp-display); font-size: clamp(20px, 1.8vw, 24px); letter-spacing: -0.3px; line-height: 1.1; margin: 0 0 16px; max-width: none; }
 .dm-next { font-size: 17px; padding: 13px 18px; min-width: 200px; justify-content: center; cursor: pointer; font-family: inherit; }
 
 /* the two people, each above their own screen */
