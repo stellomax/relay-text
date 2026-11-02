@@ -64,7 +64,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="home">
-      <AdminHeader />
+      <AdminHeader narrow />
 
       <main className="dash">
         <div className="dash-head title-row">

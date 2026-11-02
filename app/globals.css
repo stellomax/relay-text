@@ -907,3 +907,6 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
   .title-picker { width: 100%; margin-top: 0; }
   .title-picker .admin-select { width: 100%; max-width: none; }
 }
+/* Admin top bar: the avatar lines up with the right edge of the page content */
+.admin-bar { padding-right: max(14px, calc((100vw - 1180px) / 2 + 16px)); }
+.admin-bar.narrow { padding-right: max(14px, calc((100vw - 1120px) / 2 + 20px)); }

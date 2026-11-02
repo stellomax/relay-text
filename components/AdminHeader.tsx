@@ -34,8 +34,8 @@ export function useSavedSchool(fallback: () => string | null) {
   return [school, pick] as const;
 }
 
-// Top bar for admin pages: logo on the left, avatar menu on the right.
-export default function AdminHeader() {
+// Top bar for admin pages: logo on the left, avatar menu on the right, lined up with the page content below.
+export default function AdminHeader({ narrow = false }: { narrow?: boolean }) {
   const [me, setMe] = useState<Me | null>(null);
   useEffect(() => {
     api<{ me: Me }>("/api/me")
@@ -47,7 +47,7 @@ export default function AdminHeader() {
   }, []);
 
   return (
-    <header className="home-bar">
+    <header className={`home-bar admin-bar ${narrow ? "narrow" : ""}`}>
       <a href="/admin" aria-label="Home">
         <img className="inbox-logo" src="/relay-text-logo.png" alt="Relay" />
       </a>
