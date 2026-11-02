@@ -209,7 +209,7 @@ export default function Landing() {
               Relay is two-way texting with built-in translation. Teachers write in English, and parents read and reply in their
               own language.
             </p>
-            <ul className="lp-checks">
+            <ul className="lp-hero-checks">
               <li>Build stronger partnerships with marginalized families</li>
               <li>Empower teachers with simplified communications</li>
               <li>Watch student connection and performance increase!</li>
