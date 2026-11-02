@@ -57,6 +57,9 @@ export default function Signup() {
     <div className="login">
       <img src="/relay-text-logo.png" alt="RelayText" className="login-logo" />
       <p className="login-tag">Create your teacher account.</p>
+      <p className="signup-note">
+        You’ll receive your own Relay number for texting families, so your personal cell number is never shared.
+      </p>
       <form onSubmit={submit} className="login-form">
         <div className="ios-group">
           <input
@@ -111,9 +114,6 @@ export default function Signup() {
         </div>
         {personal && <p className="login-error">Please use your school email address, not a personal one.</p>}
         {mismatch && <p className="login-error">The passwords don’t match.</p>}
-        <p className="ios-footnote">
-          You’ll get your own Relay number for texting families, so your personal cell number is never shared.
-        </p>
         {error && <p className="login-error">{error}</p>}
         <button className="ios-button" disabled={busy || !ready}>
           {busy ? "Creating Account…" : "Create Account"}
