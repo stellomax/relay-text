@@ -103,13 +103,21 @@ alter table public.staff   add column if not exists school_id uuid references pu
 alter table public.invites add column if not exists school_id uuid references public.schools(id) on delete set null;
 create index if not exists staff_school_idx on public.staff (school_id);
 
+-- Short school names: "Middle School" → "MS", "High School" → "HS" (Nov 2026). Safe to run again.
+update public.schools set name = replace(replace(name, 'Middle School', 'MS'), 'High School', 'HS')
+  where name like '%Middle School%' or name like '%High School%';
+update public.staff set school = replace(replace(school, 'Middle School', 'MS'), 'High School', 'HS')
+  where school like '%Middle School%' or school like '%High School%';
+update public.invites set school = replace(replace(school, 'Middle School', 'MS'), 'High School', 'HS')
+  where school like '%Middle School%' or school like '%High School%';
+
 -- Sample schools (skipped if a school with the same name already exists)
 insert into public.schools (name, district, area_code, signup_code) values
-  ('Sagewood Middle School',  'Sagewood School District', '303', '12345'),
+  ('Sagewood MS',            'Sagewood School District', '303', '12345'),
   ('Elk Elementary',          'Elk Valley Schools',       '970', '22222'),
-  ('Aspen Ridge High School', 'Aspen Ridge District',     '970', '33333'),
+  ('Aspen Ridge HS', 'Aspen Ridge District',     '970', '33333'),
   ('Cedar Valley Elementary', 'Cedar Valley Unified',     '720', '44444'),
-  ('Pinecrest Middle School', 'Pinecrest Public Schools', '719', '55555'),
+  ('Pinecrest MS', 'Pinecrest Public Schools', '719', '55555'),
   ('Riverside Academy',       'Riverside School District','303', '66666')
 on conflict (name) do nothing;
 
