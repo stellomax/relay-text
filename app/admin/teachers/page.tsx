@@ -135,11 +135,11 @@ export default function AdminPage() {
   }
 
   // What Relay is, in one line, for the start of messages sent to new teachers.
-  const ABOUT = (school?: string | null) =>
-    `${school || "Our school"} uses Relay to text parents in their own language. You write and read in English.`;
+  const ABOUT = (_school?: string | null) =>
+    "Below are your sign up details for Relay, an easy to use texting platform that provides real-time translation- perfect for communicating with multi-lingual parents. Your personal number will never be exposed.";
 
   function inviteMessage(code: string, school?: string | null) {
-    return `You're invited to Relay. ${ABOUT(school)}\n\nSign up at ${data?.signupUrl || "relaytext.io/signup"} with code ${code} (works once, expires in 30 days).`;
+    return `${ABOUT(school)}\n\nSign up at ${data?.signupUrl || "relaytext.io/signup"} with code ${code} (works once, expires in 30 days).`;
   }
 
   async function createCode() {
@@ -157,7 +157,7 @@ export default function AdminPage() {
         setNotice({
           title: "Teacher Added",
           lines,
-          copy: `Your Relay account is ready. ${ABOUT(data?.schools.find((x) => x.id === adding.school_id)?.name)}\n\nSign in at relaytext.io with ${r.email}\nTemporary password: ${r.tempPassword}\nYou can change your password in Settings.`,
+          copy: `${ABOUT(data?.schools.find((x) => x.id === adding.school_id)?.name)}\n\nSign in at relaytext.io with ${r.email}\nTemporary password: ${r.tempPassword}\nYou can change your password in Settings.`,
         });
         setAdding(null);
         await load();
