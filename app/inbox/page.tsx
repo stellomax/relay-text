@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Avatar from "@/components/Avatar";
 import Thread from "@/components/Thread";
-import Compose from "@/components/Compose";
+import NewThread from "@/components/NewThread";
 import ContactSheet from "@/components/ContactSheet";
 import DemoReply from "@/components/DemoReply";
 import { ChevronRight, Compose as ComposeIcon, Search } from "@/components/icons";
@@ -15,7 +15,7 @@ import type { Contact, Message } from "@/lib/db";
 
 type Conversation = { contact: Contact; last: Partial<Message> | null; unread: number };
 type Inbox = { id: string; label: string; sub?: string };
-type SheetKind = "new" | "info" | "demo" | null;
+type SheetKind = "info" | "demo" | null;
 
 function readParams() {
   if (typeof window === "undefined") return { c: null as string | null, as: null as string | null };
@@ -43,6 +43,7 @@ export default function Messages() {
   const [sheet, setSheet] = useState<SheetKind>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [composeGroup, setComposeGroup] = useState<string | null>(null);
+  const [composing, setComposing] = useState(false);
   const asRef = useRef<string | null>(null);
   const [me, setMe] = useState<Me | null>(null);
 
@@ -81,7 +82,7 @@ export default function Messages() {
     const p = new URLSearchParams(window.location.search);
     if (p.get("compose") || p.get("group")) {
       setComposeGroup(p.get("group"));
-      setSheet("new");
+      setComposing(true);
       p.delete("compose");
       p.delete("group");
       const rest = p.toString();
@@ -89,6 +90,7 @@ export default function Messages() {
     }
     const onPop = () => {
       sync();
+      setComposing(!!(window.history.state && window.history.state.compose));
       load();
     };
     window.addEventListener("popstate", onPop);
@@ -102,11 +104,21 @@ export default function Messages() {
 
   // Opening a conversation pushes a history entry, so the phone's back gesture works.
   function open(id: string) {
+    setComposing(false);
     if (id !== selectedId) window.history.pushState({}, "", url(id, as));
     setSelectedId(id);
     setConvos((cs) => cs.map((c) => (c.contact.id === id && !readOnly ? { ...c, unread: 0 } : c)));
   }
+  function startNew() {
+    if (readOnly) return;
+    // A history entry, so the phone's back gesture closes New Message.
+    window.history.pushState({ compose: 1 }, "", url(null, as));
+    setSelectedId(null);
+    setComposeGroup(null);
+    setComposing(true);
+  }
   function back() {
+    setComposing(false);
     if (readParams().c) window.history.pushState({}, "", url(null, as));
     setSelectedId(null);
     load();
@@ -159,13 +171,13 @@ export default function Messages() {
   );
 
   return (
-    <div className={`app ${selectedId ? "show-thread" : ""}`}>
+    <div className={`app ${selectedId || composing ? "show-thread" : ""}`}>
       <aside className="inbox">
         <div className="inbox-bar">
           <img className="inbox-logo" src="/relay-text-logo.png" alt="RelayText" />
           <span className="inbox-bar-actions">
             {!readOnly && (
-              <button className="new-msg-btn" onClick={() => setSheet("new")}>
+              <button className="new-msg-btn" onClick={() => startNew()}>
                 <ComposeIcon size={18} /> New Message
               </button>
             )}
@@ -218,7 +230,7 @@ export default function Messages() {
                   <li>Write in English and tap Send</li>
                 </ol>
                 <p>Each parent gets the text in their own language. Their replies show up here in English.</p>
-                <button className="ios-button big" onClick={() => setSheet("new")}>
+                <button className="ios-button big" onClick={() => startNew()}>
                   New Message
                 </button>
               </>
@@ -255,7 +267,18 @@ export default function Messages() {
       </aside>
 
       <main className="pane">
-        {selected ? (
+        {composing && !readOnly ? (
+          <NewThread
+            key={composeGroup || "new"}
+            initialGroupId={composeGroup}
+            onBack={back}
+            headerRight={<MainMenu me={me} />}
+            onSent={async (r) => {
+              await load();
+              if (r.count === 1 && r.contactIds[0]) open(r.contactIds[0]);
+            }}
+          />
+        ) : selected ? (
           <Thread
             contact={selected}
             backBadge={otherUnread}
@@ -281,7 +304,7 @@ export default function Messages() {
                 ) : (
                   <>
                     Choose a conversation, or{" "}
-                    <button className="link-btn" onClick={() => setSheet("new")}>
+                    <button className="link-btn" onClick={() => startNew()}>
                       start a new one
                     </button>
                     .
@@ -293,17 +316,6 @@ export default function Messages() {
         )}
       </main>
 
-      {sheet === "new" && !readOnly && (
-        <Compose
-          initialGroupId={composeGroup}
-          onClose={async (r) => {
-            setSheet(null);
-            setComposeGroup(null);
-            if (r?.sent) await load();
-            if (r?.openContactId) open(r.openContactId);
-          }}
-        />
-      )}
       {sheet === "info" && selected && (
         <ContactSheet
           contact={selected}
