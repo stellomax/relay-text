@@ -212,3 +212,21 @@ on conflict do nothing;
 alter table public.parents              enable row level security;
 alter table public.parent_groups        enable row level security;
 alter table public.parent_group_members enable row level security;
+
+-- Requests from the "Bring Relay to your school" form on the website (Nov 2026)
+create table if not exists public.school_requests (
+  id           uuid primary key default gen_random_uuid(),
+  first_name   text not null,
+  last_name    text not null,
+  email        text not null,
+  phone        text,
+  role         text,
+  organization text not null,       -- school or district
+  location     text,                -- city, state
+  students     text,                -- size range
+  message      text,
+  handled      boolean not null default false,
+  created_at   timestamptz not null default now()
+);
+create index if not exists school_requests_created_idx on public.school_requests (created_at desc);
+alter table public.school_requests enable row level security;

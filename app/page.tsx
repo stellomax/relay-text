@@ -83,7 +83,7 @@ const STORY = [
 ];
 
 
-const CONTACT = "mailto:relay@stellomark.com?subject=Bringing%20Relay%20to%20our%20school";
+const CONTACT = "/contact";
 
 const FAQ = [
   {
