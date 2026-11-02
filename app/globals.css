@@ -913,3 +913,8 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .schools-table { min-width: 760px; }
 .code-cell { font-weight: 700; letter-spacing: 2px; font-variant-numeric: tabular-nums; color: var(--brand); }
 .code-cell.code-off { color: var(--label-4); }
+/* Messages on wide screens: bring the avatar in from the far corner */
+@media (min-width: 761px) {
+  .pane .thread-bar { padding-left: clamp(6px, calc((100vw - 900px) / 3), 120px); padding-right: clamp(6px, calc((100vw - 900px) / 3), 120px); }
+  .pane .pane-bar { padding-right: clamp(10px, calc((100vw - 900px) / 3), 120px); }
+}
