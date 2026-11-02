@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import MainMenu, { type Me } from "@/components/MainMenu";
+import { type Me } from "@/components/MainMenu";
+import AdminHeader, { savedSchool, saveSchool } from "@/components/AdminHeader";
 import { Book, ChevronRight, Compose, PersonAdd } from "@/components/icons";
 import { api } from "@/lib/client";
 import { languageName } from "@/lib/languages";
@@ -42,6 +43,8 @@ export default function AdminDashboard() {
       .then((d) => {
         setS(d);
         setError("");
+        // Remember the school shown, so Manage Teachers and Manage Parents open on the same one.
+        if (!savedSchool()) saveSchool(d.schoolId);
       })
       .catch((e) => setError(e.message));
   }, []);
@@ -53,44 +56,22 @@ export default function AdminDashboard() {
         setMe(d.me);
       })
       .catch(() => {});
-    const saved = (() => {
-      try {
-        return localStorage.getItem("relay.dashSchool") || undefined;
-      } catch {
-        return undefined;
-      }
-    })();
-    load(saved);
+    load(savedSchool() || undefined);
   }, [load]);
-
-  function pickSchool(id: string) {
-    try {
-      localStorage.setItem("relay.dashSchool", id);
-    } catch {}
-    load(id);
-  }
 
   const first = (s?.name || me?.name || "").split(" ")[0];
   const p = s?.parents;
 
   return (
     <div className="home">
-      <header className="home-bar">
-        <img className="inbox-logo" src="/relay-text-logo.png" alt="Relay" />
-        <span className="home-bar-right">
-          {s && s.schools.length > 1 && (
-            <select className="admin-select school-pick" value={s.schoolId} onChange={(e) => pickSchool(e.target.value)} aria-label="School">
-              <option value="all">All schools</option>
-              {s.schools.map((x) => (
-                <option key={x.id} value={x.id}>
-                  {x.name}
-                </option>
-              ))}
-            </select>
-          )}
-          <MainMenu me={me} />
-        </span>
-      </header>
+      <AdminHeader
+        schools={s?.schools}
+        school={s?.schoolId}
+        onSchool={(id) => {
+          saveSchool(id);
+          load(id);
+        }}
+      />
 
       <main className="dash">
         <div className="dash-head">

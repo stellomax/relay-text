@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Avatar from "@/components/Avatar";
 import Sheet from "@/components/Sheet";
-import { ChevronLeft, ChevronRight, Plus } from "@/components/icons";
+import { ChevronRight, Plus } from "@/components/icons";
+import AdminHeader, { AdminTitle, useSavedSchool } from "@/components/AdminHeader";
 import { api } from "@/lib/client";
 import { prettyPhone } from "@/lib/phone";
 import { listTime } from "@/lib/format";
@@ -83,7 +84,8 @@ export default function AdminPage() {
   const [adding, setAdding] = useState<typeof EMPTY_NEW | null>(null);
   const [busy, setBusy] = useState("");
   const [notice, setNotice] = useState<Notice>(null);
-  const [schoolFilter, setSchoolFilter] = useState<string>("");
+  const [pickedSchool, setPickedSchool] = useSavedSchool(() => null);
+  const schoolFilter = !pickedSchool || pickedSchool === "all" ? "" : pickedSchool;
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: "name", dir: 1 });
 
@@ -100,7 +102,7 @@ export default function AdminPage() {
   useEffect(() => {
     load();
     const params = new URLSearchParams(window.location.search);
-    if (params.get("school")) setSchoolFilter(params.get("school")!);
+    if (params.get("school")) setPickedSchool(params.get("school")!);
     // "Add Teacher" in the main menu opens straight to the add sheet.
     if (params.get("add")) {
       setAdding({ ...EMPTY_NEW });
@@ -196,23 +198,14 @@ export default function AdminPage() {
     setSort((s) => (s.key === key ? { key, dir: s.dir === 1 ? -1 : 1 } : { key, dir: key === "families" || key === "messages30d" || key === "last_seen_at" ? -1 : 1 }));
 
   return (
-    <div className="settings">
-      <header className="settings-bar">
-        <a className="back-btn text" href="/admin">
-          <ChevronLeft /> Home
-        </a>
-        <div className="settings-title">Teachers</div>
-        <button
-          className="icon-btn add-btn"
-          onClick={() => setAdding({ ...EMPTY_NEW, school_id: schoolFilter && schoolFilter !== "none" ? schoolFilter : "" })}
-          aria-label="Add teacher"
-          title="Add teacher"
-        >
-          <Plus size={20} />
-        </button>
-      </header>
+    <div className="admin-page">
+      <AdminHeader schools={data?.schools} school={pickedSchool} onSchool={setPickedSchool} />
 
       <div className="settings-body admin-wide">
+        <AdminTitle
+          title="Manage Teachers"
+          sub={data ? `${data.schools.find((x) => x.id === schoolFilter)?.name || "All schools"} · ${people.length} ${people.length === 1 ? "person" : "people"}` : undefined}
+        />
         {error && <p className="sheet-error">{error}</p>}
         {!data && !error && <p className="ios-footnote top">Loading…</p>}
 
@@ -304,17 +297,6 @@ export default function AdminPage() {
                 onChange={(e) => setSearch(e.target.value)}
                 aria-label="Search teachers"
               />
-              {data.schools.length > 0 && (
-                <select className="admin-select" value={schoolFilter} onChange={(e) => setSchoolFilter(e.target.value)} aria-label="Filter by school">
-                  <option value="">All schools</option>
-                  {data.schools.map((sc) => (
-                    <option key={sc.id} value={sc.id}>
-                      {sc.name}
-                    </option>
-                  ))}
-                  <option value="none">No school</option>
-                </select>
-              )}
               <button
                 className="pill-btn add-pill"
                 onClick={() => setAdding({ ...EMPTY_NEW, school_id: schoolFilter && schoolFilter !== "none" ? schoolFilter : "" })}
