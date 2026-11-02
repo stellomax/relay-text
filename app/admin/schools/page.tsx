@@ -50,7 +50,7 @@ export default function SchoolsPage() {
   }
 
   function inviteText(s: School) {
-    return `Join ${s.name} on Relay. ${s.name} uses Relay to text parents in their own language. You write and read in English.\n\nSign up at ${signupUrl} with code ${s.signup_code}.`;
+    return `Below are your sign up details for Relay, an easy to use texting platform that provides real-time translation- perfect for communicating with multi-lingual parents. Your personal number will never be exposed.\n\nSign up at ${signupUrl} with code ${s.signup_code}.`;
   }
 
   async function save() {
