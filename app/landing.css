@@ -388,8 +388,8 @@
 .lp-slide-b { animation: lp-swap-b 14s infinite; }
 @keyframes lp-swap-a { 0%, 44% { opacity: 1; visibility: visible; } 50%, 94% { opacity: 0; visibility: hidden; } 100% { opacity: 1; visibility: visible; } }
 @keyframes lp-swap-b { 0%, 44% { opacity: 0; visibility: hidden; } 50%, 94% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } }
-.lp-swap-labels { grid-area: 2 / 1; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 16px; font-size: 13px; font-weight: 700; }
-.lp-swap-labels span { padding: 5px 12px; border-radius: 999px; color: var(--ink-2); background: transparent; }
+.lp-swap-labels { grid-area: 2 / 1; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 18px; font-size: 17px; font-weight: 700; flex-wrap: wrap; }
+.lp-swap-labels span { padding: 8px 18px; border-radius: 999px; color: var(--ink-2); background: transparent; }
 .lp-swap-labels .a { animation: lp-pill-a 14s infinite; }
 .lp-swap-labels .b { animation: lp-pill-b 14s infinite; }
 @keyframes lp-pill-a { 0%, 44% { background: var(--lilac-2); color: var(--purple); } 50%, 94% { background: transparent; color: var(--ink-2); } 100% { background: var(--lilac-2); color: var(--purple); } }
@@ -478,3 +478,7 @@ i.rep { background: #1f9e89; }
 .lp .lp-noapp, .lp .lp-schools, .lp .lp-hellos, .lp .lp-faq { padding-top: var(--sec-half); padding-bottom: var(--sec-half); }
 .lp .lp-benefits, .lp .lp-final { margin-top: var(--sec-half); margin-bottom: var(--sec-half); }
 .lp .lp-foot { padding-top: var(--sec-half); }
+@media (max-width: 560px) {
+  .lp-swap-labels { font-size: 15px; gap: 6px; }
+  .lp-swap-labels span { padding: 7px 12px; }
+}
