@@ -73,7 +73,7 @@ export default function AdminDashboard() {
         <div className="dash-head title-row">
           <div className="title-main">
             <h1 className="home-title">{first ? `Hi, ${first}` : "Welcome"}</h1>
-            <p className="home-sub">{s ? `${s.school?.name || "All schools"} · here’s the last 30 days` : " "}</p>
+            <p className="home-sub">{s ? s.school?.name || "All schools" : " "}</p>
           </div>
           {s && (
             <SchoolPicker
