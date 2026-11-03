@@ -39,49 +39,21 @@ const HELLOS = [
   { t: "Salom", l: "Uzbek" },
 ];
 
-const STORY = [
+// Sample testimonials: placeholder photos, names and lorem ipsum until real quotes come in.
+const TESTIMONIALS = [
   {
-    title: "Reach",
-    text: "Reach families traditional communication misses.",
-    icon: (
-      <>
-        <path d="M22 2L11 13" />
-        <path d="M22 2l-7 20-4-9-9-4z" />
-      </>
-    ),
+    quote:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
+    name: "Administrator Name",
+    role: "Principal, Sample Middle School",
+    photo: "https://images.unsplash.com/photo-1562788869-4ed32648eb72?w=240&h=240&q=80&auto=format&fit=crop&crop=faces",
   },
   {
-    title: "Connect",
-    text: "Teachers and parents text naturally, each in their own language.",
-    icon: (
-      <>
-        <path d="M4 4h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9l-4 3.5V15H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
-        <path d="M18 9h2a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-1v2.5L16 19h-4a2 2 0 0 1-1.8-1.1" />
-      </>
-    ),
-  },
-  {
-    title: "Engage",
-    text: "Remove the language barrier and make two-way family participation easier.",
-    icon: (
-      <>
-        <circle cx="9" cy="7" r="3.2" />
-        <path d="M3 20v-1.5A4.5 4.5 0 0 1 7.5 14h3a4.5 4.5 0 0 1 4.5 4.5V20" />
-        <circle cx="17.5" cy="8.5" r="2.5" />
-        <path d="M17 14h1a3.5 3.5 0 0 1 3.5 3.5V20" />
-      </>
-    ),
-  },
-  {
-    title: "Succeed",
-    text: "Build stronger school-family partnerships that support student success.",
-    icon: (
-      <>
-        <path d="M2 9l10-5 10 5-10 5z" />
-        <path d="M6 11v5c0 1.6 2.7 3 6 3s6-1.4 6-3v-5" />
-        <path d="M22 9v6" />
-      </>
-    ),
+    quote:
+      "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim.",
+    name: "Teacher Name",
+    role: "6th grade teacher, Sample Middle School",
+    photo: "https://images.unsplash.com/photo-1758873268223-f61976493498?w=240&h=240&q=80&auto=format&fit=crop&crop=faces",
   },
 ];
 
@@ -213,20 +185,24 @@ export default function Landing() {
         </section>
 
         <section className="lp-benefits" id="about" aria-labelledby="benefits">
-          <h2 id="benefits">More than translation: a connection with every family</h2>
-          <ul>
-            {STORY.map((b) => (
-              <li key={b.title}>
-                <span className="lp-benefit-icon" aria-hidden>
-                  <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    {b.icon}
-                  </svg>
+          <h2 id="benefits">What educators are saying</h2>
+          <div className="lp-testimonials">
+            {TESTIMONIALS.map((t) => (
+              <figure key={t.name} className="lp-quote">
+                <span className="lp-quote-mark" aria-hidden>
+                  “
                 </span>
-                <h3>{b.title}</h3>
-                <p>{b.text}</p>
-              </li>
+                <blockquote>{t.quote}</blockquote>
+                <figcaption>
+                  <img src={t.photo} alt="" width={64} height={64} loading="lazy" />
+                  <span>
+                    <b>{t.name}</b>
+                    {t.role}
+                  </span>
+                </figcaption>
+              </figure>
             ))}
-          </ul>
+          </div>
         </section>
 
         <section className="lp-schools" id="for-teachers" aria-labelledby="schools">
