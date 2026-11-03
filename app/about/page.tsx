@@ -33,7 +33,7 @@ const BELIEFS = [
 // Sample names and titles with placeholder photos (public/team-1..4.jpg); replace with the real team.
 const TEAM = [
   { name: "Daniel Brooks", title: "Co-founder · Former Middle School Principal", photo: "/team-1.jpg" },
-  { name: "Elena Morales", title: "ELD Teacher · Curriculum Lead", photo: "/team-2.jpg" },
+  { name: "Elena Morales", title: "ELD Teacher · Curriculum Lead", photo: "/team-2b.jpg" },
   { name: "Julie Hansen", title: "Family Engagement Coordinator", photo: "/team-3.jpg" },
   { name: "Michelle Carter", title: "Lead Developer", photo: "/team-4.jpg" },
 ];
