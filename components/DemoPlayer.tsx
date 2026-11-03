@@ -6,13 +6,13 @@ import { useEffect, useRef, useState } from "react";
 const TEACHER = {
   name: "Mrs. Wright",
   role: "6th grade science · Sagewood MS",
-  photo: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=320&h=320&q=80&auto=format&fit=crop&crop=faces",
+  photo: "/demo-teacher.jpg",
   initials: "MW",
 };
 const PARENT = {
   name: "Ms. Rivera",
   role: "Sofia's mom",
-  photo: "https://images.unsplash.com/photo-1700190828755-2965e99a7604?w=320&h=320&q=80&auto=format&fit=crop&crop=faces",
+  photo: "/demo-parent.jpg",
   initials: "LR",
 };
 
