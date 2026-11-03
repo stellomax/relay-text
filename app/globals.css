@@ -733,7 +733,7 @@ a { color: var(--tint); text-decoration: none; }
 .home-cards .home-card:first-child { background: none; }
 
 .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 14px; }
-.kpis.three { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 6px; }
+.kpis:has(+ .kpi-note) { margin-bottom: 6px; }
 .kpi-trend { display: inline-flex; align-items: center; gap: 3px; margin-left: 10px; font-size: 14px; font-weight: 600; letter-spacing: 0; vertical-align: 6px; padding: 2px 8px; border-radius: 999px; }
 .kpi-trend.up { color: #006300; background: #e6f4e6; }
 .kpi-trend.down { color: #b42318; background: #fdecea; }
@@ -823,7 +823,6 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 @media (max-width: 900px) {
   .dash-actions { grid-template-columns: 1fr; }
   .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .kpis.three { grid-template-columns: 1fr; }
   .dash-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {
