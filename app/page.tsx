@@ -207,7 +207,7 @@ export default function Landing() {
 
         <section className="lp-schools" id="for-teachers" aria-labelledby="schools">
           <div className="lp-schools-copy">
-            <h2 id="schools">Simple for teachers. Insightful for Admins.</h2>
+            <h2 id="schools">Simple for teachers. Insightful for admin.</h2>
             <dl>
               <div>
                 <dt>Teachers just text</dt>
