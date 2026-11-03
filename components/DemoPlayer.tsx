@@ -19,9 +19,6 @@ const PARENT = {
 /* ---------- the conversation ---------- */
 type Msg = { from: "teacher" | "parent"; en: string; es: string; time: string };
 
-const DISCLOSURE =
-  "Enviado por Mrs. Anton, Sagewood MS vía Relay. Reply STOP to opt out or HELP for help. Pueden aplicarse tarifas de mensajes y datos.";
-
 const SCRIPT: Msg[] = [
   {
     from: "teacher",
@@ -384,7 +381,6 @@ export default function DemoPlayer() {
                 return (
                   <div className="dm-sms in dm-in" key={i}>
                     {m.es}
-                    {i === 0 && <span className="dm-disc">{DISCLOSURE}</span>}
                   </div>
                 );
               })}
