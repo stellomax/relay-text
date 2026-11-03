@@ -327,6 +327,7 @@
 .lp-faq dl > div { background: var(--lilac); border-radius: 22px; padding: 24px 26px; }
 .lp-faq dt { font-family: var(--lp-display), var(--lp-body), sans-serif; font-weight: 700; font-size: 20px; color: var(--plum); }
 .lp-faq dd { margin: 8px 0 0; color: var(--ink-2); }
+.lp-faq dd a { color: var(--purple); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 @media (max-width: 760px) {
   .lp-faq dl { grid-template-columns: 1fr; }
 }
