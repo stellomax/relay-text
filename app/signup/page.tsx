@@ -57,9 +57,6 @@ export default function Signup() {
     <div className="login">
       <img src="/relay-text-logo.png" alt="RelayText" className="login-logo" />
       <p className="login-tag">Create your teacher account.</p>
-      <p className="signup-note">
-        You’ll receive your own Relay number for texting families, so your personal cell number is never shared.
-      </p>
       <form onSubmit={submit} className="login-form">
         <div className="ios-group">
           <input
