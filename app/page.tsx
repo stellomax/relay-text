@@ -44,8 +44,8 @@ const TESTIMONIALS = [
   {
     quote:
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
-    name: "Administrator Name",
-    role: "Principal, Sample Middle School",
+    name: "Jennifer A.",
+    role: "Assistant Principal",
     photo: "https://images.unsplash.com/photo-1562788869-4ed32648eb72?w=240&h=240&q=80&auto=format&fit=crop&crop=faces",
   },
   {
