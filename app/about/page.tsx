@@ -74,8 +74,13 @@ export default function AboutPage() {
         <section className="lp-about-why" aria-labelledby="who">
           <h2 id="who">Who we are</h2>
           <p>
-            {BRAND} is a service of {COMPANY}. We work with schools and districts to get every teacher texting every family. Have a
-            question, or want to see if Relay fits your school? Write to us at <a href="mailto:relay@stellomark.com">relay@stellomark.com</a>.
+            We’re a team of teachers, school administrators and developers who care deeply about using technology to connect with
+            marginalized families. English language development (ELD) students and their families already work hard to learn a
+            new language and a new culture. Making it easier to talk with their child’s school brings all of us closer.
+          </p>
+          <p>
+            {BRAND} is a service of {COMPANY}. Have a question, or want to see if Relay fits your school? Write to us at{" "}
+            <a href="mailto:relay@stellomark.com">relay@stellomark.com</a>.
           </p>
         </section>
 
