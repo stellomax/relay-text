@@ -139,7 +139,7 @@ export const GET = withAdmin(async (req, me) => {
   }
 
   // Headline rates for the last 30 days, and the 30 days before that for the trend arrows.
-  // Outreach: parents on the list a teacher texted. Engagement: parents on the list who texted back.
+  // Outreach: parents on the list a teacher texted. Engagement: of those, how many texted back.
   // Involvement: active teachers who sent at least one text.
   const onList = new Set(parents.map((p) => p.id));
   const activeIds = new Set(staff.filter((s) => s.status === "active").map((s) => s.id));
@@ -159,7 +159,12 @@ export const GET = withAdmin(async (req, me) => {
       if (m.staff_id && activeIds.has(m.staff_id)) bucket.teachers.add(m.staff_id);
     } else if (listed) bucket.engaged.add(pid);
   }
-  const counts = (b: ReturnType<typeof period>) => ({ contacted: b.contacted.size, engaged: b.engaged.size, teachers: b.teachers.size });
+  // Engagement = contacted parents who responded (replied in the same period)
+  const counts = (b: ReturnType<typeof period>) => ({
+    contacted: b.contacted.size,
+    engaged: [...b.engaged].filter((id) => b.contacted.has(id)).length,
+    teachers: b.teachers.size,
+  });
 
   const active = staff.filter((s) => s.status === "active");
   const teachers = active

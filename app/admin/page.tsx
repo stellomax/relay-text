@@ -142,9 +142,10 @@ export default function AdminDashboard() {
                 label="Parent Engagement"
                 n={s.rates?.current.engaged ?? 0}
                 prev={s.rates?.previous?.engaged}
-                of={p.total}
-                sub="have engaged with us"
-                empty="Upload your list to start"
+                of={s.rates?.current.contacted ?? 0}
+                prevOf={s.rates?.previous?.contacted}
+                sub="contacted parents responded"
+                empty="No parents contacted yet"
               />
               <RateCard
                 href="/admin/teachers"
@@ -296,9 +297,10 @@ function MessagesPanel({ s }: { s: Summary }) {
 }
 
 // A headline rate: big percentage, "N out of M …", and an arrow comparing with the previous 30 days.
-function RateCard({ href, label, n, prev, of, sub, empty }: { href: string; label: string; n: number; prev?: number; of: number; sub: string; empty: string }) {
+function RateCard({ href, label, n, prev, of, prevOf, sub, empty }: { href: string; label: string; n: number; prev?: number; of: number; prevOf?: number; sub: string; empty: string }) {
   const now = of ? Math.round((n / of) * 100) : 0;
-  const before = prev !== undefined && of ? Math.round((prev / of) * 100) : null;
+  const base = prevOf ?? of; // the earlier period's own total when it has one
+  const before = prev !== undefined && base ? Math.round((prev / base) * 100) : null;
   const diff = before === null ? null : now - before;
   return (
     <a className="kpi" href={href}>
