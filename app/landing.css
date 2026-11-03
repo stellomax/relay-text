@@ -305,7 +305,7 @@
   /* Keep the switching window tall enough to show the whole dashboard screenshot */
   .lp-schools-copy { min-height: 548px; }
   /* height: 0 + min-height: 100% → the window takes the text column's height instead of setting it */
-  .lp-swap { align-self: stretch; height: 0; min-height: 100%; grid-template-rows: minmax(0, 1fr) auto; }
+  .lp-swap { align-self: stretch; height: 0; min-height: 100%; }
   .lp-window { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
   .lp-window-body { flex: 1; min-height: 0; }
   .lp-wl { overflow: hidden; }
@@ -385,23 +385,19 @@
   .ct-row { grid-template-columns: 1fr; }
 }
 
-/* "Simple for teachers. Clear for admin.": the inbox and the dashboard take turns */
-.lp-swap { display: grid; min-width: 0; }
-.lp-swap > .lp-slide { grid-area: 1 / 1; }
-.lp-slide-a { animation: lp-swap-a 9s infinite; }
-.lp-slide-b { animation: lp-swap-b 9s infinite; }
-@keyframes lp-swap-a { 0%, 44% { opacity: 1; visibility: visible; } 50%, 94% { opacity: 0; visibility: hidden; } 100% { opacity: 1; visibility: visible; } }
-@keyframes lp-swap-b { 0%, 44% { opacity: 0; visibility: hidden; } 50%, 94% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } }
-.lp-swap-labels { grid-area: 2 / 1; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 18px; font-size: 17px; font-weight: 700; flex-wrap: wrap; }
-.lp-swap-labels span { padding: 8px 18px; border-radius: 999px; color: var(--ink-2); background: transparent; }
-.lp-swap-labels .a { animation: lp-pill-a 9s infinite; }
-.lp-swap-labels .b { animation: lp-pill-b 9s infinite; }
-@keyframes lp-pill-a { 0%, 44% { background: var(--lilac-2); color: var(--purple); } 50%, 94% { background: transparent; color: var(--ink-2); } 100% { background: var(--lilac-2); color: var(--purple); } }
-@keyframes lp-pill-b { 0%, 44% { background: transparent; color: var(--ink-2); } 50%, 94% { background: var(--lilac-2); color: var(--purple); } 100% { background: transparent; color: var(--ink-2); } }
+/* "Simple for teachers. Insightful for admin.": the inbox and the dashboard take turns (components/ViewSwitcher.tsx).
+   Tabs sit above the window; clicking one switches, hovering them pauses the switching. */
+.lp-swap { display: grid; min-width: 0; grid-template-rows: auto minmax(0, 1fr); }
+.lp-swap > .lp-slide { grid-area: 2 / 1; display: flex; flex-direction: column; min-height: 0; opacity: 0; visibility: hidden; transition: opacity 0.6s ease, visibility 0s linear 0.6s; }
+.lp-swap > .lp-slide.on { opacity: 1; visibility: visible; transition: opacity 0.6s ease, visibility 0s; }
+.lp-swap > .lp-slide > .lp-window { flex: 1; }
+.lp-swap-labels { grid-area: 1 / 1; display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 0 14px; flex-wrap: wrap; }
+.lp-swap-labels button { font: inherit; font-size: 17px; font-weight: 700; padding: 9px 20px; border-radius: 8px; border: 1.5px solid var(--line, #e3dfe8); background: #fff; color: var(--ink-2); cursor: pointer; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+.lp-swap-labels button:hover { border-color: var(--purple); color: var(--purple); }
+.lp-swap-labels button.on { background: var(--lilac-2); border-color: var(--purple); color: var(--purple); }
+.lp-swap-labels button:focus-visible { outline: 3px solid var(--purple); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
-  .lp-slide-a, .lp-slide-b, .lp-swap-labels span { animation: none; }
-  .lp-slide-b { opacity: 0; visibility: hidden; }
-  .lp-swap-labels { display: none; }
+  .lp-swap > .lp-slide, .lp-swap > .lp-slide.on { transition: none; }
 }
 
 /* the dashboard mockup */
@@ -435,8 +431,7 @@ i.rep { background: #1f9e89; }
 .lp-mini > span { background: #f6f3f9; border-radius: 7px; padding: 6px 8px; font-size: 9.5px; color: #5c5367; line-height: 1.25; }
 .lp-mini b { display: block; font-size: 15px; font-weight: 800; color: #241133; letter-spacing: -0.3px; }
 @media (max-width: 980px) {
-  .lp-swap > .lp-slide { align-self: start; grid-area: 2 / 1; }
-  .lp-swap-labels { grid-area: 1 / 1; margin: 0 0 14px; }
+  .lp-swap > .lp-slide { align-self: start; }
   .lp-dash-row { grid-template-columns: 1fr; flex: none; }
   .lp-wk { flex: none; height: 130px; }
 }
@@ -483,8 +478,8 @@ i.rep { background: #1f9e89; }
 .lp .lp-benefits, .lp .lp-final { margin-top: var(--sec-half); margin-bottom: var(--sec-half); }
 .lp .lp-foot { padding-top: 40px; padding-bottom: 44px; margin-top: var(--sec-half); }
 @media (max-width: 560px) {
-  .lp-swap-labels { font-size: 15px; gap: 6px; }
-  .lp-swap-labels span { padding: 7px 12px; }
+  .lp-swap-labels { gap: 6px; }
+  .lp-swap-labels button { font-size: 15px; padding: 7px 12px; }
 }
 
 /* top menu: About Us · For Teachers · View Demo · Request a Quote · Teacher Login */
