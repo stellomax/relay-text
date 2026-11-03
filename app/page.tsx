@@ -445,7 +445,7 @@ export default function Landing() {
         </section>
 
         <section className="lp-faq" aria-labelledby="faq">
-          <h2 id="faq">Questions principals ask</h2>
+          <h2 id="faq">What admin and teachers want to know.</h2>
           <dl>
             {FAQ.map((f) => (
               <div key={f.q}>
