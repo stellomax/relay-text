@@ -620,3 +620,13 @@ i.rep { background: #1f9e89; }
   .lp-team { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 32px; }
   .lp-team .team-avatar { width: 120px; height: 120px; }
 }
+
+/* About page: even spacing between sections (one gap everywhere, set here) */
+.lp-about-main { --about-gap: 80px; }
+@media (max-width: 760px) { .lp-about-main { --about-gap: 56px; } }
+.lp .lp-about-main > section:not(.lp-page-hero):not(.lp-final) { padding-top: 0; padding-bottom: 0; margin-top: var(--about-gap); }
+.lp .lp-about-main > section > h2:first-child, .lp .lp-about-main > section > p:first-child { margin-top: 0; }
+.lp .lp-about-main > .lp-page-hero { padding-bottom: 40px; }
+.lp .lp-about-main > section.lp-page-hero + section:not(.lp-page-hero) { margin-top: 0; }
+.lp .lp-about-main > .lp-final { margin-top: var(--about-gap); margin-bottom: var(--about-gap); }
+.lp .lp-about-main + .lp-foot { margin-top: 0; }
