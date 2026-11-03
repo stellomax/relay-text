@@ -25,7 +25,7 @@ const BELIEFS = [
     text: "Teachers are busy. If it isn’t as easy as sending a text, it won’t get used. So Relay works like the Messages app they already know.",
   },
   {
-    title: "Families’ trust comes first",
+    title: "Build trust first, success will follow",
     text: "We keep only what a conversation needs, and we never sell or share family information for marketing.",
   },
 ];
