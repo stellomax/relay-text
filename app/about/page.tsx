@@ -3,7 +3,6 @@ import { Plus_Jakarta_Sans, Figtree } from "next/font/google";
 import { BRAND, COMPANY_DISPLAY } from "@/lib/brand";
 import SiteNav from "@/components/SiteNav";
 import DemoModal from "@/components/DemoModal";
-import TeamAvatar from "@/components/TeamAvatar";
 import "../landing.css";
 import "../demo/demo.css";
 
@@ -31,12 +30,12 @@ const BELIEFS = [
   },
 ];
 
-// Sample names, titles and placeholder portraits; replace with the real team.
+// Sample names and titles with placeholder photos (public/team-1..4.jpg); replace with the real team.
 const TEAM = [
-  { name: "Daniel Brooks", title: "Co-founder · Former Middle School Principal", look: { skin: "#c58c63", hair: "short" as const, hairColor: "#2b211c", shirt: "#3b2a8f", bg: "#e9e0f5" } },
-  { name: "Elena Morales", title: "ELD Teacher · Curriculum Lead", look: { skin: "#d9a57c", hair: "long" as const, hairColor: "#3a2418", shirt: "#6a02a0", bg: "#e4f1ee" } },
-  { name: "Grace Okafor", title: "Family Engagement Coordinator", look: { skin: "#7a4a2e", hair: "curly" as const, hairColor: "#1f1612", shirt: "#1f9e89", bg: "#f6ecdf" } },
-  { name: "Priya Shah", title: "Lead Developer", look: { skin: "#b77c55", hair: "bun" as const, hairColor: "#1d1410", shirt: "#d0782a", bg: "#e6edf8" } },
+  { name: "Daniel Brooks", title: "Co-founder · Former Middle School Principal", photo: "/team-1.jpg" },
+  { name: "Elena Morales", title: "ELD Teacher · Curriculum Lead", photo: "/team-2.jpg" },
+  { name: "Julie Hansen", title: "Family Engagement Coordinator", photo: "/team-3.jpg" },
+  { name: "Michelle Carter", title: "Lead Developer", photo: "/team-4.jpg" },
 ];
 
 export default function AboutPage() {
@@ -69,7 +68,7 @@ export default function AboutPage() {
           <ul className="lp-team">
             {TEAM.map((t) => (
               <li key={t.name}>
-                <TeamAvatar {...t.look} />
+                <img className="team-avatar" src={t.photo} alt={t.name} width={148} height={148} loading="lazy" />
                 <b>{t.name}</b>
                 <span>{t.title}</span>
               </li>
