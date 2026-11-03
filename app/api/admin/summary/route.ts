@@ -123,16 +123,43 @@ export const GET = withAdmin(async (req, me) => {
   for (const p of parents) langCount.set(p.language, (langCount.get(p.language) || 0) + 1);
   const languages = [...langCount.entries()].sort((a, b) => b[1] - a[1]).map(([code, count]) => ({ code, count }));
 
-  // Total parents per teacher: everyone they have a conversation with (all time)
+  // Conversations in scope: total parents per teacher (all time), and which parent each conversation is with
   const convoCount = new Map<string, number>();
+  const parentOf = new Map<string, string>();
   if (staffIds.length) {
-    const convos = await allRows<{ staff_id: string | null }>((a, b) => {
-      let q = supa.from("contacts").select("id, staff_id").not("staff_id", "is", null).order("id").range(a, b);
+    const convos = await allRows<{ id: string; staff_id: string | null; parent_id: string | null }>((a, b) => {
+      let q = supa.from("contacts").select("id, staff_id, parent_id").not("staff_id", "is", null).order("id").range(a, b);
       if (schoolId) q = q.in("staff_id", staffIds);
       return q;
     });
-    for (const c of convos) if (c.staff_id) convoCount.set(c.staff_id, (convoCount.get(c.staff_id) || 0) + 1);
+    for (const c of convos) {
+      if (c.staff_id) convoCount.set(c.staff_id, (convoCount.get(c.staff_id) || 0) + 1);
+      if (c.parent_id) parentOf.set(c.id, c.parent_id);
+    }
   }
+
+  // Headline rates for the last 30 days, and the 30 days before that for the trend arrows.
+  // Outreach: parents on the list a teacher texted. Engagement: parents on the list who texted back.
+  // Involvement: active teachers who sent at least one text.
+  const onList = new Set(parents.map((p) => p.id));
+  const activeIds = new Set(staff.filter((s) => s.status === "active").map((s) => s.id));
+  const d60 = Date.now() - 60 * DAY;
+  const period = () => ({ contacted: new Set<string>(), engaged: new Set<string>(), teachers: new Set<string>(), any: false });
+  const cur = period();
+  const prev = period();
+  for (const m of msgs) {
+    const t = new Date(m.created_at).getTime();
+    const bucket = t >= d30 ? cur : t >= d60 ? prev : null;
+    if (!bucket) continue;
+    bucket.any = true;
+    const pid = parentOf.get(m.contact_id);
+    const listed = pid && onList.has(pid);
+    if (m.direction === "outbound") {
+      if (listed) bucket.contacted.add(pid);
+      if (m.staff_id && activeIds.has(m.staff_id)) bucket.teachers.add(m.staff_id);
+    } else if (listed) bucket.engaged.add(pid);
+  }
+  const counts = (b: ReturnType<typeof period>) => ({ contacted: b.contacted.size, engaged: b.engaged.size, teachers: b.teachers.size });
 
   const active = staff.filter((s) => s.status === "active");
   const teachers = active
@@ -171,5 +198,6 @@ export const GET = withAdmin(async (req, me) => {
       list: teachers,
     },
     messages: { sent30, replies30, weeks, days },
+    rates: { current: counts(cur), previous: prev.any ? counts(prev) : null },
   });
 });

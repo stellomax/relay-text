@@ -9,6 +9,7 @@ import { languageName } from "@/lib/languages";
 import { listTime } from "@/lib/format";
 
 type Week = { start: string; sent: number; replies: number };
+type Rates = { contacted: number; engaged: number; teachers: number };
 type Summary = {
   name: string;
   isSuper: boolean;
@@ -26,6 +27,7 @@ type Summary = {
     list: { id: string; name: string; role: string; texts30: number; received30?: number; parentsTotal?: number; parents30: number; last_seen_at: string | null }[];
   };
   messages: { sent30: number; replies30: number; weeks: Week[]; days?: Week[] };
+  rates?: { current: Rates; previous: Rates | null };
 };
 
 const fmt = (n: number) => n.toLocaleString();
@@ -125,34 +127,36 @@ export default function AdminDashboard() {
         {s && p && (
           <>
             {/* Headline numbers */}
-            <div className="kpis">
-              <a className="kpi" href="/admin/parents">
-                <span className="kpi-label">Parents on the list</span>
-                <span className="kpi-value">{fmt(p.total)}</span>
-                <span className="kpi-sub">{p.total ? `${fmt(p.canText)} can be texted` : "Upload your list to start"}</span>
-              </a>
-              <div className="kpi">
-                <span className="kpi-label">Families reached</span>
-                <span className="kpi-value">{fmt(p.reached30)}</span>
-                <span className="kpi-sub">{p.canText ? `${pct(p.reached30, p.canText)}% of parents who can be texted` : "in the last 30 days"}</span>
-              </div>
-              <a className="kpi" href="/inbox">
-                <span className="kpi-label">Texts sent</span>
-                <span className="kpi-value">{fmt(s.messages.sent30)}</span>
-                <span className="kpi-sub">
-                  {plural(s.messages.replies30, "reply", "replies")} from parents
-                  {s.unread > 0 && <span className="home-badge">{s.unread} unread for you</span>}
-                </span>
-              </a>
-              <a className="kpi" href="/admin/teachers">
-                <span className="kpi-label">Teachers texting</span>
-                <span className="kpi-value">
-                  {fmt(s.teachers.texting30)}
-                  <span className="kpi-of"> of {fmt(s.teachers.total)}</span>
-                </span>
-                <span className="kpi-sub">sent at least one text</span>
-              </a>
+            <div className="kpis three">
+              <RateCard
+                href="/admin/parents"
+                label="Parent Outreach"
+                n={s.rates?.current.contacted ?? p.reached30}
+                prev={s.rates?.previous?.contacted}
+                of={p.total}
+                sub="contacted"
+                empty="Upload your list to start"
+              />
+              <RateCard
+                href="/inbox"
+                label="Parent Engagement"
+                n={s.rates?.current.engaged ?? 0}
+                prev={s.rates?.previous?.engaged}
+                of={p.total}
+                sub="have engaged with us"
+                empty="Upload your list to start"
+              />
+              <RateCard
+                href="/admin/teachers"
+                label="Teacher Involvement"
+                n={s.rates?.current.teachers ?? s.teachers.texting30}
+                prev={s.rates?.previous?.teachers}
+                of={s.teachers.total}
+                sub="have sent at least one text"
+                empty="Add teachers to start"
+              />
             </div>
+            <p className="kpi-note">Last 30 days, compared with the 30 days before.</p>
 
             <div className="dash-grid">
               <section className="panel wide">
@@ -288,6 +292,27 @@ function MessagesPanel({ s }: { s: Summary }) {
       </span>
       <WeekChart buckets={buckets} noun={days ? noun : "week"} />
     </>
+  );
+}
+
+// A headline rate: big percentage, "N out of M …", and an arrow comparing with the previous 30 days.
+function RateCard({ href, label, n, prev, of, sub, empty }: { href: string; label: string; n: number; prev?: number; of: number; sub: string; empty: string }) {
+  const now = of ? Math.round((n / of) * 100) : 0;
+  const before = prev !== undefined && of ? Math.round((prev / of) * 100) : null;
+  const diff = before === null ? null : now - before;
+  return (
+    <a className="kpi" href={href}>
+      <span className="kpi-label">{label}</span>
+      <span className="kpi-value">
+        {of ? `${now}%` : "–"}
+        {diff !== null && of > 0 && (
+          <span className={`kpi-trend ${diff > 0 ? "up" : diff < 0 ? "down" : "flat"}`} title={`${before}% in the 30 days before`}>
+            {diff > 0 ? "▲" : diff < 0 ? "▼" : "–"} {diff === 0 ? "no change" : `${Math.abs(diff)} pts`}
+          </span>
+        )}
+      </span>
+      <span className="kpi-sub">{of ? `${fmt(n)} out of ${fmt(of)} ${sub}` : empty}</span>
+    </a>
   );
 }
 
