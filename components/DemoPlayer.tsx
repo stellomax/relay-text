@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from "react";
 
 /* ---------- the cast ---------- */
 const TEACHER = {
-  name: "Mrs. Anton",
+  name: "Mrs. Wright",
   role: "6th grade science · Sagewood MS",
   photo: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=320&h=320&q=80&auto=format&fit=crop&crop=faces",
-  initials: "MA",
+  initials: "MW",
 };
 const PARENT = {
   name: "Ms. Rivera",
@@ -23,8 +23,8 @@ const SCRIPT: Msg[] = [
   {
     from: "teacher",
     time: "3:24 PM",
-    en: "Hi Ms. Rivera, this is Mrs. Anton, Sofia's science teacher. Sofia presented her volcano project today and did a wonderful job!",
-    es: "Hola, Sra. Rivera, soy la Sra. Anton, la maestra de ciencias de Sofía. ¡Sofía presentó hoy su proyecto del volcán y lo hizo de maravilla!",
+    en: "Hi Ms. Rivera, this is Mrs. Wright, Sofia's science teacher. Sofia presented her volcano project today and did a wonderful job!",
+    es: "Hola, Sra. Rivera, soy la Sra. Wright, la maestra de ciencias de Sofía. ¡Sofía presentó hoy su proyecto del volcán y lo hizo de maravilla!",
   },
   {
     from: "parent",
@@ -59,8 +59,8 @@ const SCRIPT: Msg[] = [
   {
     from: "parent",
     time: "3:49 PM",
-    es: "¡Muchas gracias, Sra. Anton! ❤️",
-    en: "Thank you so much, Mrs. Anton! ❤️",
+    es: "¡Muchas gracias, Sra. Wright! ❤️",
+    en: "Thank you so much, Mrs. Wright! ❤️",
   },
 ];
 
@@ -352,7 +352,7 @@ export default function DemoPlayer() {
               <span className="dm-back">‹</span>
               <Avatar who={TEACHER} size={46} />
               <span className="dm-ph-name">
-                Mrs. Anton (Escuela) <i>›</i>
+                Mrs. Wright (Escuela) <i>›</i>
               </span>
             </div>
             <div className="dm-ph-msgs" ref={phoneRef}>
