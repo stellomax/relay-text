@@ -163,10 +163,10 @@ export default function Landing() {
 
           <figure className="lp-photo lp-hero-photo">
             <img
-              src="/hero-teacher.jpg"
+              src="/hero-teacher-2.jpg"
               alt="A teacher smiling as she types on her laptop at her classroom desk, with a text message to a parent about Friday's photo day"
               width={1269}
-              height={1239}
+              height={1240}
             />
           </figure>
         </section>
