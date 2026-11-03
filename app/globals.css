@@ -1003,3 +1003,21 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .chart-controls { display: flex; gap: 8px; flex-wrap: wrap; }
 .chart-controls .admin-select { height: 36px; font-size: 15px; }
 .chart-legend { margin: -4px 0 12px; }
+
+/* Dashboard: what conversations are about */
+.topics-sub { margin: -8px 0 10px; font-size: 13px; color: var(--label-3); }
+.topic-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.topic-list li { display: grid; grid-template-columns: minmax(0, 170px) 1fr 40px; gap: 10px; align-items: center; font-size: 14px; }
+.topic-n { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topic-bar { height: 10px; background: #f1f0f4; border-radius: 3px; overflow: hidden; }
+.topic-bar i { display: block; height: 100%; background: #7a2bb8; border-radius: 0 3px 3px 0; }
+.topic-p { text-align: right; color: var(--label-2); font-variant-numeric: tabular-nums; }
+.tone { margin-top: 16px; padding-top: 12px; border-top: 1px solid #f0eff3; }
+.tone-label { display: block; font-size: 13px; font-weight: 600; color: var(--label-3); margin-bottom: 8px; }
+.tone .seg { height: 12px; margin-bottom: 0; }
+.tone-keys { list-style: none; margin: 8px 0 0; padding: 0; display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--label-2); }
+.tone-keys li { display: flex; align-items: center; gap: 6px; }
+.tone-keys strong { color: var(--label); }
+.seg-part.tone-positive, .sw.tone-positive { background: #0ca30c; }
+.seg-part.tone-neutral, .sw.tone-neutral { background: #c4c1ca; }
+.seg-part.tone-concern, .sw.tone-concern { background: #fab219; }
