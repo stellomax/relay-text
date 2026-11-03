@@ -359,7 +359,7 @@ export default function Landing() {
         </section>
 
         <section className="lp-final">
-          <h2>Bring Relay to your school.</h2>
+          <h2>Learn how Relay can elevate your school.</h2>
           <p>Start with a pilot. We’ll set up your school, and your teachers can be texting families the same day.</p>
           <div className="lp-ctas center">
             <a className="lp-btn outline-light" href={CONTACT}>
