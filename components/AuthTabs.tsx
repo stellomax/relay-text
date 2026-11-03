@@ -110,8 +110,26 @@ function SignupForm() {
     };
   }, [f.code]);
 
+  const codeOk = check?.valid === true;
+  const personal = REQUIRE_SCHOOL_EMAIL && /@.+\./.test(f.email) && isPersonalEmail(f.email);
+  const mismatch = f.confirmPassword.length > 0 && f.confirmPassword !== f.password;
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    // The button is always purple and clickable; say what's missing instead of greying it out.
+    const missing = !codeOk
+      ? "Please enter the 5-digit sign-up code from your Relay admin."
+      : personal
+        ? "Please use your school email address, not a personal one."
+        : f.password.length < 8
+          ? "Please choose a password with at least 8 characters."
+          : f.password !== f.confirmPassword
+            ? "The passwords don’t match."
+            : "";
+    if (missing) {
+      setError(missing);
+      return;
+    }
     setBusy(true);
     setError("");
     const res = await fetch("/api/signup", {
@@ -128,10 +146,6 @@ function SignupForm() {
     setBusy(false);
   }
 
-  const codeOk = check?.valid === true;
-  const personal = REQUIRE_SCHOOL_EMAIL && /@.+\./.test(f.email) && isPersonalEmail(f.email);
-  const mismatch = f.confirmPassword.length > 0 && f.confirmPassword !== f.password;
-  const ready = codeOk && !personal && f.password.length >= 8 && f.password === f.confirmPassword;
 
   return (
     <form onSubmit={submit} className="login-form">
@@ -188,7 +202,7 @@ function SignupForm() {
       {personal && <p className="login-error">Please use your school email address, not a personal one.</p>}
       {mismatch && <p className="login-error">The passwords don’t match.</p>}
       {error && <p className="login-error">{error}</p>}
-      <button className="ios-button" disabled={busy || !ready}>
+      <button className="ios-button" disabled={busy}>
         {busy ? "Creating Account…" : "Create Account"}
       </button>
     </form>
