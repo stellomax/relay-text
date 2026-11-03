@@ -77,7 +77,7 @@ export default function TeachersPage() {
       <main>
         <section className="lp-page-hero">
           <p className="lp-eyebrow">For teachers</p>
-          <h1>Text any parent, in their language.</h1>
+          <h1>Text any parent, in their own language.</h1>
           <p className="lp-lede">
             You write in English. Each parent reads and replies in their own language, by regular text message. Relay takes care of
             the translation in both directions.
