@@ -233,8 +233,9 @@
 
 .lp-foot {
   display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; padding: 32px clamp(16px, 4vw, 48px) 40px;
-  font-size: 15px; color: var(--ink-2);
+  font-size: 15px; background: var(--plum); color: rgba(255, 255, 255, 0.75);
 }
+.lp-foot a { color: #fff; }
 .lp-foot nav { display: flex; flex-wrap: wrap; gap: 8px 22px; }
 .lp-foot a { text-decoration: none; }
 .lp-foot a:hover { text-decoration: underline; }
@@ -480,7 +481,7 @@ i.rep { background: #1f9e89; }
 .lp .lp-hero { padding-bottom: var(--sec-half); }
 .lp .lp-noapp, .lp .lp-schools, .lp .lp-hellos, .lp .lp-faq { padding-top: var(--sec-half); padding-bottom: var(--sec-half); }
 .lp .lp-benefits, .lp .lp-final { margin-top: var(--sec-half); margin-bottom: var(--sec-half); }
-.lp .lp-foot { padding-top: var(--sec-half); }
+.lp .lp-foot { padding-top: 40px; padding-bottom: 44px; margin-top: var(--sec-half); }
 @media (max-width: 560px) {
   .lp-swap-labels { font-size: 15px; gap: 6px; }
   .lp-swap-labels span { padding: 7px 12px; }
