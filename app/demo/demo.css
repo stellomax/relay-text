@@ -218,3 +218,5 @@
 /* while a message is still playing, the button text is faded; it comes back to full strength when it's ready to press */
 .dm-next .dm-next-label { transition: opacity 0.25s; }
 .dm-next.busy .dm-next-label { opacity: 0.45; }
+/* the pop-up always uses dark text, whatever section opened it */
+.dm-modal { color: var(--ink, #241133); text-align: left; }
