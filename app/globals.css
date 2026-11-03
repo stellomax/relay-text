@@ -716,7 +716,14 @@ a { color: var(--tint); text-decoration: none; }
 .dash { max-width: 1120px; margin: 0 auto; padding: 28px 20px 64px; }
 .dash-head { margin-bottom: 18px; }
 .dash-head .home-sub { margin-bottom: 0; font-size: 17px; }
-.dash-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 26px; }
+.dash-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 22px; }
+/* The three actions look like buttons, not cards: one line, icon + label */
+.dash-btn { display: flex; align-items: center; justify-content: center; gap: 9px; height: 50px; padding: 0 16px; border-radius: 12px; font-size: 17px; font-weight: 600; letter-spacing: -0.2px; color: var(--brand); background: #fff; border: 1.5px solid var(--brand); text-decoration: none; transition: background 0.15s, box-shadow 0.15s, transform 0.15s; white-space: nowrap; }
+.dash-btn:hover { background: rgba(106, 2, 160, 0.06); }
+.dash-btn:active { transform: translateY(1px); }
+.dash-btn.primary { background: var(--brand); color: #fff; box-shadow: 0 2px 8px rgba(106, 2, 160, 0.25); }
+.dash-btn.primary:hover { background: #55017d; }
+.dash-btn-badge { font-size: 12px; font-weight: 700; color: #fff; background: #e5484d; border-radius: 999px; padding: 2px 8px; }
 .dash-actions .home-card { padding: 18px; gap: 14px; }
 .dash-actions .home-icon { width: 50px; height: 50px; border-radius: 14px; }
 .dash-actions .home-card-title { font-size: 19px; }
