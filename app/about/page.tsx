@@ -39,14 +39,9 @@ export default function AboutPage() {
         <section className="lp-page-hero">
           <p className="lp-eyebrow">About us</p>
           <h1>When families and teachers understand each other, students thrive.</h1>
-          <p className="lp-lede">
-            Relay is two-way texting with built-in translation. Teachers write in English, and parents read and reply in their own
-            language, on the phone they already have.
-          </p>
         </section>
 
-        <section className="lp-about-why" aria-labelledby="why">
-          <h2 id="why">Why we built Relay</h2>
+        <section className="lp-about-why">
           <p>
             In many schools, the families who most need to hear from teachers are the ones messages miss: families who speak a
             language other than English at home, newcomers, and parents juggling long work hours. Newsletters go unread, portals

@@ -528,6 +528,8 @@ i.rep { background: #1f9e89; }
 .lp-about-why p { margin-top: 18px; color: var(--ink-2); }
 .lp-about-why h2 + p { margin-top: 28px; }
 .lp-about-why a { color: var(--purple); font-weight: 600; }
+.lp-page-hero + .lp-about-why { padding-top: 0; }
+.lp-page-hero + .lp-about-why p:first-child { margin-top: 0; }
 .lp-steps li h3:first-child { margin-top: 0; }
 
 /* testimonials on the purple band: an administrator and a teacher, side by side */
