@@ -803,6 +803,8 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .dash-table .tag-admin { margin-left: 8px; }
 .mini { display: inline-block; width: 70px; height: 8px; margin-right: 10px; vertical-align: 1px; }
 .mini-bar { display: block; height: 100%; background: #7a2bb8; border-radius: 0 3px 3px 0; min-width: 2px; }
+.mini-bar.replies { background: #1f9e89; }
+.dash-table .center { text-align: center; font-variant-numeric: tabular-nums; }
 
 @media (max-width: 900px) {
   .dash-actions { grid-template-columns: 1fr; }
