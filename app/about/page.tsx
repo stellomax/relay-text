@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 const BELIEFS = [
   {
-    title: "Every family, in their language",
+    title: "Start with the end in mind",
     text: "A parent shouldn’t need English, an app or a translator to hear from their child’s teacher, or to answer back.",
   },
   {
