@@ -11,7 +11,7 @@ const display = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["600", "700", "
 const body = Figtree({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--lp-body" });
 
 export const metadata: Metadata = {
-  title: "Relay · Text any parent, in their language.",
+  title: "Relay · Text any parent, in their own language.",
   description:
     "Relay is two-way texting with built-in translation. Teachers write in English, and parents read and reply in their own language. No parent app.",
 };
@@ -110,7 +110,7 @@ export default function Landing() {
         <section className="lp-hero">
           <div className="lp-hero-copy">
             <h1>
-              <span>Text any parent,</span> <span>in their language.</span>
+              <span>Text any parent,</span> <span>in their own language.</span>
             </h1>
             <p className="lp-lede">
               Relay is two-way texting with built-in translation. Teachers write in English, and parents read and reply in their
@@ -186,7 +186,7 @@ export default function Landing() {
               account to create and no password to forget.
             </p>
             <ul className="lp-checks">
-              <li>Works on any phone that can text, including older phones and flip phones</li>
+              <li>Works on any phone that can text</li>
               <li>No data plan or Wi‑Fi needed</li>
               <li>Parents reply in their own words, in their own language</li>
               <li>Reply STOP anytime to opt out</li>
