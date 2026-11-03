@@ -35,10 +35,10 @@ export default function AboutPage() {
     <div className={`lp ${display.variable} ${body.variable}`}>
       <SiteNav />
 
-      <main>
+      <main className="lp-about-main">
         <section className="lp-page-hero">
           <p className="lp-eyebrow">About us</p>
-          <h1>Every family should be able to talk with their child’s teacher.</h1>
+          <h1>When families and teachers understand each other, students thrive.</h1>
           <p className="lp-lede">
             Relay is two-way texting with built-in translation. Teachers write in English, and parents read and reply in their own
             language, on the phone they already have.
