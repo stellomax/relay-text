@@ -492,7 +492,8 @@ function ListHealth({ p }: { p: Summary["parents"] }) {
 function TeacherList({ s }: { s: Summary }) {
   const list = s.teachers.list;
   if (!list.length) return <p className="panel-empty">No teachers yet. Use Manage Teachers to add them.</p>;
-  const max = Math.max(1, ...list.map((t) => t.texts30));
+  // Sent and received bars share one scale so they can be compared
+  const max = Math.max(1, ...list.map((t) => Math.max(t.texts30, t.received30 ?? 0)));
   return (
     <>
       <table className="dash-table">
@@ -501,7 +502,7 @@ function TeacherList({ s }: { s: Summary }) {
             <th>Teacher</th>
             <th className="num">Texts sent</th>
             <th className="num">Texts received</th>
-            <th className="num">Total parents</th>
+            <th className="center">Total parents</th>
             <th>Last signed in</th>
           </tr>
         </thead>
@@ -518,8 +519,13 @@ function TeacherList({ s }: { s: Summary }) {
                 </span>
                 {fmt(t.texts30)}
               </td>
-              <td className="num">{fmt(t.received30 ?? 0)}</td>
-              <td className="num">{fmt(t.parentsTotal ?? t.parents30)}</td>
+              <td className="num">
+                <span className="mini">
+                  {(t.received30 ?? 0) > 0 && <span className="mini-bar replies" style={{ width: `${((t.received30 ?? 0) / max) * 100}%` }} />}
+                </span>
+                {fmt(t.received30 ?? 0)}
+              </td>
+              <td className="center">{fmt(t.parentsTotal ?? t.parents30)}</td>
               <td className="muted">{t.last_seen_at ? listTime(t.last_seen_at) : "Never"}</td>
             </tr>
           ))}
