@@ -230,3 +230,12 @@ create table if not exists public.school_requests (
 );
 create index if not exists school_requests_created_idx on public.school_requests (created_at desc);
 alter table public.school_requests enable row level security;
+
+-- ============================================================================
+-- Demo data (Nov 2026). Rows created by Manage Schools → Load demo data are marked demo = true,
+-- and Remove demo data deletes only those rows. Safe to run again.
+-- ============================================================================
+alter table public.staff         add column if not exists demo boolean not null default false;
+alter table public.parents       add column if not exists demo boolean not null default false;
+alter table public.contacts      add column if not exists demo boolean not null default false;
+alter table public.parent_groups add column if not exists demo boolean not null default false;

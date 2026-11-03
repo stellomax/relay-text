@@ -25,7 +25,7 @@ type Summary = {
     texting30: number;
     list: { id: string; name: string; role: string; texts30: number; parents30: number; last_seen_at: string | null }[];
   };
-  messages: { sent30: number; replies30: number; weeks: Week[] };
+  messages: { sent30: number; replies30: number; weeks: Week[]; days?: Week[] };
 };
 
 const fmt = (n: number) => n.toLocaleString();
@@ -157,7 +157,7 @@ export default function AdminDashboard() {
             <div className="dash-grid">
               <section className="panel wide">
                 <div className="panel-head">
-                  <h2>Messages each week</h2>
+                  <h2>Messages each day</h2>
                   <span className="legend">
                     <span className="key">
                       <i className="sw sent" /> Sent by teachers
@@ -167,7 +167,7 @@ export default function AdminDashboard() {
                     </span>
                   </span>
                 </div>
-                <WeekChart weeks={s.messages.weeks} />
+                <WeekChart weeks={s.messages.days || s.messages.weeks} daily={!!s.messages.days} />
               </section>
 
               <section className="panel">
@@ -205,17 +205,19 @@ export default function AdminDashboard() {
   );
 }
 
-// Grouped columns: sent and replies for each of the last 8 weeks, with a hover tooltip.
-function WeekChart({ weeks }: { weeks: Week[] }) {
+// Grouped columns: sent and replies for each of the last 60 days (or 8 weeks), with a hover tooltip.
+function WeekChart({ weeks, daily = false }: { weeks: Week[]; daily?: boolean }) {
   const [hover, setHover] = useState<number | null>(null);
   const max = Math.max(1, ...weeks.flatMap((w) => [w.sent, w.replies]));
   const step = niceStep(max);
   const top = Math.ceil(max / step) * step;
   const ticks = Array.from({ length: Math.round(top / step) + 1 }, (_, i) => i * step);
   const label = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const longLabel = (iso: string) =>
+    daily ? new Date(iso).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : `Week of ${label(iso)}`;
   const empty = weeks.every((w) => !w.sent && !w.replies);
   return (
-    <div className="wk">
+    <div className={`wk${daily ? " daily" : ""}`}>
       <div className="wk-plot">
         <div className="wk-axis">
           {!empty && ticks.map((t) => (
@@ -238,13 +240,13 @@ function WeekChart({ weeks }: { weeks: Week[] }) {
                 onFocus={() => setHover(i)}
                 onBlur={() => setHover(null)}
                 tabIndex={0}
-                aria-label={`Week of ${label(w.start)}: ${w.sent} sent, ${w.replies} replies`}
+                aria-label={`${longLabel(w.start)}: ${w.sent} sent, ${w.replies} replies`}
               >
                 <span className="wk-bar sent" style={{ height: `${(w.sent / top) * 100}%` }} />
                 <span className="wk-bar replies" style={{ height: `${(w.replies / top) * 100}%` }} />
                 {hover === i && (
                   <span className="tip">
-                    <strong>Week of {label(w.start)}</strong>
+                    <strong>{longLabel(w.start)}</strong>
                     <span>
                       <i className="sw sent" /> {fmt(w.sent)} sent
                     </span>
@@ -256,12 +258,12 @@ function WeekChart({ weeks }: { weeks: Week[] }) {
               </div>
             ))}
           </div>
-          {empty && <p className="wk-empty">No texts yet. Once teachers start texting, each week shows here.</p>}
+          {empty && <p className="wk-empty">No texts yet. Once teachers start texting, each {daily ? "day" : "week"} shows here.</p>}
         </div>
       </div>
       <div className="wk-x">
         {weeks.map((w, i) => (
-          <span key={w.start}>{i % 2 === 1 || weeks.length <= 6 ? label(w.start) : ""}</span>
+          <span key={w.start}>{daily ? ((weeks.length - 1 - i) % 7 === 0 ? label(w.start) : "") : i % 2 === 1 || weeks.length <= 6 ? label(w.start) : ""}</span>
         ))}
       </div>
     </div>
@@ -275,25 +277,81 @@ function niceStep(max: number) {
   return Math.max(1, (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * pow);
 }
 
-// Horizontal bars: how many parents speak each language (top 6, the rest as "Other").
+// Pie of the languages parents speak: the top 7 each get a color (fixed order, validated palette),
+// every other language folds into one gray slice. The list beside it names every language with its count.
+const PIE_COLORS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6"];
+const PIE_OTHER = "#c4c1ca";
+
+function slicePath(cx: number, cy: number, r: number, a0: number, a1: number) {
+  const p = (a: number) => [cx + r * Math.sin(a), cy - r * Math.cos(a)];
+  const [x0, y0] = p(a0);
+  const [x1, y1] = p(a1);
+  return `M${cx},${cy} L${x0},${y0} A${r},${r} 0 ${a1 - a0 > Math.PI ? 1 : 0} 1 ${x1},${y1} Z`;
+}
+
 function Languages({ langs, total }: { langs: { code: string; count: number }[]; total: number }) {
-  if (!total) return <p className="panel-empty">Languages appear here once parents are on the list.</p>;
-  const top = langs.slice(0, 6);
-  const rest = langs.slice(6).reduce((a, l) => a + l.count, 0);
-  const rows = [...top.map((l) => ({ name: languageName(l.code), count: l.count })), ...(rest ? [{ name: `${langs.length - 6} other languages`, count: rest }] : [])];
-  const max = Math.max(...rows.map((r) => r.count));
+  const [hi, setHi] = useState<number | null>(null);
+  if (!total || !langs.length) return <p className="panel-empty">Languages appear here once parents are on the list.</p>;
+  const sum = langs.reduce((a, l) => a + l.count, 0);
+  const top = langs.slice(0, PIE_COLORS.length);
+  const rest = langs.slice(PIE_COLORS.length);
+  const restCount = rest.reduce((a, l) => a + l.count, 0);
+  const slices = [
+    ...top.map((l, i) => ({ name: languageName(l.code), count: l.count, color: PIE_COLORS[i] })),
+    ...(restCount ? [{ name: `All other languages (${rest.length})`, count: restCount, color: PIE_OTHER }] : []),
+  ];
+  const sliceOf = (i: number) => Math.min(i, PIE_COLORS.length); // list row -> slice index
+  let angle = 0;
+  const R = 78;
+  const C = 82;
   return (
-    <div className="langs">
-      {rows.map((r) => (
-        <div key={r.name} className="lang-row" title={`${r.name}: ${fmt(r.count)} ${r.count === 1 ? "parent" : "parents"} (${pct(r.count, total)}%)`}>
-          <span className="lang-name">{r.name}</span>
-          <span className="lang-track">
-            <span className="lang-bar" style={{ width: `${(r.count / max) * 100}%` }} />
-            <span className="lang-val">{fmt(r.count)}</span>
-          </span>
-        </div>
-      ))}
-      <p className="panel-foot">{plural(langs.length, "language", "languages")} in all</p>
+    <div className="lang-pie-wrap">
+      <svg className="lang-pie" viewBox="0 0 164 164" role="img" aria-label="Languages parents speak">
+        {slices.length === 1 ? (
+          <circle cx={C} cy={C} r={R} fill={slices[0].color} />
+        ) : (
+          slices.map((sl, i) => {
+            const a0 = angle;
+            angle += (sl.count / sum) * Math.PI * 2;
+            return (
+              <path
+                key={sl.name}
+                d={slicePath(C, C, R, a0, angle)}
+                fill={sl.color}
+                stroke="#fff"
+                strokeWidth={2}
+                strokeLinejoin="round"
+                opacity={hi === null || hi === i ? 1 : 0.35}
+                onMouseEnter={() => setHi(i)}
+                onMouseLeave={() => setHi(null)}
+              >
+                <title>{`${sl.name}: ${fmt(sl.count)} ${sl.count === 1 ? "parent" : "parents"} (${pct(sl.count, sum)}%)`}</title>
+              </path>
+            );
+          })
+        )}
+      </svg>
+      <div className="lang-list-wrap">
+        <ul className="lang-list">
+          {langs.map((l, i) => {
+            const s = sliceOf(i);
+            return (
+              <li
+                key={l.code}
+                className={hi === s ? "on" : hi !== null ? "dim" : ""}
+                onMouseEnter={() => setHi(s)}
+                onMouseLeave={() => setHi(null)}
+              >
+                <i style={{ background: i < PIE_COLORS.length ? PIE_COLORS[i] : PIE_OTHER }} aria-hidden />
+                <span className="lang-n">{languageName(l.code)}</span>
+                <span className="lang-c">{fmt(l.count)}</span>
+                <span className="lang-p">{pct(l.count, sum)}%</span>
+              </li>
+            );
+          })}
+        </ul>
+        <p className="panel-foot">{plural(langs.length, "language", "languages")} in all</p>
+      </div>
     </div>
   );
 }

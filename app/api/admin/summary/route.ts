@@ -6,7 +6,8 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 const DAY = 86400000;
-const WEEKS = 8;
+const WEEKS = 9;
+const DAYS = 60; // daily chart
 
 // Everything the admin dashboard shows, for one school (?school=<id>) or every school (?school=all).
 // Admins start on their own school; admins without a school start on all schools.
@@ -31,7 +32,7 @@ export const GET = withAdmin(async (req, me) => {
   const { data: parentRows, error: parentErr } = await parentsQ;
   const parents = (parentRows || []) as { id: string; language: string; opted_out: boolean; consent_at: string | null }[];
 
-  // Messages over the last 8 weeks, from teachers in scope
+  // Messages over the last 9 weeks (covers the 60-day chart), from teachers in scope
   const since = new Date(Date.now() - WEEKS * 7 * DAY);
   since.setHours(0, 0, 0, 0);
   let msgs: { staff_id: string | null; direction: string; created_at: string; contact_id: string }[] = [];
@@ -53,6 +54,15 @@ export const GET = withAdmin(async (req, me) => {
     .eq("staff_id", me.id)
     .eq("direction", "inbound")
     .eq("is_read", false);
+
+  // Daily sent / replies for the last 60 days (oldest first), by Mountain Time days.
+  const TZ = -7 * 3600000;
+  const todayStart = Math.floor((Date.now() + TZ) / DAY) * DAY - TZ;
+  const days = Array.from({ length: DAYS }, (_, i) => ({ start: new Date(todayStart - (DAYS - 1 - i) * DAY).toISOString(), sent: 0, replies: 0 }));
+  for (const m of msgs) {
+    const di = DAYS - 1 - Math.floor((todayStart + DAY - 1 - new Date(m.created_at).getTime()) / DAY);
+    if (di >= 0 && di < DAYS) m.direction === "outbound" ? days[di].sent++ : days[di].replies++;
+  }
 
   // Weekly sent / replies (oldest first)
   const weekStart = (i: number) => new Date(since.getTime() + i * 7 * DAY);
@@ -131,6 +141,6 @@ export const GET = withAdmin(async (req, me) => {
       texting30: teachers.filter((t) => t.texts30 > 0).length,
       list: teachers.slice(0, 8),
     },
-    messages: { sent30, replies30, weeks },
+    messages: { sent30, replies30, weeks, days },
   });
 });

@@ -196,6 +196,7 @@ export default function SchoolsPage() {
               Teachers who sign up at {signupUrl} with a school’s code join that school automatically. A school can only be deleted when it
               has no teachers; to stop new sign-ups, turn its code off instead.
             </p>
+            {isSuper && <DemoData schools={schools} onChange={load} />}
           </>
         )}
       </div>
@@ -290,5 +291,95 @@ export default function SchoolsPage() {
       )}
       {toast && <div className="toast">{toast}</div>}
     </div>
+  );
+}
+
+// Super admins: load a full set of sample teachers, parents and conversations for sales demos, and remove it before going live.
+function DemoData({ schools, onChange }: { schools: School[]; onChange: () => void }) {
+  const [status, setStatus] = useState<{ ready: boolean; teachers: number | null; parents: number | null; conversations: number | null } | null>(null);
+  const [schoolId, setSchoolId] = useState("");
+  const [busy, setBusy] = useState<"" | "load" | "wipe">("");
+  const [msg, setMsg] = useState("");
+  const [err, setErr] = useState("");
+
+  const refresh = useCallback(async () => {
+    try {
+      setStatus(await api("/api/admin/demo"));
+    } catch (e: any) {
+      setErr(e.message);
+    }
+  }, []);
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+  useEffect(() => {
+    if (!schoolId && schools.length) setSchoolId((schools.find((s) => s.name === "Sagewood MS") || schools[0]).id);
+  }, [schools, schoolId]);
+
+  async function run(action: "load" | "wipe") {
+    const school = schools.find((s) => s.id === schoolId)?.name || "this school";
+    const ask =
+      action === "load"
+        ? `Load demo data into ${school}? This adds 20 sample teachers, about 220 parents and 60 days of conversations. Any demo data already loaded is replaced. Real accounts and conversations are not changed.`
+        : "Remove all demo data? Only the sample teachers, parents, groups and conversations are deleted. Real accounts and conversations are not changed.";
+    if (!confirm(ask)) return;
+    setBusy(action);
+    setErr("");
+    setMsg("");
+    try {
+      const r: any = await api("/api/admin/demo", { method: "POST", body: { action, schoolId } });
+      if (action === "load") {
+        const l = r.loaded;
+        setMsg(`Loaded into ${l.school}: ${l.teachers} teachers, ${l.parents} parents, ${l.groups} groups, ${l.conversations} conversations and ${l.messages} messages.${l.skippedTeachers ? ` ${l.skippedTeachers} teacher email(s) already belonged to a real account and were skipped.` : ""}`);
+      } else {
+        setMsg("Demo data removed.");
+      }
+      await refresh();
+      onChange();
+    } catch (e: any) {
+      setErr(e.message);
+    } finally {
+      setBusy("");
+    }
+  }
+
+  const loaded = !!status?.teachers;
+  return (
+    <section className="demo-card">
+      <h2>Demo data</h2>
+      {status && !status.ready ? (
+        <p className="ios-footnote">To use demo data, run the one-time demo SQL in Supabase first (it adds a “demo” flag to four tables).</p>
+      ) : (
+        <>
+          <p className="demo-sub">
+            {loaded
+              ? `Loaded: ${status!.teachers} sample teachers, ${status!.parents} parents and ${status!.conversations} conversations.`
+              : "Fill a school with 20 sample teachers, about 220 parents in many languages, groups, and 60 days of two-way conversations that grow over time. Every sample row is marked, so removing it never touches real data."}
+          </p>
+          <div className="demo-actions">
+            <label>
+              School
+              <select value={schoolId} onChange={(e) => setSchoolId(e.target.value)}>
+                {schools.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button className="pill-btn" disabled={!!busy || !schoolId} onClick={() => run("load")}>
+              {busy === "load" ? "Loading… (up to a minute)" : loaded ? "Reload demo data" : "Load demo data"}
+            </button>
+            {loaded && (
+              <button className="pill-btn danger-pill" disabled={!!busy} onClick={() => run("wipe")}>
+                {busy === "wipe" ? "Removing…" : "Remove demo data"}
+              </button>
+            )}
+          </div>
+        </>
+      )}
+      {msg && <p className="demo-ok">{msg}</p>}
+      {err && <p className="sheet-error">{err}</p>}
+    </section>
   );
 }
