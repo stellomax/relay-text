@@ -550,3 +550,7 @@ i.rep { background: #1f9e89; }
 /* About Us: section titles sit well below the page headline */
 .lp .lp-about-main h2 { font-size: clamp(26px, 2.6vw, 34px); line-height: 1.2; }
 .lp-page-hero h1 { text-wrap: balance; }
+/* About Us: wider columns, closer to the width of the cards */
+.lp-about-main .lp-page-hero { max-width: 1120px; }
+.lp-about-main .lp-page-hero .lp-lede { max-width: 46em; }
+.lp-about-main .lp-about-why { max-width: 1040px; }
