@@ -46,7 +46,7 @@ const TESTIMONIALS = [
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
     name: "Jennifer A.",
     role: "Assistant Principal",
-    photo: "/testimonial-jennifer.jpg",
+    photo: "/testimonial-jennifer-2.jpg",
   },
   {
     quote:
