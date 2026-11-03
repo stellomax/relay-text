@@ -108,7 +108,8 @@ export default function DemoPlayer() {
         const t = setTimeout(() => setPhase("sending"), 350);
         return () => clearTimeout(t);
       }
-      const per = Math.max(12, Math.min(32, 1700 / text.length));
+      // about twice as slow as before (PR #152): each message takes roughly 3–4 seconds to type
+      const per = Math.max(25, Math.min(55, 3400 / text.length));
       const t = setTimeout(() => setTyped((n) => Math.min(text.length, n + 2)), per * 2);
       return () => clearTimeout(t);
     }
