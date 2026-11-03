@@ -933,3 +933,9 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .req-msg { max-width: 360px; white-space: pre-wrap; color: var(--label-2); }
 .req-table a.cell-sub { color: var(--tint); }
 .req-toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: var(--label-2); margin-bottom: 12px; cursor: pointer; }
+
+/* Sign In / Sign Up tabs on the login page */
+.auth-tabs { width: 100%; max-width: 360px; margin: 0 0 22px; }
+.auth-tabs button { padding: 10px 8px; font-size: 16px; }
+/* keep the logo still when switching tabs (the Sign Up form is taller) */
+.login:has(.auth-tabs) { justify-content: flex-start; padding-top: max(48px, 12vh); }
