@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Plus_Jakarta_Sans, Figtree } from "next/font/google";
 import { BRAND, COMPANY } from "@/lib/brand";
 import DemoModal from "@/components/DemoModal";
+import ViewSwitcher from "@/components/ViewSwitcher";
 import SiteNav from "@/components/SiteNav";
 import "./landing.css";
 import "./demo/demo.css";
@@ -235,8 +236,9 @@ export default function Landing() {
           </div>
 
           {/* Switches back and forth: a teacher's inbox, then the administrator dashboard. */}
-          <div className="lp-swap">
-            <div className="lp-window lp-slide lp-slide-a" aria-label="The Relay inbox">
+          <ViewSwitcher
+            a={
+            <div className="lp-window" aria-label="The Relay inbox">
               <div className="lp-window-bar">
                 <i />
                 <i />
@@ -307,7 +309,9 @@ export default function Landing() {
                 </div>
               </div>
             </div>
-            <div className="lp-window lp-slide lp-slide-b" aria-label="The administrator dashboard">
+            }
+            b={
+            <div className="lp-window" aria-label="The administrator dashboard">
               <div className="lp-window-bar">
                 <i />
                 <i />
@@ -320,11 +324,8 @@ export default function Landing() {
                 loading="lazy"
               />
             </div>
-            <div className="lp-swap-labels" aria-hidden>
-              <span className="a">Teacher inbox</span>
-              <span className="b">Administrator dashboard</span>
-            </div>
-          </div>
+            }
+          />
         </section>
 
         <section className="lp-hellos" aria-labelledby="langs">
