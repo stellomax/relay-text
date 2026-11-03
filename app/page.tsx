@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Figtree } from "next/font/google";
 import { BRAND, COMPANY } from "@/lib/brand";
+import DemoModal from "@/components/DemoModal";
 import "./landing.css";
+import "./demo/demo.css";
 
 const display = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--lp-display" });
 const body = Figtree({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--lp-body" });
@@ -218,9 +220,7 @@ export default function Landing() {
               <a className="lp-btn" href={CONTACT}>
                 Bring Relay to your school
               </a>
-              <a className="lp-btn ghost" href="/signup">
-                Teacher sign up
-              </a>
+              <DemoModal className="lp-btn ghost lp-hero-demo">See Relay in action</DemoModal>
             </div>
             <p className="lp-fine">
               Teachers: sign up with the code from your school, or <a href="/login">log in</a>.

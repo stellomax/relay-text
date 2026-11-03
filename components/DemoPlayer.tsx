@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /* ---------- the cast ---------- */
 const TEACHER = {
@@ -98,35 +98,6 @@ export default function DemoPlayer() {
   const [typed, setTyped] = useState(0);
   const deskRef = useRef<HTMLDivElement>(null);
   const phoneRef = useRef<HTMLDivElement>(null);
-  const tpRef = useRef<HTMLDivElement>(null);
-  const ppRef = useRef<HTMLDivElement>(null);
-  const ctlRef = useRef<HTMLDivElement>(null);
-  const [shift, setShift] = useState(0);
-  const shiftRef = useRef(0);
-
-  // keep the button exactly halfway between Mrs. Anton and Ms. Rivera (wide screens only)
-  useLayoutEffect(() => {
-    function place() {
-      const tp = tpRef.current, pp = ppRef.current, ctl = ctlRef.current;
-      if (!tp || !pp || !ctl) return;
-      let next = 0;
-      if (window.innerWidth > 900) {
-        const a = tp.getBoundingClientRect(), b = pp.getBoundingClientRect(), c = ctl.getBoundingClientRect();
-        const home = c.left - (shiftRef.current ?? 0) + c.width / 2; // where the button sits with no shift
-        next = Math.round((a.right + b.left) / 2 - home);
-      }
-      shiftRef.current = next;
-      setShift(next);
-    }
-    place();
-    const ro = new ResizeObserver(place);
-    [tpRef, ppRef].forEach((r) => r.current && ro.observe(r.current));
-    window.addEventListener("resize", place);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", place);
-    };
-  }, []);
 
   const cur = idx > 0 ? SCRIPT[idx - 1] : null;
   const finished = idx === SCRIPT.length && phase === "done";
@@ -213,40 +184,66 @@ export default function DemoPlayer() {
   });
 
 
+  // the button says what comes next, so it's obvious there is more
+  function nextLabel() {
+    const m = SCRIPT[idx];
+    if (!m) return "Next message ›";
+    if (m.from === "parent") return SCRIPT[idx - 1]?.from === "parent" ? "See Ms. Rivera’s next text ›" : "See Ms. Rivera’s reply ›";
+    return "See Mrs. Anton’s reply ›";
+  }
+  const waiting = idx > 0 && !finished && phase === "done";
+
   return (
     <div className="dm">
       {/* the two screens */}
       <div className="dm-stage" onClick={next} role="button" tabIndex={-1} aria-label="Play the next message">
-        {/* the people, with the button between them */}
-        <div className="dm-person tp" ref={tpRef}>
+        {/* the people */}
+        <div className="dm-person tp">
           <Avatar who={TEACHER} size={84} />
           <div>
             <b>{TEACHER.name}</b>
             <span>{TEACHER.role}</span>
           </div>
         </div>
-        <div className="dm-ctl" ref={ctlRef} style={{ transform: shift ? `translateX(${shift}px)` : undefined }} onClick={(e) => e.stopPropagation()}>
-          {finished ? (
-            <>
-              <button type="button" className="lp-btn dm-next" onClick={restart}>
-                ↺ Watch again
-              </button>
-              <a className="dm-cta" href="/contact">
-                Bring Relay to your school ›
-              </a>
-            </>
-          ) : (
-            <button type="button" className="lp-btn dm-next" onClick={next}>
-              {idx === 0 ? "Start demo conversation ›" : "Next message ›"}
-            </button>
-          )}
-        </div>
-        <div className="dm-person pp" ref={ppRef}>
+        <div className="dm-person pp">
           <Avatar who={PARENT} size={84} />
           <div>
             <b>{PARENT.name}</b>
             <span>{PARENT.role}</span>
           </div>
+        </div>
+
+        {/* before the first click: a big play button over both screens */}
+        {idx === 0 && (
+          <div className="dm-start-wrap" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="dm-start" onClick={next} autoFocus>
+              <span className="dm-play" aria-hidden>
+                <svg viewBox="0 0 24 24" width="30" height="30">
+                  <path d="M8 5.5v13l11-6.5z" fill="currentColor" />
+                </svg>
+              </span>
+              <b>Start demo conversation</b>
+              <span>Click through a real text conversation, one message at a time.</span>
+            </button>
+          </div>
+        )}
+
+        {/* the advance button, under the screens */}
+        <div className="dm-ctl" onClick={(e) => e.stopPropagation()}>
+          {finished ? (
+            <>
+              <button type="button" className="lp-btn dm-next" onClick={restart}>
+                ↺ Watch again
+              </button>
+              <a className="lp-btn ghost dm-next" href="/contact">
+                Bring Relay to your school
+              </a>
+            </>
+          ) : idx > 0 ? (
+            <button type="button" className={`lp-btn dm-next${waiting ? " ready" : ""}`} onClick={next}>
+              {nextLabel()}
+            </button>
+          ) : null}
         </div>
 
         {/* teacher's computer */}
