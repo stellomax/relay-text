@@ -529,3 +529,20 @@ i.rep { background: #1f9e89; }
 .lp-about-why h2 + p { margin-top: 28px; }
 .lp-about-why a { color: var(--purple); font-weight: 600; }
 .lp-steps li h3:first-child { margin-top: 0; }
+
+/* testimonials on the purple band: an administrator and a teacher, side by side */
+.lp-testimonials { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; max-width: 1120px; margin: 48px auto 0; }
+.lp-quote {
+  margin: 0; display: flex; flex-direction: column; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 24px; padding: 32px 34px 30px;
+}
+.lp-quote-mark { font-family: var(--lp-display); font-size: 72px; line-height: 0.6; height: 34px; color: #c9a3ff; }
+.lp-quote blockquote { margin: 10px 0 0; font-size: 20px; line-height: 1.6; color: #fff; flex: 1; }
+.lp-quote figcaption { display: flex; align-items: center; gap: 14px; margin-top: 26px; font-size: 15px; color: rgba(255, 255, 255, 0.75); }
+.lp-quote figcaption img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex: none; background: rgba(255, 255, 255, 0.15); }
+.lp-quote figcaption b { display: block; font-size: 18px; color: #fff; }
+@media (max-width: 860px) {
+  .lp-testimonials { grid-template-columns: 1fr; max-width: 560px; }
+  .lp-quote { padding: 26px 24px 24px; }
+  .lp-quote blockquote { font-size: 18px; }
+}
