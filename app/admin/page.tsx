@@ -524,12 +524,19 @@ function TeacherList({ s }: { s: Summary }) {
   const max = Math.max(1, ...list.map((t) => Math.max(t.texts30, t.received30 ?? 0)));
   return (
     <>
-      <table className="dash-table">
+      <table className="dash-table teacher-table">
+        <colgroup>
+          <col style={{ width: "26%" }} />
+          <col style={{ width: "20%" }} />
+          <col style={{ width: "20%" }} />
+          <col style={{ width: "16%" }} />
+          <col style={{ width: "18%" }} />
+        </colgroup>
         <thead>
           <tr>
             <th>Teacher</th>
-            <th className="num">Texts sent</th>
-            <th className="num">Texts received</th>
+            <th className="center">Texts sent</th>
+            <th className="center">Texts received</th>
             <th className="center">Total parents</th>
             <th>Last signed in</th>
           </tr>
@@ -542,16 +549,20 @@ function TeacherList({ s }: { s: Summary }) {
                 {t.role === "admin" && <span className="tag-admin">Admin</span>}
               </td>
               <td className="num">
+                <span className="num-in">
                 <span className="mini">
                   {t.texts30 > 0 && <span className="mini-bar" style={{ width: `${(t.texts30 / max) * 100}%` }} />}
                 </span>
-                {fmt(t.texts30)}
+                <span className="num-v">{fmt(t.texts30)}</span>
+                </span>
               </td>
               <td className="num">
+                <span className="num-in">
                 <span className="mini">
                   {(t.received30 ?? 0) > 0 && <span className="mini-bar replies" style={{ width: `${((t.received30 ?? 0) / max) * 100}%` }} />}
                 </span>
-                {fmt(t.received30 ?? 0)}
+                <span className="num-v">{fmt(t.received30 ?? 0)}</span>
+                </span>
               </td>
               <td className="center">{fmt(t.parentsTotal ?? t.parents30)}</td>
               <td className="muted">{t.last_seen_at ? listTime(t.last_seen_at) : "Never"}</td>
