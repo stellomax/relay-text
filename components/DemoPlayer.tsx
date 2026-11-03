@@ -230,8 +230,13 @@ export default function DemoPlayer() {
               </a>
             </>
           ) : idx > 0 ? (
-            <button type="button" className={`lp-btn dm-next${waiting ? " ready" : ""}`} onClick={next}>
-              Continue conversation ›
+            <button
+              type="button"
+              className={`lp-btn dm-next${waiting ? " ready" : " busy"}`}
+              onClick={next}
+              aria-label={waiting ? undefined : "Message on its way"}
+            >
+              <span className="dm-next-label">Continue conversation ›</span>
             </button>
           ) : null}
         </div>
