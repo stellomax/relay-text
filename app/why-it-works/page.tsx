@@ -134,7 +134,7 @@ export default function WhyItWorksPage() {
       <main className="lp-about-main ww">
         <section className="lp-page-hero">
           <p className="lp-eyebrow">Why it works</p>
-          <h1>Small, regular messages home make a real difference.</h1>
+          <h1>Short, regular texts to parents. Big results for students.</h1>
           <p className="lp-lede">
             The research is clear and surprisingly practical: when teachers reach parents often, briefly and personally,
             students show up more, turn in more work and fail fewer classes. Here's what the studies found, and how to put
