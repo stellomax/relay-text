@@ -122,10 +122,10 @@ export default function Landing() {
               <li>Watch student connection and performance increase!</li>
             </ul>
             <div className="lp-ctas">
-              <a className="lp-btn" href={CONTACT}>
+              <a className="lp-btn outline" href={CONTACT}>
                 Bring Relay to your school
               </a>
-              <DemoModal className="lp-btn outline lp-hero-demo">See Relay in action</DemoModal>
+              <DemoModal className="lp-btn lp-hero-demo">See Relay in action</DemoModal>
             </div>
             <p className="lp-fine">
               Teachers: sign up with the code from your school, or <a href="/login">log in</a>.
