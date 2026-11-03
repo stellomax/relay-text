@@ -468,3 +468,13 @@ i.rep { background: #1f9e89; }
 @media (max-width: 760px) {
   .lp .lp-lede, .lp .lp-noapp-copy > p, .lp .lp-hellos > p, .lp .lp-final > p { font-size: 18px; }
 }
+
+/* Uniform space between sections: 96px on wide screens, 64px on phones.
+   Plain sections get half of it as top/bottom padding; the colored blocks (benefits band, closing card)
+   keep their inner padding and get half of it as outer margin. The hero keeps its own top padding. */
+.lp { --sec-half: 48px; }
+@media (max-width: 760px) { .lp { --sec-half: 32px; } }
+.lp .lp-hero { padding-bottom: var(--sec-half); }
+.lp .lp-noapp, .lp .lp-schools, .lp .lp-hellos, .lp .lp-faq { padding-top: var(--sec-half); padding-bottom: var(--sec-half); }
+.lp .lp-benefits, .lp .lp-final { margin-top: var(--sec-half); margin-bottom: var(--sec-half); }
+.lp .lp-foot { padding-top: var(--sec-half); }
