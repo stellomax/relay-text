@@ -1,4 +1,4 @@
-import { db, Staff } from "@/lib/db";
+import { allRows, db, Staff } from "@/lib/db";
 import { json, withAdmin } from "@/lib/http";
 import { isSuperAdmin } from "@/lib/staff";
 
@@ -27,23 +27,32 @@ export const GET = withAdmin(async (req, me) => {
   const staffIds = staff.map((s) => s.id);
 
   // Parents in scope
-  let parentsQ = supa.from("parents").select("id, language, opted_out, consent_at").limit(50000);
-  if (schoolId) parentsQ = parentsQ.eq("school_id", schoolId);
-  const { data: parentRows, error: parentErr } = await parentsQ;
-  const parents = (parentRows || []) as { id: string; language: string; opted_out: boolean; consent_at: string | null }[];
+  let parentErr = null as { message: string } | null;
+  const parentRows = await allRows<{ id: string; language: string; opted_out: boolean; consent_at: string | null }>((a, b) => {
+    let q = supa.from("parents").select("id, language, opted_out, consent_at").order("id").range(a, b);
+    if (schoolId) q = q.eq("school_id", schoolId);
+    return q;
+  }).catch((e) => {
+    parentErr = { message: String(e?.message || e) };
+    return [];
+  });
+  const parents = parentRows as { id: string; language: string; opted_out: boolean; consent_at: string | null }[];
 
   // Messages over the last 9 weeks (covers the 60-day chart), from teachers in scope
   const since = new Date(Date.now() - WEEKS * 7 * DAY);
   since.setHours(0, 0, 0, 0);
   let msgs: { staff_id: string | null; direction: string; created_at: string; contact_id: string }[] = [];
   if (!schoolId || staffIds.length) {
-    let mQ = supa
-      .from("messages")
-      .select("staff_id, direction, created_at, contact_id, sent_by")
-      .gte("created_at", since.toISOString())
-      .limit(50000);
-    if (schoolId) mQ = mQ.in("staff_id", staffIds);
-    const { data } = await mQ;
+    const data = await allRows<typeof msgs[number] & { sent_by: string | null }>((a, b) => {
+      let q = supa
+        .from("messages")
+        .select("id, staff_id, direction, created_at, contact_id, sent_by")
+        .gte("created_at", since.toISOString())
+        .order("id")
+        .range(a, b);
+      if (schoolId) q = q.in("staff_id", staffIds);
+      return q;
+    });
     // The automatic sign-up confirmation isn't a message a teacher sent.
     msgs = ((data || []) as (typeof msgs[number] & { sent_by: string | null })[]).filter((m) => m.sent_by !== "opt-in confirmation");
   }

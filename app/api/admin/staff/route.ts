@@ -1,5 +1,5 @@
 import { baseUrlFromRequest } from "@/lib/config";
-import { db, Staff } from "@/lib/db";
+import { allRows, db, Staff } from "@/lib/db";
 import { json, withAdmin, errorMessage } from "@/lib/http";
 import { autoBuyEnabled, assignNumber, unassignNumber, type AssignResult } from "@/lib/numbers";
 import { cleanAreaCode, isBuiltInAdmin, isSuperAdmin, newJoinCode, staffByEmail, staffById, tempPassword } from "@/lib/staff";
@@ -13,10 +13,10 @@ export const maxDuration = 60;
 export const GET = withAdmin(async (req, me) => {
   const supa = db();
   const since = new Date(Date.now() - 30 * 86400000).toISOString();
-  const [{ data: staff, error }, { data: contacts }, { data: msgs }, { data: invites }, { data: schools }] = await Promise.all([
+  const [{ data: staff, error }, contacts, msgs, { data: invites }, { data: schools }] = await Promise.all([
     supa.from("staff").select("*").order("created_at", { ascending: true }),
-    supa.from("contacts").select("staff_id"),
-    supa.from("messages").select("staff_id").gte("created_at", since).limit(20000),
+    allRows<{ staff_id: string | null }>((a, b) => supa.from("contacts").select("id, staff_id").order("id").range(a, b)),
+    allRows<{ staff_id: string | null }>((a, b) => supa.from("messages").select("id, staff_id").gte("created_at", since).order("id").range(a, b)),
     supa
       .from("invites")
       .select("id, code, name, school, area_code, role, expires_at, created_at")

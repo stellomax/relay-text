@@ -1,5 +1,5 @@
 import { baseUrlFromRequest } from "@/lib/config";
-import { db } from "@/lib/db";
+import { allRows, db } from "@/lib/db";
 import { json, withAdmin, withSuper } from "@/lib/http";
 import { codeIsFree, newFreeCode, School } from "@/lib/schools";
 import { cleanAreaCode, isSuperAdmin } from "@/lib/staff";
@@ -9,10 +9,10 @@ export const dynamic = "force-dynamic";
 // All schools with teacher counts. Admins use this for school dropdowns; super admins manage it.
 export const GET = withAdmin(async (req, me) => {
   const supa = db();
-  const [{ data: schools, error }, { data: staff }, { data: parents }] = await Promise.all([
+  const [{ data: schools, error }, { data: staff }, parents] = await Promise.all([
     supa.from("schools").select("*").order("name"),
     supa.from("staff").select("school_id, status"),
-    supa.from("parents").select("school_id").limit(100000),
+    allRows<{ school_id: string | null }>((a, b) => supa.from("parents").select("id, school_id").order("id").range(a, b)),
   ]);
   if (error) throw new Error(error.message);
   const counts = new Map<string, number>();
