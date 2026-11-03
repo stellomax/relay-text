@@ -5,7 +5,6 @@ import { BRAND } from "@/lib/brand";
 
 const LINKS = [
   { label: "About Us", href: "/about" },
-  { label: "For Teachers", href: "/teachers" },
   { label: "View Demo", href: "/#demo" },
   { label: "Request a Quote", href: "/contact" },
 ];
