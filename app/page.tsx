@@ -167,7 +167,6 @@ export default function Landing() {
               alt="A teacher at her classroom desk, smiling as she types a message on her laptop"
               width={1000}
               height={1250}
-              fetchPriority="high"
             />
             <div className="lp-notif lp-photo-notif lp-sent-notif" aria-hidden>
               <div className="lp-notif-top">

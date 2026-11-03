@@ -341,7 +341,8 @@
   max-width: 760px; margin: 0 auto; padding: clamp(28px, 5vw, 64px) clamp(16px, 4vw, 48px) clamp(56px, 8vw, 96px);
   display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(28px, 4vw, 44px); align-items: start;
 }
-.ct-pitch h1 { font-size: clamp(34px, 4vw, 52px); line-height: 1.08; letter-spacing: -0.03em; margin: 0; }
+.lp .ct-pitch h1 { font-size: clamp(30px, 5vw, 48px); line-height: 1.08; letter-spacing: -0.03em; margin: 0; max-width: none; }
+@media (min-width: 640px) { .lp .ct-pitch h1 { white-space: nowrap; } }
 .ct-pitch .lp-lede { margin-top: 18px; }
 .ct-alt { margin-top: 26px; color: var(--ink-2); font-size: 16px; }
 .ct-alt a { color: var(--purple); font-weight: 600; }
