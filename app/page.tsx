@@ -163,10 +163,10 @@ export default function Landing() {
 
           <figure className="lp-photo lp-hero-photo">
             <img
-              src="https://images.unsplash.com/photo-1758685848174-e061c6486651?w=1000&h=1250&q=80&auto=format&fit=crop&crop=faces"
+              src="https://images.unsplash.com/photo-1758685848174-e061c6486651?w=1000&h=1100&q=80&auto=format&fit=crop&crop=faces"
               alt="A teacher at her classroom desk, smiling as she types a message on her laptop"
               width={1000}
-              height={1250}
+              height={1100}
             />
             <div className="lp-notif lp-photo-notif lp-sent-notif" aria-hidden>
               <div className="lp-notif-top">
