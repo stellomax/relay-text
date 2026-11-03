@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { Plus_Jakarta_Sans, Figtree } from "next/font/google";
 import { BRAND, COMPANY } from "@/lib/brand";
 import DemoModal from "@/components/DemoModal";
@@ -60,7 +61,7 @@ const TESTIMONIALS = [
 
 const CONTACT = "/contact";
 
-const FAQ = [
+const FAQ: { q: string; a: ReactNode }[] = [
   {
     q: "Will parents see our personal numbers?",
     a: "Never. Every text goes out from a Relay number, never from a teacher’s own phone, so parents never see a teacher’s personal cell number. Protecting the privacy of teachers and families is at the heart of how Relay is built.",
@@ -91,7 +92,12 @@ const FAQ = [
   },
   {
     q: "What does it cost?",
-    a: "Surprisingly affordable for the value Relay provides. Pricing depends on the size of your school. Get in touch and we’ll set up a pilot that fits.",
+    a: (
+      <>
+        Surprisingly affordable for the value Relay provides. Pricing depends on the size of your school, we will meet you where you
+        are to meet the needs of your students and families. <a href="/contact">Get in touch</a> and we’ll set up a pilot that fits.
+      </>
+    ),
   },
 ];
 
