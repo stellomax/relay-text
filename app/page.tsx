@@ -83,7 +83,7 @@ const FAQ = [
   },
   {
     q: "Is family information protected?",
-    a: "Relay stores only what it needs to carry the conversation: each parent’s name, phone number and language, an optional child’s first name, and the messages. It holds no grades or student records. Only the teacher and your school’s administrators can see a family’s conversation, and family information is never sold or shared for marketing.",
+    a: "Relay stores only what it needs to carry the conversation: each parent’s name, phone number and language, an optional child’s first name, and the messages. Only the teacher and your school’s administrators can see a family’s conversation, and family information is never sold or shared for marketing.",
   },
   {
     q: "What about FERPA and district approval?",

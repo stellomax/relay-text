@@ -26,7 +26,7 @@ const BELIEFS = [
   },
   {
     title: "Families’ trust comes first",
-    text: "We keep only what a conversation needs, hold no grades or student records, and never sell or share family information for marketing.",
+    text: "We keep only what a conversation needs, and we never sell or share family information for marketing.",
   },
 ];
 
