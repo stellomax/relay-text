@@ -38,8 +38,12 @@ const TEAM = [
   { name: "Michelle Carter", title: "Co-founder · Former School Administrator", photo: "/team-4.jpg" },
   { name: "Ryan Kowalski", title: "Lead Developer", photo: "/team-5.jpg" },
   { name: "Megan Ellis", title: "Client Success Manager", photo: "/team-6.jpg" },
-  { name: "Dr. Robert Hale", title: "Board Advisor · Retired Superintendent", photo: "/team-7.jpg" },
-  { name: "Carol Whitman", title: "Board Advisor · Former State ELD Director", photo: "/team-8.jpg" },
+  { name: "Dr. Robert Hale", title: "Advisory Board · Retired Superintendent", photo: "/team-7.jpg" },
+  { name: "Carol Whitman", title: "Advisory Board · Former State ELD Director", photo: "/team-8.jpg" },
+  { name: "Marcus Johnson", title: "Advisory Board · Former High School Principal", photo: "/team-9.jpg" },
+  { name: "Dr. Lisa Nakamura", title: "Advisory Board · Professor of Education", photo: "/team-10.jpg" },
+  { name: "Tom Reynolds", title: "Advisory Board · Former School Board President", photo: "/team-11.jpg" },
+  { name: "Dr. Angela Price", title: "Advisory Board · Multilingual Learner Specialist", photo: "/team-12.jpg" },
 ];
 
 export default function AboutPage() {
