@@ -45,7 +45,7 @@ export default function AboutPage() {
           <p>Our team passionately believes this statement. In fact, it’s why we built {BRAND} in the first place.</p>
           <p>
             We’re a team of teachers, school administrators, developers and (above all) parents who care deeply about removing
-            barriers that hinder teacher/family partnership. Our lives are surrounded by technology—why not take what we’re
+            barriers that hinder teacher/family partnership. Our lives are surrounded by technology; why not take what we’re
             already using to connect with marginalized families?
           </p>
           <p>
