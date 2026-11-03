@@ -71,7 +71,7 @@ const FAQ = [
   },
   {
     q: "Is this more work for teachers?",
-    a: "If teachers can text, they can use Relay. It looks and works like the Messages app. They write in English, and Relay handles the language barrier in both directions.",
+    a: "Simplicity guided every decision we made. If teachers can text, they can use Relay. It looks and works like the Messages app. They write in English, and Relay handles the language barrier in both directions.",
   },
   {
     q: "Does IT need to be involved?",
