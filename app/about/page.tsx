@@ -35,7 +35,11 @@ const TEAM = [
   { name: "Daniel Brooks", title: "Co-founder · Former Middle School Principal", photo: "/team-1.jpg" },
   { name: "Elena Morales", title: "ELD Teacher · Curriculum Lead", photo: "/team-2b.jpg" },
   { name: "Julie Hansen", title: "Family Engagement Coordinator", photo: "/team-3.jpg" },
-  { name: "Michelle Carter", title: "Lead Developer", photo: "/team-4.jpg" },
+  { name: "Michelle Carter", title: "Co-founder · Former School Administrator", photo: "/team-4.jpg" },
+  { name: "Ryan Kowalski", title: "Lead Developer", photo: "/team-5.jpg" },
+  { name: "Megan Ellis", title: "Client Success Manager", photo: "/team-6.jpg" },
+  { name: "Dr. Robert Hale", title: "Board Advisor · Retired Superintendent", photo: "/team-7.jpg" },
+  { name: "Carol Whitman", title: "Board Advisor · Former State ELD Director", photo: "/team-8.jpg" },
 ];
 
 export default function AboutPage() {
