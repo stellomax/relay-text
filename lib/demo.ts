@@ -76,25 +76,18 @@ const START: Record<Tier, [number, number]> = { champion: [59, 56], regular: [57
 
 // Parents by language: [language, count, parent names, student first names]
 const FAMILIES: [string, number, string[], string[]][] = [
-  ["es", 92,
+  ["es", 34,
     ["Maria Lopez", "José Hernández", "Guadalupe Martínez", "Juan Garcia", "Rosa Gonzalez", "Luis Rodríguez", "Ana Pérez", "Carlos Sánchez", "Verónica Ramírez", "Miguel Torres", "Lucía Flores", "Jorge Rivera", "Patricia Gómez", "Ricardo Díaz", "Elena Cruz", "Fernando Morales", "Claudia Reyes", "Alejandro Ortiz", "Silvia Gutiérrez", "Eduardo Chávez", "Leticia Ramos", "Arturo Mendoza", "Gabriela Castillo", "Raúl Vargas", "Adriana Romero", "Héctor Jiménez", "Mónica Herrera", "Sergio Medina", "Teresa Aguilar", "Oscar Vázquez", "Yolanda Castro", "Javier Ruiz"],
     ["Sofía", "Mateo", "Valentina", "Santiago", "Camila", "Diego", "Isabella", "Emiliano", "Ximena", "Leonardo", "Daniela", "Adrián", "Lucía", "Gael", "Mariana", "Iker", "Renata", "Andrés", "Ana", "Joaquín"]],
-  ["vi", 20, ["Nguyen Thi Lan", "Tran Van Minh", "Le Thi Hoa", "Pham Van Duc", "Hoang Thi Mai", "Vu Van Hung", "Dang Thi Thu", "Bui Van Long"], ["Linh", "Bao", "Anh", "Khoa", "Vy", "Minh", "Thao", "Duy"]],
-  ["ar", 17, ["Ahmed Hassan", "Fatima Ali", "Mohammed Saleh", "Layla Haddad", "Omar Khalil", "Mariam Youssef", "Khaled Mansour", "Noor Ibrahim"], ["Yusuf", "Amira", "Zaid", "Lina", "Adam", "Huda", "Karim", "Salma"]],
-  ["so", 14, ["Amina Hassan", "Abdi Warsame", "Hodan Ali", "Mohamed Farah", "Fadumo Yusuf", "Ahmed Abdi", "Sahra Omar"], ["Yusuf", "Hamza", "Ayaan", "Ifrah", "Khalid", "Deeqa", "Nasra"]],
-  ["uk", 10, ["Olena Kovalenko", "Andriy Shevchenko", "Iryna Bondarenko", "Oksana Melnyk", "Taras Petrenko"], ["Dmytro", "Sofiia", "Maksym", "Anna", "Artem"]],
-  ["ht", 9, ["Jean Baptiste", "Marie Joseph", "Pierre Louis", "Nadège Charles", "Wilner Pierre"], ["Marie", "Jean", "Daphney", "Kervens", "Lovely"]],
-  ["fa-AF", 9, ["Ahmad Rahimi", "Zahra Ahmadi", "Mohammad Karimi", "Fatima Noori", "Abdul Hakimi"], ["Zahra", "Mustafa", "Mariam", "Ali", "Hasina"]],
-  ["zh-CN", 8, ["Li Wei", "Wang Fang", "Zhang Min", "Chen Jing", "Liu Yang"], ["Jason", "Emily", "Kevin", "Grace", "Lucas"]],
-  ["my", 7, ["Thu Zar", "Kyaw Win", "Aye Aye Mon", "Htet Aung"], ["Hnin Wai", "Ko Ko", "Su Mon", "Zaw Min"]],
-  ["sw", 6, ["Neema Mwangi", "Baraka Otieno", "Grace Uwimana", "Joseph Mugisha"], ["Faith", "David", "Esther", "Emmanuel"]],
-  ["ne", 5, ["Sita Gurung", "Ram Thapa", "Maya Rai", "Bishnu Tamang"], ["Anish", "Srijana", "Bikash", "Puja"]],
-  ["ru", 4, ["Natalia Ivanova", "Sergei Popov", "Elena Smirnova"], ["Alina", "Nikita", "Polina"]],
-  ["pt", 4, ["Ana Souza", "Paulo Oliveira", "Juliana Santos"], ["Gabriel", "Beatriz", "Rafael"]],
-  ["am", 3, ["Hiwot Tesfaye", "Dawit Bekele", "Meron Alemu"], ["Abel", "Liya", "Nahom"]],
-  ["ko", 3, ["Kim Ji-yeon", "Park Min-ho", "Lee Soo-jin"], ["Daniel", "Hannah", "Joon"]],
-  ["fr", 3, ["Aminata Diallo", "Jean-Claude Mbeki", "Fatou Ndiaye"], ["Moussa", "Aïcha", "Ibrahima"]],
-  ["en", 10, ["Jessica Miller", "Brandon Davis", "Ashley Wilson", "Tasha Robinson", "Kyle Anderson"], ["Ethan", "Madison", "Jayden", "Aaliyah", "Noah"]],
+  ["vi", 9, ["Nguyen Thi Lan", "Tran Van Minh", "Le Thi Hoa", "Pham Van Duc", "Hoang Thi Mai", "Vu Van Hung", "Dang Thi Thu", "Bui Van Long"], ["Linh", "Bao", "Anh", "Khoa", "Vy", "Minh", "Thao", "Duy"]],
+  ["ar", 8, ["Ahmed Hassan", "Fatima Ali", "Mohammed Saleh", "Layla Haddad", "Omar Khalil", "Mariam Youssef", "Khaled Mansour", "Noor Ibrahim"], ["Yusuf", "Amira", "Zaid", "Lina", "Adam", "Huda", "Karim", "Salma"]],
+  ["so", 6, ["Amina Hassan", "Abdi Warsame", "Hodan Ali", "Mohamed Farah", "Fadumo Yusuf", "Ahmed Abdi", "Sahra Omar"], ["Yusuf", "Hamza", "Ayaan", "Ifrah", "Khalid", "Deeqa", "Nasra"]],
+  ["uk", 5, ["Olena Kovalenko", "Andriy Shevchenko", "Iryna Bondarenko", "Oksana Melnyk", "Taras Petrenko"], ["Dmytro", "Sofiia", "Maksym", "Anna", "Artem"]],
+  ["ht", 4, ["Jean Baptiste", "Marie Joseph", "Pierre Louis", "Nadège Charles", "Wilner Pierre"], ["Marie", "Jean", "Daphney", "Kervens", "Lovely"]],
+  ["fa-AF", 4, ["Ahmad Rahimi", "Zahra Ahmadi", "Mohammad Karimi", "Fatima Noori", "Abdul Hakimi"], ["Zahra", "Mustafa", "Mariam", "Ali", "Hasina"]],
+  ["zh-CN", 3, ["Li Wei", "Wang Fang", "Zhang Min", "Chen Jing", "Liu Yang"], ["Jason", "Emily", "Kevin", "Grace", "Lucas"]],
+  ["sw", 2, ["Neema Mwangi", "Baraka Otieno", "Grace Uwimana", "Joseph Mugisha"], ["Faith", "David", "Esther", "Emmanuel"]],
+  ["en", 5, ["Jessica Miller", "Brandon Davis", "Ashley Wilson", "Tasha Robinson", "Kyle Anderson"], ["Ethan", "Madison", "Jayden", "Aaliyah", "Noah"]],
 ];
 
 // ---------- the conversations (English; translated per family) ----------
@@ -380,7 +373,7 @@ export async function loadDemo(schoolId: string) {
 
   // Rosters and groups
   const rosters = teachers.map((t) => {
-    const size = t.eld ? 30 : Math.round(between(18, 28));
+    const size = t.eld ? 22 : Math.round(between(12, 20));
     const pool = t.eld ? textable.filter((x) => x.p.lang !== "en") : textable;
     return shuffle(pool).slice(0, size).map((x) => x.i);
   });
@@ -393,7 +386,7 @@ export async function loadDemo(schoolId: string) {
     const roster = shuffle(rosters[ti]);
     names.forEach((name, gi) => {
       const gid = randomUUID();
-      const members = roster.slice(gi * 10, gi * 10 + Math.round(between(10, 16)));
+      const members = roster.slice(gi * 6, gi * 6 + Math.round(between(6, 10)));
       teacherGroups[ti].push(members);
       groupRows.push({ id: gid, staff_id: t.id, name, created_at: new Date(now - (SPAN + 2) * DAY).toISOString(), demo: true });
       for (const m of members) memberRows.push({ group_id: gid, parent_id: parents[m].id });
