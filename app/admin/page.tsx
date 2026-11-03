@@ -89,38 +89,18 @@ export default function AdminDashboard() {
 
         {/* The three things an admin does */}
         <div className="dash-actions">
-          <a className="home-card primary" href="/inbox?compose=1">
-            <span className="home-icon">
-              <Compose size={26} />
-            </span>
-            <span className="home-card-text">
-              <span className="home-card-title">Send a Message</span>
-              <span className="home-card-desc">To one parent, a group, or everyone</span>
-            </span>
-            <ChevronRight size={16} className="home-chev" />
+          <a className="dash-btn primary" href="/inbox?compose=1">
+            <Compose size={20} />
+            Send a Message
           </a>
-          <a className="home-card" href="/admin/teachers">
-            <span className="home-icon">
-              <PersonAdd size={26} />
-            </span>
-            <span className="home-card-text">
-              <span className="home-card-title">Manage Teachers</span>
-              <span className="home-card-desc">
-                Add, edit or remove
-                {s && s.teachers.pending > 0 && <span className="home-badge">{s.teachers.pending} waiting</span>}
-              </span>
-            </span>
-            <ChevronRight size={16} className="home-chev" />
+          <a className="dash-btn" href="/admin/teachers">
+            <PersonAdd size={20} />
+            Manage Teachers
+            {s && s.teachers.pending > 0 && <span className="dash-btn-badge">{s.teachers.pending} waiting</span>}
           </a>
-          <a className="home-card" href="/admin/parents">
-            <span className="home-icon">
-              <Book size={26} />
-            </span>
-            <span className="home-card-text">
-              <span className="home-card-title">Manage Parents</span>
-              <span className="home-card-desc">Upload a spreadsheet, add or remove</span>
-            </span>
-            <ChevronRight size={16} className="home-chev" />
+          <a className="dash-btn" href="/admin/parents">
+            <Book size={20} />
+            Manage Parents
           </a>
         </div>
 
