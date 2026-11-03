@@ -28,6 +28,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/|favicon|icon-|icon\\.svg|apple-touch-icon|relay-text-logo|hero-teacher|testimonial-|manifest|login|signup|forgot|reset-password|contact|demo|teachers|about|why-it-works|join|privacy|terms|landing/|api/auth/|api/sms/|api/optin|api/contact|api/signup|api/join-info|api/languages).*)",
+    "/((?!_next/|favicon|icon-|icon\\.svg|apple-touch-icon|relay-text-logo|hero-teacher|testimonial-|team-|manifest|login|signup|forgot|reset-password|contact|demo|teachers|about|why-it-works|join|privacy|terms|landing/|api/auth/|api/sms/|api/optin|api/contact|api/signup|api/join-info|api/languages).*)",
   ],
 };
