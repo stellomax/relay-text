@@ -148,7 +148,7 @@ export const GET = withAdmin(async (req, me) => {
       total: active.length,
       pending: staff.filter((s) => s.status === "pending").length,
       texting30: teachers.filter((t) => t.texts30 > 0).length,
-      list: teachers.slice(0, 8),
+      list: teachers,
     },
     messages: { sent30, replies30, weeks, days },
   });

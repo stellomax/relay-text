@@ -156,18 +156,7 @@ export default function AdminDashboard() {
 
             <div className="dash-grid">
               <section className="panel wide">
-                <div className="panel-head">
-                  <h2>Messages each day</h2>
-                  <span className="legend">
-                    <span className="key">
-                      <i className="sw sent" /> Sent by teachers
-                    </span>
-                    <span className="key">
-                      <i className="sw replies" /> Replies from parents
-                    </span>
-                  </span>
-                </div>
-                <WeekChart weeks={s.messages.days || s.messages.weeks} daily={!!s.messages.days} />
+                <MessagesPanel s={s} />
               </section>
 
               <section className="panel">
@@ -205,16 +194,111 @@ export default function AdminDashboard() {
   );
 }
 
+type Bucket = { key: string; label: string; long: string; sent: number; replies: number };
+const RANGES = [7, 30, 60] as const;
+const VIEWS = [
+  { id: "day", label: "Daily", noun: "day" },
+  { id: "week", label: "Weekly", noun: "week" },
+  { id: "month", label: "Monthly", noun: "month" },
+] as const;
+type ViewId = (typeof VIEWS)[number]["id"];
+
+// The server sends one entry per Mountain Time day; `start` is that day's midnight.
+// Shift by 7 hours and read UTC fields to get the calendar date.
+const dayDate = (iso: string) => new Date(new Date(iso).getTime() + 7 * 3600000);
+const md = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+
+function bucketize(days: Week[], range: number, view: ViewId): Bucket[] {
+  const picked = days.slice(-range);
+  if (view === "day") {
+    return picked.map((w) => {
+      const d = dayDate(w.start);
+      return { key: w.start, label: md(d), long: d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" }), sent: w.sent, replies: w.replies };
+    });
+  }
+  const out: (Bucket & { first: Date; last: Date })[] = [];
+  for (const w of picked) {
+    const d = dayDate(w.start);
+    let key: string;
+    let label: string;
+    if (view === "week") {
+      const monday = new Date(d.getTime() - ((d.getUTCDay() + 6) % 7) * 86400000);
+      key = monday.toISOString().slice(0, 10);
+      label = md(monday);
+    } else {
+      key = `${d.getUTCFullYear()}-${d.getUTCMonth()}`;
+      label = d.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" });
+    }
+    const last = out[out.length - 1];
+    if (last && last.key === key) {
+      last.sent += w.sent;
+      last.replies += w.replies;
+      last.last = d;
+    } else {
+      out.push({ key, label, long: "", sent: w.sent, replies: w.replies, first: d, last: d });
+    }
+  }
+  return out.map(({ first, last, ...b }) => ({
+    ...b,
+    long:
+      view === "month"
+        ? `${first.toLocaleDateString("en-US", { month: "long", timeZone: "UTC" })} (${md(first)}${first.getTime() === last.getTime() ? "" : ` – ${md(last)}`})`
+        : `${md(first)}${first.getTime() === last.getTime() ? "" : ` – ${md(last)}`}`,
+  }));
+}
+
+function MessagesPanel({ s }: { s: Summary }) {
+  const [range, setRange] = useState<number>(60);
+  const [view, setView] = useState<ViewId>("day");
+  const days = s.messages.days;
+  const noun = VIEWS.find((v) => v.id === view)!.noun;
+  const buckets: Bucket[] = days
+    ? bucketize(days, range, view)
+    : s.messages.weeks.map((w) => ({ key: w.start, label: md(dayDate(w.start)), long: `Week of ${md(dayDate(w.start))}`, sent: w.sent, replies: w.replies }));
+  return (
+    <>
+      <div className="panel-head">
+        <h2>Messages each {days ? noun : "week"}</h2>
+        {days && (
+          <span className="chart-controls">
+            <select className="admin-select" value={range} onChange={(e) => setRange(Number(e.target.value))} aria-label="Date range">
+              {RANGES.map((r) => (
+                <option key={r} value={r}>
+                  Last {r} days
+                </option>
+              ))}
+            </select>
+            <select className="admin-select" value={view} onChange={(e) => setView(e.target.value as ViewId)} aria-label="Show by">
+              {VIEWS.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.label}
+                </option>
+              ))}
+            </select>
+          </span>
+        )}
+      </div>
+      <span className="legend chart-legend">
+        <span className="key">
+          <i className="sw sent" /> Sent by teachers
+        </span>
+        <span className="key">
+          <i className="sw replies" /> Replies from parents
+        </span>
+      </span>
+      <WeekChart buckets={buckets} noun={days ? noun : "week"} />
+    </>
+  );
+}
+
 // Grouped columns: sent and replies for each of the last 60 days (or 8 weeks), with a hover tooltip.
-function WeekChart({ weeks, daily = false }: { weeks: Week[]; daily?: boolean }) {
+function WeekChart({ buckets: weeks, noun }: { buckets: Bucket[]; noun: string }) {
+  const daily = weeks.length > 14;
   const [hover, setHover] = useState<number | null>(null);
   const max = Math.max(1, ...weeks.flatMap((w) => [w.sent, w.replies]));
   const step = niceStep(max);
   const top = Math.ceil(max / step) * step;
   const ticks = Array.from({ length: Math.round(top / step) + 1 }, (_, i) => i * step);
-  const label = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  const longLabel = (iso: string) =>
-    daily ? new Date(iso).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : `Week of ${label(iso)}`;
   const empty = weeks.every((w) => !w.sent && !w.replies);
   return (
     <div className={`wk${daily ? " daily" : ""}`}>
@@ -233,20 +317,20 @@ function WeekChart({ weeks, daily = false }: { weeks: Week[]; daily?: boolean })
           <div className="wk-cols">
             {weeks.map((w, i) => (
               <div
-                key={w.start}
+                key={w.key}
                 className={`wk-col ${hover === i ? "on" : ""}`}
                 onMouseEnter={() => setHover(i)}
                 onMouseLeave={() => setHover(null)}
                 onFocus={() => setHover(i)}
                 onBlur={() => setHover(null)}
                 tabIndex={0}
-                aria-label={`${longLabel(w.start)}: ${w.sent} sent, ${w.replies} replies`}
+                aria-label={`${w.long}: ${w.sent} sent, ${w.replies} replies`}
               >
                 <span className="wk-bar sent" style={{ height: `${(w.sent / top) * 100}%` }} />
                 <span className="wk-bar replies" style={{ height: `${(w.replies / top) * 100}%` }} />
                 {hover === i && (
                   <span className="tip">
-                    <strong>{longLabel(w.start)}</strong>
+                    <strong>{w.long}</strong>
                     <span>
                       <i className="sw sent" /> {fmt(w.sent)} sent
                     </span>
@@ -258,12 +342,12 @@ function WeekChart({ weeks, daily = false }: { weeks: Week[]; daily?: boolean })
               </div>
             ))}
           </div>
-          {empty && <p className="wk-empty">No texts yet. Once teachers start texting, each {daily ? "day" : "week"} shows here.</p>}
+          {empty && <p className="wk-empty">No texts yet. Once teachers start texting, each {noun} shows here.</p>}
         </div>
       </div>
       <div className="wk-x">
         {weeks.map((w, i) => (
-          <span key={w.start}>{daily ? ((weeks.length - 1 - i) % 7 === 0 ? label(w.start) : "") : i % 2 === 1 || weeks.length <= 6 ? label(w.start) : ""}</span>
+          <span key={w.key}>{weeks.length <= 10 || (weeks.length - 1 - i) % 7 === 0 ? w.label : ""}</span>
         ))}
       </div>
     </div>
@@ -315,7 +399,7 @@ function Languages({ langs, total }: { langs: { code: string; count: number }[];
             angle += (sl.count / sum) * Math.PI * 2;
             return (
               <path
-                key={sl.name}
+                key={i}
                 d={slicePath(C, C, R, a0, angle)}
                 fill={sl.color}
                 stroke="#fff"
