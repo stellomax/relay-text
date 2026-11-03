@@ -91,7 +91,7 @@ const FAQ = [
   },
   {
     q: "What does it cost?",
-    a: "Pricing depends on the size of your school. Get in touch and we’ll set up a pilot that fits.",
+    a: "Surprisingly affordable for the value Relay provides. Pricing depends on the size of your school. Get in touch and we’ll set up a pilot that fits.",
   },
 ];
 
