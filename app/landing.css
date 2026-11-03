@@ -523,3 +523,9 @@ i.rep { background: #1f9e89; }
   .lp-steps { grid-template-columns: 1fr; }
   .lp-can-list { grid-template-columns: 1fr; }
 }
+.lp-about-why { max-width: 780px; margin: 0 auto; padding: var(--sec-half) clamp(16px, 4vw, 48px); }
+.lp-about-why h2 { text-align: center; }
+.lp-about-why p { margin-top: 18px; color: var(--ink-2); }
+.lp-about-why h2 + p { margin-top: 28px; }
+.lp-about-why a { color: var(--purple); font-weight: 600; }
+.lp-steps li h3:first-child { margin-top: 0; }
