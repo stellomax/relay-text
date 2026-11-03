@@ -51,8 +51,8 @@ const TESTIMONIALS = [
   {
     quote:
       "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim.",
-    name: "Teacher Name",
-    role: "6th grade teacher, Sample Middle School",
+    name: "Pamela H.",
+    role: "ELD Facilitator",
     photo: "https://images.unsplash.com/photo-1758873268223-f61976493498?w=240&h=240&q=80&auto=format&fit=crop&crop=faces",
   },
 ];
