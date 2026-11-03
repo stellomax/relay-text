@@ -973,3 +973,8 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .wk.daily .wk-col { gap: 1px; }
 .wk.daily .wk-bar { width: 40%; border-radius: 3px 3px 0 0; }
 .wk.daily .wk-x span { overflow: visible; }
+
+/* Messages chart: range + grouping pickers */
+.chart-controls { display: flex; gap: 8px; flex-wrap: wrap; }
+.chart-controls .admin-select { height: 36px; font-size: 15px; }
+.chart-legend { margin: -4px 0 12px; }

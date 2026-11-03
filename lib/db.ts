@@ -67,3 +67,20 @@ export type Message = {
   to_number?: string | null;
   created_at: string;
 };
+
+// Supabase returns at most 1,000 rows per request, whatever .limit() says.
+// allRows pages through a query 1,000 rows at a time and returns every row.
+// Build the query fresh in `page` (with a stable .order) and apply the given range.
+export async function allRows<T>(
+  page: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
+  max = 200000
+): Promise<T[]> {
+  const out: T[] = [];
+  for (let from = 0; from < max; from += 1000) {
+    const { data, error } = await page(from, from + 999);
+    if (error) throw new Error(error.message);
+    out.push(...(data || []));
+    if (!data || data.length < 1000) break;
+  }
+  return out;
+}

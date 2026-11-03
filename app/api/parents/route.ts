@@ -1,4 +1,4 @@
-import { db, Staff } from "@/lib/db";
+import { allRows, db, Staff } from "@/lib/db";
 import { json, withAdmin, withAuth } from "@/lib/http";
 import { canSeeParent, cleanParent, findParentByPhone, parentsQuery, schoolKey, syncConversations, type Parent } from "@/lib/parents";
 
@@ -9,7 +9,13 @@ export const maxDuration = 60;
 // only admins can add, edit, upload or delete.
 export const GET = withAuth(async (req, me) => {
   const school = new URL(req.url).searchParams.get("school");
-  const { data, error } = await parentsQuery(me, school).order("parent_name").limit(10000);
+  let data: Parent[] = [];
+  let error: { message: string } | null = null as { message: string } | null;
+  try {
+    data = await allRows<Parent>((a, b) => parentsQuery(me, school).order("parent_name").order("id").range(a, b));
+  } catch (e) {
+    error = { message: e instanceof Error ? e.message : String(e) };
+  }
   if (error) {
     if (/parents/.test(error.message) && /exist|relation|schema cache/i.test(error.message)) {
       return json({ error: "The Parents list needs a database update: run the latest supabase/schema.sql in Supabase." }, 500);
