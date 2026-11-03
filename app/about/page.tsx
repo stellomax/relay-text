@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Figtree } from "next/font/google";
-import { BRAND, COMPANY } from "@/lib/brand";
+import { BRAND, COMPANY_DISPLAY } from "@/lib/brand";
 import SiteNav from "@/components/SiteNav";
 import DemoModal from "@/components/DemoModal";
 import TeamAvatar from "@/components/TeamAvatar";
@@ -104,7 +104,7 @@ export default function AboutPage() {
 
         <section className="lp-about-why lp-about-contact">
           <p>
-            {BRAND} is a service of {COMPANY}. Have a question, or want to see if Relay fits your school? Write to us at{" "}
+            {BRAND} is a service of {COMPANY_DISPLAY}. Have a question, or want to see if Relay fits your school? Write to us at{" "}
             <a href="mailto:relay@stellomark.com">relay@stellomark.com</a>.
           </p>
         </section>
@@ -123,7 +123,7 @@ export default function AboutPage() {
 
       <footer className="lp-foot">
         <span>
-          {BRAND} is a service of {COMPANY}.
+          {BRAND} is a service of {COMPANY_DISPLAY}.
         </span>
         <nav aria-label="Footer">
           <a href="/join">Parents: sign up for texts</a>

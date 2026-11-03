@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Plus_Jakarta_Sans, Figtree } from "next/font/google";
-import { BRAND, COMPANY } from "@/lib/brand";
+import { BRAND, COMPANY_DISPLAY } from "@/lib/brand";
 import DemoModal from "@/components/DemoModal";
 import ViewSwitcher from "@/components/ViewSwitcher";
 import SiteNav from "@/components/SiteNav";
@@ -372,7 +372,7 @@ export default function Landing() {
 
       <footer className="lp-foot">
         <span>
-          {BRAND} is a service of {COMPANY}.
+          {BRAND} is a service of {COMPANY_DISPLAY}.
         </span>
         <nav aria-label="Footer">
           <a href="/join">Parents: sign up for texts</a>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Figtree } from "next/font/google";
-import { BRAND, COMPANY } from "@/lib/brand";
+import { BRAND, COMPANY_DISPLAY } from "@/lib/brand";
 import SiteNav from "@/components/SiteNav";
 import DemoModal from "@/components/DemoModal";
 import "../landing.css";
@@ -257,7 +257,7 @@ export default function WhyItWorksPage() {
 
       <footer className="lp-foot">
         <span>
-          {BRAND} is a service of {COMPANY}.
+          {BRAND} is a service of {COMPANY_DISPLAY}.
         </span>
         <nav aria-label="Footer">
           <a href="/join">Parents: sign up for texts</a>
