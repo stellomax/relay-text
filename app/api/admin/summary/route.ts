@@ -1,6 +1,6 @@
 import { allRows, db, Staff } from "@/lib/db";
 import { json, withAdmin } from "@/lib/http";
-import { isSuperAdmin } from "@/lib/staff";
+import { isSuperAdmin, NO_SCHOOL_ID, schoolLimit } from "@/lib/staff";
 import { TOPICS, toneOf, topicOf } from "@/lib/topics";
 
 export const dynamic = "force-dynamic";
@@ -16,8 +16,11 @@ export const GET = withAdmin(async (req, me) => {
   const supa = db();
   const asked = new URL(req.url).searchParams.get("school");
   const { data: schoolRows } = await supa.from("schools").select("id, name").order("name");
-  const schools = (schoolRows || []) as { id: string; name: string }[];
-  const schoolId = asked === "all" ? null : asked && schools.some((s) => s.id === asked) ? asked : me.school_id || null;
+  const lim = schoolLimit(me);
+  // Admins (not super admins) only ever see their own school.
+  const schools = ((schoolRows || []) as { id: string; name: string }[]).filter((s) => lim === undefined || s.id === lim);
+  const schoolId =
+    lim !== undefined ? lim || NO_SCHOOL_ID : asked === "all" ? null : asked && schools.some((s) => s.id === asked) ? asked : me.school_id || null;
 
   // Teachers in scope
   let staffQ = supa.from("staff").select("id, name, school, school_id, role, status, last_seen_at, phone_placeholder");

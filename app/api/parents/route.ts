@@ -1,6 +1,7 @@
 import { allRows, db, Staff } from "@/lib/db";
 import { json, withAdmin, withAuth } from "@/lib/http";
 import { canSeeParent, cleanParent, findParentByPhone, parentsQuery, schoolKey, syncConversations, type Parent } from "@/lib/parents";
+import { schoolLimit } from "@/lib/staff";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -25,13 +26,14 @@ export const GET = withAuth(async (req, me) => {
   let schools: { id: string; name: string }[] | undefined;
   if (me.role === "admin") {
     const { data: s } = await db().from("schools").select("id, name").order("name");
-    schools = s || [];
+    const lim = schoolLimit(me);
+    schools = (s || []).filter((x) => lim === undefined || x.id === lim); // admins: just their own school
   }
   return json({ parents: data || [], schools, mySchoolId: me.school_id || null, canManage: me.role === "admin" });
 });
 
 async function schoolFor(me: Staff, raw: unknown): Promise<string | null> {
-  if (raw === undefined) return me.school_id || null;
+  if (raw === undefined || schoolLimit(me) !== undefined) return me.school_id || null; // admins: always their own school
   const id = raw ? String(raw) : null;
   if (!id) return null;
   const { data } = await db().from("schools").select("id").eq("id", id).maybeSingle();
@@ -156,13 +158,16 @@ export const PATCH = withAdmin(async (req, me) => {
 });
 
 // Delete one or more parents ({ ids: [...] }). Past conversations stay in Messages.
-export const DELETE = withAdmin(async (req) => {
+export const DELETE = withAdmin(async (req, me) => {
   const body = await req.json().catch(() => ({}));
   const ids: string[] = (Array.isArray(body.ids) ? body.ids : []).map(String).filter(Boolean).slice(0, 10000);
   if (!ids.length) return json({ error: "Choose at least one parent." }, 400);
   let deleted = 0;
   for (let i = 0; i < ids.length; i += 200) {
-    const { error, count } = await db().from("parents").delete({ count: "exact" }).in("id", ids.slice(i, i + 200));
+    let q = db().from("parents").delete({ count: "exact" }).in("id", ids.slice(i, i + 200));
+    const lim = schoolLimit(me);
+    if (lim !== undefined) q = lim ? q.eq("school_id", lim) : q.is("school_id", null); // only their own school's parents
+    const { error, count } = await q;
     if (error) throw new Error(error.message);
     deleted += count || 0;
   }

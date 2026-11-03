@@ -63,7 +63,7 @@ const CONTACT = "/contact";
 const FAQ = [
   {
     q: "Will parents see our personal numbers?",
-    a: "No. Every text goes out from a Relay number, never from a teacher’s own phone, so parents never see a teacher’s personal cell number. Protecting the privacy of teachers and families is at the heart of how Relay is built.",
+    a: "Never. Every text goes out from a Relay number, never from a teacher’s own phone, so parents never see a teacher’s personal cell number. Protecting the privacy of teachers and families is at the heart of how Relay is built.",
   },
   {
     q: "Is this more work for teachers?",

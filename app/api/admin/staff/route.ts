@@ -2,7 +2,7 @@ import { baseUrlFromRequest } from "@/lib/config";
 import { allRows, db, Staff } from "@/lib/db";
 import { json, withAdmin, errorMessage } from "@/lib/http";
 import { autoBuyEnabled, assignNumber, unassignNumber, type AssignResult } from "@/lib/numbers";
-import { cleanAreaCode, isBuiltInAdmin, isSuperAdmin, newJoinCode, staffByEmail, staffById, tempPassword } from "@/lib/staff";
+import { cleanAreaCode, inMySchool, isBuiltInAdmin, isSuperAdmin, newJoinCode, schoolLimit, staffByEmail, staffById, tempPassword } from "@/lib/staff";
 import { newFreeCode, schoolById } from "@/lib/schools";
 import { authClient, findAuthUserId, setPassword, upsertAuthUser } from "@/lib/supabaseAuth";
 
@@ -19,13 +19,16 @@ export const GET = withAdmin(async (req, me) => {
     allRows<{ staff_id: string | null }>((a, b) => supa.from("messages").select("id, staff_id").gte("created_at", since).order("id").range(a, b)),
     supa
       .from("invites")
-      .select("id, code, name, school, area_code, role, expires_at, created_at")
+      .select("id, code, name, school, school_id, area_code, role, expires_at, created_at")
       .is("used_at", null)
       .gt("expires_at", new Date().toISOString())
       .order("created_at", { ascending: false }),
     supa.from("schools").select("id, name, district, area_code, active").order("name"),
   ]);
   if (error) throw new Error(error.message);
+  // Admins only see and manage their own school; super admins see everyone.
+  const lim = schoolLimit(me);
+  const mine = <T extends { school_id?: string | null }>(rows: T[] | null) => (rows || []).filter((r) => inMySchool(me, r.school_id));
   const families = new Map<string, number>();
   const recent = new Map<string, number>();
   (contacts || []).forEach((c) => c.staff_id && families.set(c.staff_id, (families.get(c.staff_id) || 0) + 1));
@@ -36,10 +39,10 @@ export const GET = withAdmin(async (req, me) => {
     autoBuy: autoBuyEnabled(),
     unassignedFamilies: unassigned,
     signupUrl: `${base}/signup`,
-    schools: schools || [],
+    schools: lim === undefined ? schools || [] : (schools || []).filter((x) => x.id === lim),
     viewerIsSuper: isSuperAdmin(me.email),
-    invites: invites || [],
-    staff: ((staff || []) as Staff[]).map((s) => ({
+    invites: mine(invites),
+    staff: mine(staff as Staff[]).map((s) => ({
       ...s,
       builtInAdmin: isBuiltInAdmin(s.email),
       superAdmin: isSuperAdmin(s.email),
@@ -54,6 +57,8 @@ export const GET = withAdmin(async (req, me) => {
 // Otherwise: create a 5-digit sign-up code for them to use at /signup (good for 30 days, one use).
 export const POST = withAdmin(async (req, me) => {
   const b = await req.json().catch(() => ({}));
+  // Admins add people to their own school only.
+  if (schoolLimit(me) !== undefined) b.school_id = schoolLimit(me);
   if (b.mode === "direct") return addDirectly(req, b);
   const name = String(b.name || "").trim().slice(0, 100);
   const sch = await schoolById(b.school_id ? String(b.school_id) : null);
@@ -76,9 +81,11 @@ export const POST = withAdmin(async (req, me) => {
 });
 
 // Cancel an unused sign-up code.
-export const DELETE = withAdmin(async (req) => {
+export const DELETE = withAdmin(async (req, me) => {
   const id = new URL(req.url).searchParams.get("invite");
   if (!id) return json({ error: "invite is required" }, 400);
+  const { data: inv } = await db().from("invites").select("school_id").eq("id", id).maybeSingle();
+  if (!inv || !inMySchool(me, inv.school_id)) return json({ error: "Code not found." }, 404);
   const { error } = await db().from("invites").delete().eq("id", id).is("used_at", null);
   if (error) throw new Error(error.message);
   return json({ ok: true });
@@ -88,7 +95,8 @@ export const DELETE = withAdmin(async (req) => {
 export const PATCH = withAdmin(async (req, me) => {
   const b = await req.json().catch(() => ({}));
   const s = b.id ? await staffById(String(b.id)) : null;
-  if (!s) return json({ error: "Person not found." }, 404);
+  if (!s || !inMySchool(me, s.school_id)) return json({ error: "Person not found." }, 404);
+  if (schoolLimit(me) !== undefined) delete b.school_id; // only super admins move people between schools
   const supa = db();
   const base = baseUrlFromRequest(req);
 

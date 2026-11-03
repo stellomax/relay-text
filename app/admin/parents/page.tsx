@@ -408,7 +408,7 @@ function ParentSheet({
             <span className="ios-row-label wide">Language</span>
             <LanguageSelect value={f.language} onChange={(code) => setF({ ...f, language: code })} />
           </label>
-          {schools.length > 0 && (
+          {schools.length > 1 && (
             <label className="ios-row">
               <span className="ios-row-label wide">School</span>
               <select value={f.school_id} onChange={(e) => setF({ ...f, school_id: e.target.value })}>
@@ -598,7 +598,7 @@ function ImportSheet({ schools, defaultSchool, onClose }: { schools: School[]; d
             Using your own file? It needs one parent per row and these columns: <strong>Parent Name</strong>, <strong>Student Name</strong>,{" "}
             <strong>Phone</strong>, <strong>Language</strong>. Column order doesn’t matter.
           </p>
-          {schools.length > 0 && (
+          {schools.length > 1 && (
             <div className="ios-group">
               <label className="ios-row">
                 <span className="ios-row-label wide">School</span>

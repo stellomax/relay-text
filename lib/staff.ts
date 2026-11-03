@@ -17,6 +17,24 @@ export function isSuperAdmin(email: string): boolean {
   return list.includes(email.trim().toLowerCase());
 }
 
+// Which school an admin may manage. Super admins see every school (undefined = no limit);
+// other admins (and teachers) are limited to their own school, or to "no school" if they have none.
+export const NO_SCHOOL_ID = "00000000-0000-0000-0000-000000000000";
+export function schoolLimit(me: Staff): string | null | undefined {
+  return isSuperAdmin(me.email) ? undefined : me.school_id || null;
+}
+export function inMySchool(me: Staff, schoolId: string | null | undefined): boolean {
+  const lim = schoolLimit(me);
+  return lim === undefined || (schoolId || null) === lim;
+}
+// Is this teacher in the admin's school? (Always true for super admins.)
+export async function staffInMySchool(me: Staff, staffId: string | null): Promise<boolean> {
+  if (!staffId) return true; // the shared main number
+  if (schoolLimit(me) === undefined || staffId === me.id) return true;
+  const s = await staffById(staffId);
+  return !!s && inMySchool(me, s.school_id);
+}
+
 export function isBuiltInAdmin(email: string): boolean {
   return adminEmails().includes(email.trim().toLowerCase());
 }

@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { json, withAuth } from "@/lib/http";
-import { canRead, canWrite } from "@/lib/staff";
+import { canRead, canWrite, staffInMySchool } from "@/lib/staff";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +10,9 @@ export const GET = withAuth(async (req, me) => {
   if (!contactId) return json({ error: "contactId is required" }, 400);
   const supa = db();
   const { data: contact } = await supa.from("contacts").select("id, staff_id").eq("id", contactId).maybeSingle();
-  if (!contact || !canRead(me, contact)) return json({ error: "Conversation not found." }, 404);
+  if (!contact || !canRead(me, contact) || !(await staffInMySchool(me, contact.staff_id))) {
+    return json({ error: "Conversation not found." }, 404);
+  }
 
   const { data, error } = await supa
     .from("messages")
