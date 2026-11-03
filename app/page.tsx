@@ -163,27 +163,11 @@ export default function Landing() {
 
           <figure className="lp-photo lp-hero-photo">
             <img
-              src="https://images.unsplash.com/photo-1758685848174-e061c6486651?w=1000&h=1100&q=80&auto=format&fit=crop&crop=faces"
-              alt="A teacher at her classroom desk, smiling as she types a message on her laptop"
-              width={1000}
-              height={1100}
+              src="/hero-teacher.jpg"
+              alt="A teacher smiling as she types on her laptop at her classroom desk, with a text message to a parent about Friday's photo day"
+              width={1269}
+              height={1239}
             />
-            <div className="lp-notif lp-photo-notif lp-sent-notif" aria-hidden>
-              <div className="lp-notif-top">
-                <span className="lp-notif-app">Relay</span>
-                <span>now</span>
-              </div>
-              <div className="lp-notif-from">To: Ms. Rivera</div>
-              <div className="lp-notif-body">Hi Ms. Rivera! Sofia presented her volcano project today and did a wonderful job.</div>
-              <div className="lp-sent-tag">Sent in Spanish ✓</div>
-            </div>
-            <figcaption>
-              Photo:{" "}
-              <a href="https://unsplash.com/photos/teacher-working-on-laptop-in-front-of-chalkboard-fTYbq_2B97s" rel="noopener" target="_blank">
-                Vitaly Gariev
-              </a>{" "}
-              on Unsplash
-            </figcaption>
           </figure>
         </section>
 
