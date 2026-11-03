@@ -107,7 +107,19 @@ export default function AdminDashboard() {
         {s && p && (
           <>
             {/* Headline numbers */}
-            <div className="kpis three">
+            <div className="kpis">
+              <a className="kpi" href="/admin/parents">
+                <span className="kpi-label">Total Parents</span>
+                <span className="kpi-value">{fmt(p.total)}</span>
+                {p.total ? (
+                  <>
+                    <span className="kpi-sub">{fmt(p.canText)} we are able to contact</span>
+                    <span className="kpi-sub">{fmt(needTranslation(s.languages))} need translation{otherLangs(s.languages) > 0 && ` · ${plural(otherLangs(s.languages), "language", "languages")}`}</span>
+                  </>
+                ) : (
+                  <span className="kpi-sub">Upload your list to start</span>
+                )}
+              </a>
               <RateCard
                 href="/admin/parents"
                 label="Parent Outreach"
@@ -137,7 +149,7 @@ export default function AdminDashboard() {
                 empty="Add teachers to start"
               />
             </div>
-            <p className="kpi-note">Last 30 days, compared with the 30 days before.</p>
+            <p className="kpi-note">Percentages cover the last 30 days, compared with the 30 days before.</p>
 
             <div className="dash-grid">
               <section className="panel wide">
@@ -274,6 +286,15 @@ function MessagesPanel({ s }: { s: Summary }) {
       <WeekChart buckets={buckets} noun={days ? noun : "week"} />
     </>
   );
+}
+
+// Parents whose language isn't English, i.e. who need texts translated
+function needTranslation(langs: { code: string; count: number }[]) {
+  return langs.filter((l) => l.code !== "en" && !l.code.startsWith("en-")).reduce((a, l) => a + l.count, 0);
+}
+
+function otherLangs(langs: { code: string; count: number }[]) {
+  return langs.filter((l) => l.code !== "en" && !l.code.startsWith("en-")).length;
 }
 
 // A headline rate: big percentage, "N out of M …", and an arrow comparing with the previous 30 days.
