@@ -426,7 +426,7 @@ export default function Landing() {
         </section>
 
         <section className="lp-hellos" aria-labelledby="langs">
-          <h2 id="langs">Whatever language a family speaks at home.</h2>
+          <h2 id="langs">Connect with families in 192 languages.</h2>
           <p>
             Real-time translation in 192 languages, including the home languages many tools skip, like Somali, Burmese,
             Kinyarwanda and Hmong.
