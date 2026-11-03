@@ -444,6 +444,7 @@ i.rep { background: #1f9e89; }
 
 /* hero: the teacher at her laptop, with the text she's sending (mirrors the mom photo further down) */
 .lp-hero-photo { max-width: 500px; }
+.lp-hero-photo img { aspect-ratio: 10 / 11; }
 .lp-hero-photo .lp-sent-notif { right: auto; left: -56px; bottom: 26px; }
 .lp-sent-tag { margin-top: 8px; padding-top: 7px; border-top: 1px solid rgba(0, 0, 0, 0.08); font-size: 13px; font-weight: 700; color: var(--purple); }
 .lp-hero-photo .lp-notif-app { color: var(--purple); }
