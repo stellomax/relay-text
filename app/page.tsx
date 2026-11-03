@@ -187,7 +187,7 @@ export default function Landing() {
             </p>
             <ul className="lp-checks">
               <li>Works on any phone that can text</li>
-              <li>No data plan or Wi‑Fi needed</li>
+              <li>Messages arrive in the text app you’re familiar with</li>
               <li>Parents reply in their own words, in their own language</li>
               <li>Reply STOP anytime to opt out</li>
             </ul>
