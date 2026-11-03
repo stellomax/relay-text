@@ -1,5 +1,5 @@
 /* RelayText landing page. Scoped under .lp so it never touches the app screens.
-   Type scale (keep to these): page title 48 · section title 46 · intro 22 · item title 20 · body and lists 18 · buttons 17
+   Type scale (keep to these): page title 48 · section title 46 · intro paragraph 20 (18 on phones) · item title 20 · body and lists 18 · buttons 17
    · small print 15 · fine print 13. */
 .lp {
   --purple: #6a02a0;
@@ -461,4 +461,10 @@ i.rep { background: #1f9e89; }
 @media (min-width: 981px) {
   .lp-hero { padding-bottom: 40px; }
   .lp-noapp { padding-top: 50px; }
+}
+
+/* Every intro paragraph under a main heading is the same size: 20px on wide screens, 18px on phones. */
+.lp .lp-lede, .lp .lp-noapp-copy > p, .lp .lp-hellos > p, .lp .lp-final > p { font-size: 20px; line-height: 1.6; }
+@media (max-width: 760px) {
+  .lp .lp-lede, .lp .lp-noapp-copy > p, .lp .lp-hellos > p, .lp .lp-final > p { font-size: 18px; }
 }
