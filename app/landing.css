@@ -387,14 +387,14 @@
 /* "Simple for teachers. Clear for admin.": the inbox and the dashboard take turns */
 .lp-swap { display: grid; min-width: 0; }
 .lp-swap > .lp-slide { grid-area: 1 / 1; }
-.lp-slide-a { animation: lp-swap-a 14s infinite; }
-.lp-slide-b { animation: lp-swap-b 14s infinite; }
+.lp-slide-a { animation: lp-swap-a 9s infinite; }
+.lp-slide-b { animation: lp-swap-b 9s infinite; }
 @keyframes lp-swap-a { 0%, 44% { opacity: 1; visibility: visible; } 50%, 94% { opacity: 0; visibility: hidden; } 100% { opacity: 1; visibility: visible; } }
 @keyframes lp-swap-b { 0%, 44% { opacity: 0; visibility: hidden; } 50%, 94% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } }
 .lp-swap-labels { grid-area: 2 / 1; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 18px; font-size: 17px; font-weight: 700; flex-wrap: wrap; }
 .lp-swap-labels span { padding: 8px 18px; border-radius: 999px; color: var(--ink-2); background: transparent; }
-.lp-swap-labels .a { animation: lp-pill-a 14s infinite; }
-.lp-swap-labels .b { animation: lp-pill-b 14s infinite; }
+.lp-swap-labels .a { animation: lp-pill-a 9s infinite; }
+.lp-swap-labels .b { animation: lp-pill-b 9s infinite; }
 @keyframes lp-pill-a { 0%, 44% { background: var(--lilac-2); color: var(--purple); } 50%, 94% { background: transparent; color: var(--ink-2); } 100% { background: var(--lilac-2); color: var(--purple); } }
 @keyframes lp-pill-b { 0%, 44% { background: transparent; color: var(--ink-2); } 50%, 94% { background: var(--lilac-2); color: var(--purple); } 100% { background: transparent; color: var(--ink-2); } }
 @media (prefers-reduced-motion: reduce) {
