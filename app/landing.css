@@ -605,3 +605,18 @@ i.rep { background: #1f9e89; }
   .ww-sample { grid-column: auto; }
   .ww-routine li { grid-template-columns: 1fr; gap: 4px; }
 }
+
+/* About: Who We Are team grid */
+.lp-team-wrap { max-width: 1040px; margin: 0 auto; padding: var(--sec-half) clamp(16px, 4vw, 48px); text-align: center; }
+.lp-team { list-style: none; padding: 0; margin: 32px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
+.lp-team li { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.lp-team .team-avatar { width: 148px; height: 148px; border-radius: 50%; margin-bottom: 12px; box-shadow: 0 6px 18px rgba(36, 17, 51, 0.12); }
+.lp-team b { font-size: 19px; color: var(--ink); }
+.lp-team span { font-size: 15px; color: var(--ink-2); line-height: 1.35; max-width: 16em; }
+.lp-about-who + .lp-team-wrap { padding-top: 48px; }
+.lp-team-wrap { padding-bottom: 0; }
+.lp-team-wrap + .lp-about-why { padding-top: 56px; }
+@media (max-width: 760px) {
+  .lp-team { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 32px; }
+  .lp-team .team-avatar { width: 120px; height: 120px; }
+}

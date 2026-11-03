@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Figtree } from "next/font/google";
 import { BRAND, COMPANY } from "@/lib/brand";
 import SiteNav from "@/components/SiteNav";
 import DemoModal from "@/components/DemoModal";
+import TeamAvatar from "@/components/TeamAvatar";
 import "../landing.css";
 import "../demo/demo.css";
 
@@ -30,6 +31,14 @@ const BELIEFS = [
   },
 ];
 
+// Sample names, titles and placeholder portraits; replace with the real team.
+const TEAM = [
+  { name: "Daniel Brooks", title: "Co-founder · Former Middle School Principal", look: { skin: "#c58c63", hair: "short" as const, hairColor: "#2b211c", shirt: "#3b2a8f", bg: "#e9e0f5" } },
+  { name: "Elena Morales", title: "ELD Teacher · Curriculum Lead", look: { skin: "#d9a57c", hair: "long" as const, hairColor: "#3a2418", shirt: "#6a02a0", bg: "#e4f1ee" } },
+  { name: "Grace Okafor", title: "Family Engagement Coordinator", look: { skin: "#7a4a2e", hair: "curly" as const, hairColor: "#1f1612", shirt: "#1f9e89", bg: "#f6ecdf" } },
+  { name: "Priya Shah", title: "Lead Developer", look: { skin: "#b77c55", hair: "bun" as const, hairColor: "#1d1410", shirt: "#d0782a", bg: "#e6edf8" } },
+];
+
 export default function AboutPage() {
   return (
     <div className={`lp ${display.variable} ${body.variable}`}>
@@ -55,6 +64,19 @@ export default function AboutPage() {
           </p>
         </section>
 
+        <section className="lp-team-wrap" aria-labelledby="who">
+          <h2 id="who">Who We Are</h2>
+          <ul className="lp-team">
+            {TEAM.map((t) => (
+              <li key={t.name}>
+                <TeamAvatar {...t.look} />
+                <b>{t.name}</b>
+                <span>{t.title}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
         <section className="lp-about-why">
           <p>
             In many schools, the families who most need to hear from teachers are the ones messages miss: families who speak a
@@ -69,7 +91,7 @@ export default function AboutPage() {
         </section>
 
         <section className="lp-steps-wrap" aria-labelledby="believe">
-          <h2 id="believe">What we believe</h2>
+          <h2 id="believe">Our Core Values</h2>
           <ul className="lp-steps">
             {BELIEFS.map((b) => (
               <li key={b.title}>
