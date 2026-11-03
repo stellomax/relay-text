@@ -194,7 +194,7 @@ export default function Landing() {
                 <span className="lp-notif-app">Messages</span>
                 <span>now</span>
               </div>
-              <div className="lp-notif-from">Mrs. Anton</div>
+              <div className="lp-notif-from">From: Mrs. Anton</div>
               <div className="lp-notif-body" lang="es">
                 ¡Hola! Recordatorio: el día de fotos es el viernes. Por favor envíe el formulario firmado.
               </div>
