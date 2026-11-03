@@ -175,7 +175,6 @@ export default function Landing() {
               </div>
               <div className="lp-notif-from">To: Ms. Rivera</div>
               <div className="lp-notif-body">Hi! Reminder: the photo day is this Friday. Please send back the signed permission form.</div>
-              <div className="lp-sent-tag">Sent in Spanish ✓</div>
             </div>
           </figure>
         </section>
