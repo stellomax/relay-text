@@ -87,7 +87,7 @@ const FAMILIES: [string, number, string[], string[]][] = [
   ["fa-AF", 4, ["Ahmad Rahimi", "Zahra Ahmadi", "Mohammad Karimi", "Fatima Noori", "Abdul Hakimi"], ["Zahra", "Mustafa", "Mariam", "Ali", "Hasina"]],
   ["zh-CN", 3, ["Li Wei", "Wang Fang", "Zhang Min", "Chen Jing", "Liu Yang"], ["Jason", "Emily", "Kevin", "Grace", "Lucas"]],
   ["sw", 2, ["Neema Mwangi", "Baraka Otieno", "Grace Uwimana", "Joseph Mugisha"], ["Faith", "David", "Esther", "Emmanuel"]],
-  ["en", 5, ["Jessica Miller", "Brandon Davis", "Ashley Wilson", "Tasha Robinson", "Kyle Anderson"], ["Ethan", "Madison", "Jayden", "Aaliyah", "Noah"]],
+  ["my", 5, ["Thu Zar", "Kyaw Win", "Aye Aye Mon", "Htet Aung"], ["Hnin Wai", "Ko Ko", "Su Mon", "Zaw Min"]],
 ];
 
 // ---------- the conversations (English; translated per family) ----------

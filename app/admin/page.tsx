@@ -361,9 +361,9 @@ function niceStep(max: number) {
   return Math.max(1, (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * pow);
 }
 
-// Pie of the languages parents speak: the top 7 each get a color (fixed order, validated palette),
-// every other language folds into one gray slice. The list beside it names every language with its count.
-const PIE_COLORS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6"];
+// Pie of the languages parents speak (English left out): up to 10 languages, each its own color
+// (fixed order; adjacent pairs, including last-to-first, pass the palette validator). The list beside it names each one.
+const PIE_COLORS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6", "#e34948", "#8f4f9e", "#7a7a2a"];
 const PIE_OTHER = "#c4c1ca";
 
 function slicePath(cx: number, cy: number, r: number, a0: number, a1: number) {
@@ -375,26 +375,31 @@ function slicePath(cx: number, cy: number, r: number, a0: number, a1: number) {
 
 function Languages({ langs, total }: { langs: { code: string; count: number }[]; total: number }) {
   const [hi, setHi] = useState<number | null>(null);
-  if (!total || !langs.length) return <p className="panel-empty">Languages appear here once parents are on the list.</p>;
-  const sum = langs.reduce((a, l) => a + l.count, 0);
-  const top = langs.slice(0, PIE_COLORS.length);
-  const rest = langs.slice(PIE_COLORS.length);
-  const restCount = rest.reduce((a, l) => a + l.count, 0);
-  const slices = [
-    ...top.map((l, i) => ({ name: languageName(l.code), count: l.count, color: PIE_COLORS[i] })),
-    ...(restCount ? [{ name: `All other languages (${rest.length})`, count: restCount, color: PIE_OTHER }] : []),
+  // English speakers don't need translation, so they're left out of the chart.
+  const isEn = (code: string) => code === "en" || code.startsWith("en-");
+  const english = langs.filter((l) => isEn(l.code)).reduce((a, l) => a + l.count, 0);
+  const others = langs.filter((l) => !isEn(l.code));
+  if (!total || !others.length)
+    return <p className="panel-empty">{total ? "Every parent on the list speaks English." : "Languages appear here once parents are on the list."}</p>;
+  const sum = others.reduce((a, l) => a + l.count, 0);
+  // Up to 10 languages, each with its own color. With more than 10, the smallest fold into "Other languages".
+  const MAX = PIE_COLORS.length;
+  const shown = others.length <= MAX ? others : others.slice(0, MAX - 1);
+  const rest = others.slice(shown.length);
+  const rows = [
+    ...shown.map((l, i) => ({ key: l.code, name: languageName(l.code), count: l.count, color: PIE_COLORS[i] })),
+    ...(rest.length ? [{ key: "_other", name: `Other languages (${rest.length})`, count: rest.reduce((a, l) => a + l.count, 0), color: PIE_OTHER }] : []),
   ];
-  const sliceOf = (i: number) => Math.min(i, PIE_COLORS.length); // list row -> slice index
   let angle = 0;
   const R = 78;
   const C = 82;
   return (
     <div className="lang-pie-wrap">
-      <svg className="lang-pie" viewBox="0 0 164 164" role="img" aria-label="Languages parents speak">
-        {slices.length === 1 ? (
-          <circle cx={C} cy={C} r={R} fill={slices[0].color} />
+      <svg className="lang-pie" viewBox="0 0 164 164" role="img" aria-label="Languages parents speak, not counting English">
+        {rows.length === 1 ? (
+          <circle cx={C} cy={C} r={R} fill={rows[0].color} />
         ) : (
-          slices.map((sl, i) => {
+          rows.map((sl, i) => {
             const a0 = angle;
             angle += (sl.count / sum) * Math.PI * 2;
             return (
@@ -417,24 +422,21 @@ function Languages({ langs, total }: { langs: { code: string; count: number }[];
       </svg>
       <div className="lang-list-wrap">
         <ul className="lang-list">
-          {langs.map((l, i) => {
-            const s = sliceOf(i);
-            return (
-              <li
-                key={l.code}
-                className={hi === s ? "on" : hi !== null ? "dim" : ""}
-                onMouseEnter={() => setHi(s)}
-                onMouseLeave={() => setHi(null)}
-              >
-                <i style={{ background: i < PIE_COLORS.length ? PIE_COLORS[i] : PIE_OTHER }} aria-hidden />
-                <span className="lang-n">{languageName(l.code)}</span>
-                <span className="lang-c">{fmt(l.count)}</span>
-                <span className="lang-p">{pct(l.count, sum)}%</span>
-              </li>
-            );
-          })}
+          {rows.map((r, i) => (
+            <li
+              key={r.key}
+              className={hi === i ? "on" : hi !== null ? "dim" : ""}
+              onMouseEnter={() => setHi(i)}
+              onMouseLeave={() => setHi(null)}
+            >
+              <i style={{ background: r.color }} aria-hidden />
+              <span className="lang-n">{r.name}</span>
+              <span className="lang-c">{fmt(r.count)}</span>
+              <span className="lang-p">{pct(r.count, sum)}%</span>
+            </li>
+          ))}
         </ul>
-        <p className="panel-foot">{plural(langs.length, "language", "languages")} in all</p>
+        {english > 0 && <p className="panel-foot">Not counting {plural(english, "parent", "parents")} who {english === 1 ? "speaks" : "speak"} English.</p>}
       </div>
     </div>
   );
