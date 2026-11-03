@@ -23,7 +23,7 @@ type Summary = {
     total: number;
     pending: number;
     texting30: number;
-    list: { id: string; name: string; role: string; texts30: number; parents30: number; last_seen_at: string | null }[];
+    list: { id: string; name: string; role: string; texts30: number; received30?: number; parentsTotal?: number; parents30: number; last_seen_at: string | null }[];
   };
   messages: { sent30: number; replies30: number; weeks: Week[]; days?: Week[] };
 };
@@ -178,7 +178,7 @@ export default function AdminDashboard() {
 
               <section className="panel wide">
                 <div className="panel-head">
-                  <h2>Teachers · last 30 days</h2>
+                  <h2>Teachers</h2>
                   <a className="panel-link" href="/admin/teachers">
                     Manage
                   </a>
@@ -500,7 +500,8 @@ function TeacherList({ s }: { s: Summary }) {
           <tr>
             <th>Teacher</th>
             <th className="num">Texts sent</th>
-            <th className="num">Parents texted</th>
+            <th className="num">Texts received</th>
+            <th className="num">Total parents</th>
             <th>Last signed in</th>
           </tr>
         </thead>
@@ -517,13 +518,14 @@ function TeacherList({ s }: { s: Summary }) {
                 </span>
                 {fmt(t.texts30)}
               </td>
-              <td className="num">{fmt(t.parents30)}</td>
+              <td className="num">{fmt(t.received30 ?? 0)}</td>
+              <td className="num">{fmt(t.parentsTotal ?? t.parents30)}</td>
               <td className="muted">{t.last_seen_at ? listTime(t.last_seen_at) : "Never"}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      {s.teachers.total > list.length && <p className="panel-foot">Top {list.length} of {s.teachers.total} teachers by texts sent.</p>}
+      <p className="panel-foot">Texts sent and received are for the last 30 days. Total parents counts everyone the teacher has a conversation with.</p>
       {s.teachers.pending > 0 && (
         <a className="health-fix" href="/admin/teachers">
           {plural(s.teachers.pending, "teacher is", "teachers are")} waiting for approval →

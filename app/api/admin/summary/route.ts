@@ -77,7 +77,12 @@ export const GET = withAdmin(async (req, me) => {
   const weekStart = (i: number) => new Date(since.getTime() + i * 7 * DAY);
   const weeks = Array.from({ length: WEEKS }, (_, i) => ({ start: weekStart(i).toISOString(), sent: 0, replies: 0 }));
   const d30 = Date.now() - 30 * DAY;
-  const perTeacher = new Map<string, { texts: number; contacts: Set<string> }>();
+  const perTeacher = new Map<string, { texts: number; received: number; contacts: Set<string> }>();
+  const entry = (id: string) => {
+    const e = perTeacher.get(id) || { texts: 0, received: 0, contacts: new Set<string>() };
+    perTeacher.set(id, e);
+    return e;
+  };
   const reachedContacts = new Set<string>();
   let sent30 = 0;
   let replies30 = 0;
@@ -90,12 +95,14 @@ export const GET = withAdmin(async (req, me) => {
         sent30++;
         reachedContacts.add(m.contact_id);
         if (m.staff_id) {
-          const e = perTeacher.get(m.staff_id) || { texts: 0, contacts: new Set<string>() };
+          const e = entry(m.staff_id);
           e.texts++;
           e.contacts.add(m.contact_id);
-          perTeacher.set(m.staff_id, e);
         }
-      } else replies30++;
+      } else {
+        replies30++;
+        if (m.staff_id) entry(m.staff_id).received++;
+      }
     }
   }
 
@@ -116,6 +123,17 @@ export const GET = withAdmin(async (req, me) => {
   for (const p of parents) langCount.set(p.language, (langCount.get(p.language) || 0) + 1);
   const languages = [...langCount.entries()].sort((a, b) => b[1] - a[1]).map(([code, count]) => ({ code, count }));
 
+  // Total parents per teacher: everyone they have a conversation with (all time)
+  const convoCount = new Map<string, number>();
+  if (staffIds.length) {
+    const convos = await allRows<{ staff_id: string | null }>((a, b) => {
+      let q = supa.from("contacts").select("id, staff_id").not("staff_id", "is", null).order("id").range(a, b);
+      if (schoolId) q = q.in("staff_id", staffIds);
+      return q;
+    });
+    for (const c of convos) if (c.staff_id) convoCount.set(c.staff_id, (convoCount.get(c.staff_id) || 0) + 1);
+  }
+
   const active = staff.filter((s) => s.status === "active");
   const teachers = active
     .map((s) => ({
@@ -123,6 +141,8 @@ export const GET = withAdmin(async (req, me) => {
       name: s.name,
       role: s.role,
       texts30: perTeacher.get(s.id)?.texts || 0,
+      received30: perTeacher.get(s.id)?.received || 0,
+      parentsTotal: convoCount.get(s.id) || 0,
       parents30: perTeacher.get(s.id)?.contacts.size || 0,
       last_seen_at: s.last_seen_at,
     }))

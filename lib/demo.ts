@@ -71,7 +71,10 @@ const DISPLAY_LAST: Record<string, string> = { OBrien: "O’Brien" };
 // Conversation starts per teacher per school day, at full speed (activity ramps up over the month).
 const RATE: Record<Tier, number> = { champion: 4.2, regular: 2.0, light: 0.55, new: 2.2, none: 0 };
 // Days ago each tier started texting (new teachers joined in the last few weeks).
-const SPAN = 60; // days of history
+const SPAN = 60;
+// Tuned so replies come in at roughly 4 for every 5 texts sent (varies day to day)
+const RESP_BROADCAST = 0.75;
+const RESP_THANKS = 0.6; // days of history
 const START: Record<Tier, [number, number]> = { champion: [59, 56], regular: [57, 42], light: [50, 24], new: [20, 9], none: [0, 0] };
 
 // Parents by language: [language, count, parent names, student first names]
@@ -337,7 +340,7 @@ export async function loadDemo(schoolId: string) {
       const child = pick(kids);
       const second = chance(0.18) ? pick(kids.filter((c) => c !== child)) : null;
       const r = rand();
-      const resp = r < 0.3 ? 0.85 : r < 0.65 ? 0.55 : r < 0.88 ? 0.25 : 0.05;
+      const resp = r < 0.35 ? 0.97 : r < 0.7 ? 0.9 : r < 0.9 ? 0.75 : 0.4; // how likely they are to answer
       const status = rand();
       const optedOut = status < 0.02;
       const needsConsent = !optedOut && status < 0.06;
@@ -427,6 +430,12 @@ export async function loadDemo(schoolId: string) {
           if (d === 0 && at > nowLocalMin - 5) break;
           turns.push({ who: tu.who, en: fill(tu.text, v), at: localMinutesToUtc(d, at, now) });
         }
+        // Many parents finish with a quick thank-you after the teacher's last text
+        const lastT = turns[turns.length - 1];
+        if (turns.length === script.turns.length && lastT.who === "T" && chance(par.resp * RESP_THANKS)) {
+          const tAt = lastT.at + between(5, 90) * 60e3;
+          if (tAt < now - 5 * 60e3) turns.push({ who: "P", en: pick(SHORT_REPLIES), at: tAt });
+        }
         if (turns.length) plans.push({ staffIdx: ti, parentIdx: pIdx, turns });
       }
       // About one group message a week from teachers with groups
@@ -437,7 +446,7 @@ export async function loadDemo(schoolId: string) {
         if (!(d === 0 && at > nowLocalMin - 5)) {
           for (const m of members) {
             const turns: Plan["turns"] = [{ who: "T", en: text, at: localMinutesToUtc(d, at, now) }];
-            if (chance(parents[m].resp * 0.4)) {
+            if (chance(parents[m].resp * RESP_BROADCAST)) {
               const rAt = at + between(10, 240);
               if (!(d === 0 && rAt > nowLocalMin - 5)) turns.push({ who: "P", en: pick(SHORT_REPLIES), at: localMinutesToUtc(d, rAt, now) });
             }

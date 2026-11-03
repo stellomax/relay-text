@@ -814,7 +814,7 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
   .kpi-value { font-size: 30px; }
   .school-pick { max-width: 150px; }
   .mini { display: none; }
-  .dash-table th:nth-child(4), .dash-table td:nth-child(4) { display: none; }
+  .dash-table th:nth-child(5), .dash-table td:nth-child(5) { display: none; }
   .lang-row { grid-template-columns: 100px 1fr; }
 }
 
