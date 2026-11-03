@@ -546,3 +546,7 @@ i.rep { background: #1f9e89; }
   .lp-quote { padding: 26px 24px 24px; }
   .lp-quote blockquote { font-size: 18px; }
 }
+
+/* About Us: section titles sit well below the page headline */
+.lp .lp-about-main h2 { font-size: clamp(26px, 2.6vw, 34px); line-height: 1.2; }
+.lp-page-hero h1 { text-wrap: balance; }
