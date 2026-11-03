@@ -497,7 +497,7 @@ function Topics({ t }: { t?: Summary["topics"] }) {
       </ul>
       {toneTotal > 0 && (
         <div className="tone">
-          <span className="tone-label">Tone of parent replies</span>
+          <span className="tone-label">Sentiment analysis</span>
           <div className="seg" role="img" aria-label={tones.map((x) => `${x.label}: ${pct(x.n, toneTotal)}%`).join(", ")}>
             {tones.filter((x) => x.n > 0).map((x) => (
               <span key={x.key} className={`seg-part tone-${x.key}`} style={{ flexGrow: x.n }} title={`${x.label}: ${fmt(x.n)}`} />
