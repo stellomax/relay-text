@@ -21,7 +21,7 @@ const BELIEFS = [
     text: "A parent shouldn’t need English, an app or a translator to hear from their child’s teacher, or to answer back.",
   },
   {
-    title: "Simple wins",
+    title: "Simplicity wins",
     text: "Teachers are busy. If it isn’t as easy as sending a text, it won’t get used. So Relay works like the Messages app they already know.",
   },
   {
