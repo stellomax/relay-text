@@ -554,3 +554,9 @@ i.rep { background: #1f9e89; }
 .lp-about-main .lp-page-hero { max-width: 1120px; }
 .lp-about-main .lp-page-hero .lp-lede { max-width: 46em; }
 .lp-about-main .lp-about-why { max-width: 1040px; }
+
+/* Admin view in the switching window: a real screenshot of the dashboard */
+.lp-dash-shot { display: block; width: 100%; height: auto; object-fit: cover; object-position: top center; background: #f2f2f7; }
+@media (min-width: 981px) {
+  .lp-dash-shot { flex: 1 1 0; min-height: 0; }
+}
