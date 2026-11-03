@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Figtree } from "next/font/google";
 import { BRAND, COMPANY } from "@/lib/brand";
 import ContactForm from "@/components/ContactForm";
+import SiteNav from "@/components/SiteNav";
 import "../landing.css";
 
 const display = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--lp-display" });
@@ -15,19 +16,7 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <div className={`lp ${display.variable} ${body.variable}`}>
-      <header className="lp-nav">
-        <a href="/" className="lp-logo" aria-label={BRAND}>
-          <img src="/relay-text-logo.png" alt="RelayText" />
-        </a>
-        <nav className="lp-nav-actions" aria-label="Account">
-          <a className="lp-link" href="/login">
-            Teacher Login
-          </a>
-          <a className="lp-btn small" href="/signup">
-            Sign up
-          </a>
-        </nav>
-      </header>
+      <SiteNav />
 
       <main className="ct">
         <section className="ct-pitch">

@@ -482,3 +482,25 @@ i.rep { background: #1f9e89; }
   .lp-swap-labels { font-size: 15px; gap: 6px; }
   .lp-swap-labels span { padding: 7px 12px; }
 }
+
+/* top menu: About Us · For Teachers · View Demo · Request a Quote · Teacher Login */
+.lp-nav { gap: 16px; }
+.lp-nav-actions { gap: 4px; }
+.lp-nav-actions .lp-btn.small { margin-left: 8px; }
+.lp-menu-btn { display: none; }
+#about, #for-teachers { scroll-margin-top: 72px; }
+@media (max-width: 900px) {
+  .lp-menu-btn {
+    display: inline-flex; align-items: center; gap: 10px; border: 1px solid var(--line); background: #fff; color: var(--plum);
+    font: inherit; font-weight: 700; font-size: 16px; padding: 9px 14px; border-radius: 999px; cursor: pointer;
+  }
+  .lp-menu-icon { display: inline-grid; gap: 3px; }
+  .lp-menu-icon i { display: block; width: 16px; height: 2px; border-radius: 2px; background: currentColor; }
+  .lp-nav { flex-wrap: wrap; }
+  .lp-nav .lp-nav-actions { display: none; }
+  .lp-nav.open .lp-nav-actions {
+    display: flex; flex-direction: column; align-items: stretch; width: 100%; gap: 2px; padding: 8px 0 6px;
+  }
+  .lp-nav.open .lp-link { padding: 12px 14px; font-size: 17px; }
+  .lp-nav.open .lp-btn.small { margin: 8px 0 0; justify-content: center; padding: 13px 18px; }
+}
