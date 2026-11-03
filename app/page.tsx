@@ -214,20 +214,16 @@ export default function Landing() {
             <h2 id="schools">Simple for teachers. Insightful for admin.</h2>
             <dl>
               <div>
-                <dt>Teachers just text</dt>
-                <dd>It looks and works like the Messages app they already use. No new platform to learn, no extra burden.</dd>
+                <dt>What matters most to parents</dt>
+                <dd>Is my child fitting in? Are they falling behind? I know it’s tough, what can I do to help?</dd>
               </div>
               <div>
-                <dt>Real conversations, both ways</dt>
-                <dd>Parents reply in their own language. Teachers read it in English and answer naturally.</dd>
+                <dt>What matters most to teachers</dt>
+                <dd>Are parents aware of the assignments and opportunities? How can I help them?</dd>
               </div>
               <div>
-                <dt>Administrators can see it working</dt>
-                <dd>Add teachers with a school sign-up code and view any conversation, read-only, in one place.</dd>
-              </div>
-              <div>
-                <dt>Private numbers, consent built in</dt>
-                <dd>Each teacher texts from their own Relay number, consent is recorded, and STOP is honored automatically.</dd>
+                <dt>What matters most to admins</dt>
+                <dd>Are our teachers empowered to effectively educate? Are parents being pulled in?</dd>
               </div>
             </dl>
           </div>
