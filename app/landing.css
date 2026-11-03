@@ -622,8 +622,8 @@ i.rep { background: #1f9e89; }
 }
 
 /* About page: even spacing between sections (one gap everywhere, set here) */
-.lp-about-main { --about-gap: 80px; }
-@media (max-width: 760px) { .lp-about-main { --about-gap: 56px; } }
+.lp-about-main { --about-gap: 64px; }
+@media (max-width: 760px) { .lp-about-main { --about-gap: 44px; } }
 .lp .lp-about-main > section:not(.lp-page-hero):not(.lp-final) { padding-top: 0; padding-bottom: 0; margin-top: var(--about-gap); }
 .lp .lp-about-main > section > h2:first-child, .lp .lp-about-main > section > p:first-child { margin-top: 0; }
 .lp .lp-about-main > .lp-page-hero { padding-bottom: 40px; }
