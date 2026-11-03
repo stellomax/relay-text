@@ -156,7 +156,7 @@ export default function Landing() {
             />
             <div className="lp-notif lp-photo-notif" aria-hidden>
               <div className="lp-notif-top">
-                <span className="lp-notif-app">Messages</span>
+                <span className="lp-notif-app">Messages app</span>
                 <span>now</span>
               </div>
               <div className="lp-notif-from">From: Mrs. Wright</div>
