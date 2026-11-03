@@ -451,7 +451,7 @@ i.rep { background: #1f9e89; }
 .lp-hero-photo img { aspect-ratio: auto; object-fit: contain; }
 .lp-hero-photo .lp-sent-notif { right: auto; left: -56px; bottom: 26px; }
 .lp-sent-tag { margin-top: 8px; padding-top: 7px; border-top: 1px solid rgba(0, 0, 0, 0.08); font-size: 13px; font-weight: 700; color: var(--purple); }
-.lp-hero-photo .lp-notif-app { color: var(--purple); }
+.lp-hero-photo .lp-notif-app, .lp-photo-notif .lp-notif-app { color: var(--purple); }
 @media (max-width: 980px) {
   .lp-hero-photo { margin-top: 8px; }
   .lp-hero-photo .lp-sent-notif { left: 10px; right: auto; bottom: 30px; width: calc(100% - 20px); }
