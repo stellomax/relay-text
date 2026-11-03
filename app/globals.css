@@ -1021,3 +1021,9 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .seg-part.tone-positive, .sw.tone-positive { background: #0ca30c; }
 .seg-part.tone-neutral, .sw.tone-neutral { background: #c4c1ca; }
 .seg-part.tone-concern, .sw.tone-concern { background: #fab219; }
+
+/* Headline cards: very light tints so each metric reads as its own block */
+.kpis .kpi:nth-child(1) { background: #f8f4fc; border-color: #ebe1f4; } /* Total Parents: purple */
+.kpis .kpi:nth-child(2) { background: #f3f7fd; border-color: #dfe8f6; } /* Outreach: blue */
+.kpis .kpi:nth-child(3) { background: #f1f9f6; border-color: #dbefe7; } /* Engagement: green */
+.kpis .kpi:nth-child(4) { background: #fdf8f0; border-color: #f3e7d4; } /* Involvement: amber */
