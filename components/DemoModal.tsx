@@ -7,8 +7,12 @@ import DemoPlayer from "@/components/DemoPlayer";
 export default function DemoModal({ className, children }: { className?: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
 
+  // relaytext.io/#demo (and the View Demo menu link) opens it
   useEffect(() => {
-    if (window.location.hash === "#demo") setOpen(true);
+    const check = () => window.location.hash === "#demo" && setOpen(true);
+    check();
+    window.addEventListener("hashchange", check);
+    return () => window.removeEventListener("hashchange", check);
   }, []);
 
   useEffect(() => {

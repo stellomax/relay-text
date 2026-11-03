@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Figtree } from "next/font/google";
 import { BRAND, COMPANY } from "@/lib/brand";
 import DemoModal from "@/components/DemoModal";
+import SiteNav from "@/components/SiteNav";
 import "./landing.css";
 import "./demo/demo.css";
 
@@ -121,19 +122,7 @@ const FAQ = [
 export default function Landing() {
   return (
     <div className={`lp ${display.variable} ${body.variable}`}>
-      <header className="lp-nav">
-        <a href="/" className="lp-logo" aria-label={BRAND}>
-          <img src="/relay-text-logo.png" alt="RelayText" />
-        </a>
-        <nav className="lp-nav-actions" aria-label="Account">
-          <a className="lp-link" href="/login">
-            Teacher Login
-          </a>
-          <a className="lp-btn small" href="/signup">
-            Sign up
-          </a>
-        </nav>
-      </header>
+      <SiteNav />
 
       <main>
         <section className="lp-hero">
@@ -223,7 +212,7 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="lp-benefits" aria-labelledby="benefits">
+        <section className="lp-benefits" id="about" aria-labelledby="benefits">
           <h2 id="benefits">More than translation: a connection with every family</h2>
           <ul>
             {STORY.map((b) => (
@@ -240,7 +229,7 @@ export default function Landing() {
           </ul>
         </section>
 
-        <section className="lp-schools" aria-labelledby="schools">
+        <section className="lp-schools" id="for-teachers" aria-labelledby="schools">
           <div className="lp-schools-copy">
             <h2 id="schools">Simple for teachers. Clear for admin.</h2>
             <dl>
