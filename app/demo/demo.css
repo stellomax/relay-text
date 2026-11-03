@@ -215,6 +215,6 @@
   .dm-narrow { display: inline; }
 }
 
-/* while a message is still playing, the button text is hidden; it comes back when it's ready to press */
-.dm-next .dm-next-label { transition: opacity 0.2s; }
-.dm-next.busy .dm-next-label { opacity: 0; }
+/* while a message is still playing, the button text is faded; it comes back to full strength when it's ready to press */
+.dm-next .dm-next-label { transition: opacity 0.25s; }
+.dm-next.busy .dm-next-label { opacity: 0.45; }
