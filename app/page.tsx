@@ -62,7 +62,7 @@ const CONTACT = "/contact";
 
 const FAQ = [
   {
-    q: "Will parents be able to see our personal numbers?",
+    q: "Will parents see our personal numbers?",
     a: "No. Every text goes out from a Relay number, never from a teacher’s own phone, so parents never see a teacher’s personal cell number. Teachers don’t give Relay their phone number at all: signing up takes only the school’s sign-up code, a name, an email address and a password. Protecting the privacy of teachers and families is at the heart of how Relay is built.",
   },
   {
