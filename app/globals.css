@@ -735,9 +735,9 @@ a { color: var(--tint); text-decoration: none; }
 .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 14px; }
 .kpis:has(+ .kpi-note) { margin-bottom: 6px; }
 .kpi-trend { display: inline-flex; align-items: center; gap: 3px; margin-left: 10px; font-size: 14px; font-weight: 600; letter-spacing: 0; vertical-align: 6px; padding: 2px 8px; border-radius: 999px; }
-.kpi-trend.up { color: #006300; background: #e6f4e6; }
-.kpi-trend.down { color: #b42318; background: #fdecea; }
-.kpi-trend.flat { color: var(--label-2); background: #f1f1f4; }
+.kpi-trend.up { color: #006300; background: rgba(12, 163, 12, 0.13); }
+.kpi-trend.down { color: #b42318; background: rgba(208, 59, 59, 0.12); }
+.kpi-trend.flat { color: var(--label-2); background: rgba(0, 0, 0, 0.06); }
 .kpi-note { margin: 0 0 14px 4px; font-size: 13px; color: var(--label-3); }
 .kpi { background: #fff; border: 1px solid #e6e6eb; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 2px; color: var(--label); }
 a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
@@ -1023,7 +1023,7 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .seg-part.tone-concern, .sw.tone-concern { background: #fab219; }
 
 /* Headline cards: very light tints so each metric reads as its own block */
-.kpis .kpi:nth-child(1) { background: #f8f4fc; border-color: #ebe1f4; } /* Total Parents: purple */
-.kpis .kpi:nth-child(2) { background: #f3f7fd; border-color: #dfe8f6; } /* Outreach: blue */
-.kpis .kpi:nth-child(3) { background: #f1f9f6; border-color: #dbefe7; } /* Engagement: green */
-.kpis .kpi:nth-child(4) { background: #fdf8f0; border-color: #f3e7d4; } /* Involvement: amber */
+.kpis .kpi:nth-child(1) { background: #f2e9fa; border-color: #e2d2f0; } /* Total Parents: purple */
+.kpis .kpi:nth-child(2) { background: #e9f1fc; border-color: #d2e1f5; } /* Outreach: blue */
+.kpis .kpi:nth-child(3) { background: #e6f5ef; border-color: #cbe8dc; } /* Engagement: green */
+.kpis .kpi:nth-child(4) { background: #fcf1e1; border-color: #f0dcbc; } /* Involvement: amber */
