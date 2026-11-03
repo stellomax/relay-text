@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 /* ---------- the cast ---------- */
 const TEACHER = {
   name: "Mrs. Wright",
-  role: "6th grade science · Sagewood MS",
+  role: "6th grade math · Sagewood MS",
   photo: "/demo-teacher.jpg",
   initials: "MW",
 };
@@ -23,20 +23,20 @@ const SCRIPT: Msg[] = [
   {
     from: "teacher",
     time: "3:24 PM",
-    en: "Hi Ms. Rivera, this is Mrs. Wright, Sofia's science teacher. Sofia presented her volcano project today and did a wonderful job!",
-    es: "Hola, Sra. Rivera, soy la Sra. Wright, la maestra de ciencias de Sofía. ¡Sofía presentó hoy su proyecto del volcán y lo hizo de maravilla!",
+    en: "Hi Ms. Rivera, this is Mrs. Wright, Sofia's math teacher. Sofia solved a tough problem on the board today and explained it to the whole class. Wonderful job!",
+    es: "Hola, Sra. Rivera, soy la Sra. Wright, la maestra de matemáticas de Sofía. Hoy Sofía resolvió un problema difícil en la pizarra y se lo explicó a toda la clase. ¡Lo hizo de maravilla!",
   },
   {
     from: "parent",
     time: "3:31 PM",
-    es: "¡Qué alegría! Gracias por avisarme. Trabajó muchísimo en ese volcán 😊",
-    en: "How wonderful! Thank you for letting me know. She worked so hard on that volcano 😊",
+    es: "¡Qué alegría! Gracias por avisarme. Ha estado practicando mucho en casa 😊",
+    en: "How wonderful! Thank you for letting me know. She has been practicing a lot at home 😊",
   },
   {
     from: "parent",
     time: "3:32 PM",
-    es: "¿Cómo le va en matemáticas? Dice que las fracciones le cuestan.",
-    en: "How is she doing in math? She says fractions are hard for her.",
+    es: "¿Cómo le va con las fracciones? Dice que le cuestan un poco.",
+    en: "How is she doing with fractions? She says they are a little hard for her.",
   },
   {
     from: "teacher",
