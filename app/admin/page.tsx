@@ -136,7 +136,7 @@ export default function AdminDashboard() {
                 prev={s.rates?.previous?.engaged}
                 of={s.rates?.current.contacted ?? 0}
                 prevOf={s.rates?.previous?.contacted}
-                sub="contacted parents responded"
+                sub="parents responded"
                 empty="No parents contacted yet"
               />
               <RateCard
@@ -145,7 +145,7 @@ export default function AdminDashboard() {
                 n={s.rates?.current.teachers ?? s.teachers.texting30}
                 prev={s.rates?.previous?.teachers}
                 of={s.teachers.total}
-                sub="have sent at least one text"
+                sub="sent at least one text"
                 empty="Add teachers to start"
               />
             </div>
@@ -165,7 +165,7 @@ export default function AdminDashboard() {
 
               <section className="panel">
                 <div className="panel-head">
-                  <h2>What conversations are about</h2>
+                  <h2>Conversation Analysis</h2>
                   <a className="panel-link" href="/inbox">
                     Open
                   </a>
