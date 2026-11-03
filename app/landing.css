@@ -301,6 +301,8 @@
 /* "Built for schools": the inbox window matches the height of the text beside it. */
 @media (min-width: 981px) {
   .lp-schools { align-items: stretch; }
+  /* Keep the switching window tall enough to show the whole dashboard screenshot */
+  .lp-schools-copy { min-height: 548px; }
   /* height: 0 + min-height: 100% → the window takes the text column's height instead of setting it */
   .lp-swap { align-self: stretch; height: 0; min-height: 100%; grid-template-rows: minmax(0, 1fr) auto; }
   .lp-window { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
