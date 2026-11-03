@@ -118,72 +118,6 @@ const FAQ = [
   },
 ];
 
-function TeacherPhone() {
-  return (
-    <div className="lp-phone lp-phone-teacher" aria-label="The teacher's view in Relay, in English">
-      <div className="lp-screen">
-        <div className="lp-statusbar">
-          <span>9:41</span>
-        </div>
-        <div className="lp-threadhead">
-          <span className="lp-avatar">MH</span>
-          <span className="lp-who">Maria Hernández</span>
-          <span className="lp-lang">Spanish</span>
-        </div>
-        <div className="lp-msgs">
-          <div className="lp-stamp">Today 3:12 PM</div>
-          <div className="lp-b out lp-seq1">
-            Hi Mrs. Hernández, this is Ms. Rivera from Sagewood Middle School. Conferences are Thursday, 4 to 7 pm. Can you come?
-            <span className="lp-tr">Sent in Spanish</span>
-          </div>
-          <div className="lp-receipt lp-seq1">Delivered</div>
-          <div className="lp-b in lp-seq4">
-            Yes! We’ll be there at 5. Thank you.
-            <span className="lp-tr" lang="es">Original: ¡Sí! Estaremos allí a las 5. Gracias.</span>
-          </div>
-          <div className="lp-b out lp-seq5">
-            Wonderful, see you then!
-            <span className="lp-tr">Sent in Spanish</span>
-          </div>
-        </div>
-        <div className="lp-compose">
-          <span>Text Message · Spanish</span>
-        </div>
-      </div>
-      <p className="lp-caption">Ms. Rivera writes and reads in English</p>
-    </div>
-  );
-}
-
-function ParentPhone() {
-  return (
-    <div className="lp-phone lp-phone-parent" aria-label="The parent's regular Messages app, in Spanish">
-      <div className="lp-screen">
-        <div className="lp-statusbar">
-          <span>9:41</span>
-        </div>
-        <div className="lp-threadhead plain">
-          <span className="lp-avatar gray">MR</span>
-          <span className="lp-who">Ms. Rivera</span>
-        </div>
-        <div className="lp-msgs" lang="es">
-          <div className="lp-stamp">Text Message · Today 3:12 PM</div>
-          <div className="lp-b in lp-seq2">
-            Hola Sra. Hernández, soy la Sra. Rivera de la Escuela Secundaria Sagewood. Las conferencias son el jueves, de 4 a 7
-            pm. ¿Puede venir?
-          </div>
-          <div className="lp-b sms lp-seq3">¡Sí! Estaremos allí a las 5. Gracias.</div>
-          <div className="lp-b in lp-seq6">¡Maravilloso, nos vemos entonces!</div>
-        </div>
-        <div className="lp-compose plain">
-          <span>Text Message</span>
-        </div>
-      </div>
-      <p className="lp-caption">Mrs. Hernández gets a normal text in Spanish</p>
-    </div>
-  );
-}
-
 export default function Landing() {
   return (
     <div className={`lp ${display.variable} ${body.variable}`}>
@@ -227,17 +161,31 @@ export default function Landing() {
             </p>
           </div>
 
-          <div className="lp-pair">
-            <TeacherPhone />
-            <div className="lp-bridge" aria-hidden>
-              <span>English</span>
-              <svg viewBox="0 0 64 24" width="64" height="24">
-                <path d="M2 8h54l-6-6M62 16H8l6 6" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span>Español</span>
+          <figure className="lp-photo lp-hero-photo">
+            <img
+              src="https://images.unsplash.com/photo-1758685848174-e061c6486651?w=1000&h=1250&q=80&auto=format&fit=crop&crop=faces"
+              alt="A teacher at her classroom desk, smiling as she types a message on her laptop"
+              width={1000}
+              height={1250}
+              fetchPriority="high"
+            />
+            <div className="lp-notif lp-photo-notif lp-sent-notif" aria-hidden>
+              <div className="lp-notif-top">
+                <span className="lp-notif-app">Relay</span>
+                <span>now</span>
+              </div>
+              <div className="lp-notif-from">To: Ms. Rivera</div>
+              <div className="lp-notif-body">Hi Ms. Rivera! Sofia presented her volcano project today and did a wonderful job.</div>
+              <div className="lp-sent-tag">Sent in Spanish ✓</div>
             </div>
-            <ParentPhone />
-          </div>
+            <figcaption>
+              Photo:{" "}
+              <a href="https://unsplash.com/photos/teacher-working-on-laptop-in-front-of-chalkboard-fTYbq_2B97s" rel="noopener" target="_blank">
+                Vitaly Gariev
+              </a>{" "}
+              on Unsplash
+            </figcaption>
+          </figure>
         </section>
 
 
@@ -255,7 +203,7 @@ export default function Landing() {
                 <span className="lp-notif-app">Messages</span>
                 <span>now</span>
               </div>
-              <div className="lp-notif-from">Ms. Rivera</div>
+              <div className="lp-notif-from">Mrs. Anton</div>
               <div className="lp-notif-body" lang="es">
                 ¡Hola! Recordatorio: el día de fotos es el viernes. Por favor envíe el formulario firmado.
               </div>
