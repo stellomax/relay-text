@@ -819,6 +819,13 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .mini-bar { display: block; height: 100%; background: #7a2bb8; border-radius: 3px 0 0 3px; min-width: 2px; }
 .mini-bar.replies { background: #1f9e89; }
 .dash-table .center { text-align: center; font-variant-numeric: tabular-nums; }
+/* Teacher table: fixed, balanced columns; the bar + number sit centered in their column */
+.teacher-table { table-layout: fixed; }
+.teacher-table td:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.teacher-table td.num { text-align: center; }
+.teacher-table .num-in { display: inline-flex; align-items: center; justify-content: flex-end; min-width: 120px; }
+.teacher-table .num-v { min-width: 32px; text-align: right; }
+.teacher-table .mini { margin-right: 6px; }
 
 @media (max-width: 900px) {
   .dash-actions { grid-template-columns: 1fr; }
@@ -831,6 +838,8 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
   .school-pick { max-width: 150px; }
   .mini { display: none; }
   .dash-table th:nth-child(5), .dash-table td:nth-child(5) { display: none; }
+  .teacher-table { table-layout: auto; }
+  .teacher-table .num-in { min-width: 0; }
   .lang-row { grid-template-columns: 100px 1fr; }
 }
 
