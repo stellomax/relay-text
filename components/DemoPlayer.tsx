@@ -184,13 +184,6 @@ export default function DemoPlayer() {
   });
 
 
-  // the button says what comes next, so it's obvious there is more
-  function nextLabel() {
-    const m = SCRIPT[idx];
-    if (!m) return "Next message ›";
-    if (m.from === "parent") return SCRIPT[idx - 1]?.from === "parent" ? "See Ms. Rivera’s next text ›" : "See Ms. Rivera’s reply ›";
-    return "See Mrs. Anton’s reply ›";
-  }
   const waiting = idx > 0 && !finished && phase === "done";
 
   return (
@@ -241,7 +234,7 @@ export default function DemoPlayer() {
             </>
           ) : idx > 0 ? (
             <button type="button" className={`lp-btn dm-next${waiting ? " ready" : ""}`} onClick={next}>
-              {nextLabel()}
+              Continue conversation ›
             </button>
           ) : null}
         </div>
