@@ -44,9 +44,14 @@ export default function AboutPage() {
         <section className="lp-about-why lp-about-who">
           <p>Our team passionately believes this statement. In fact, it’s why we built {BRAND} in the first place.</p>
           <p>
-            We’re a team of teachers, school administrators and developers who care deeply about using technology to connect with
-            marginalized families. English language development (ELD) students and their families already work hard to learn a
-            new language and a new culture. Making it easier to talk with their child’s school brings all of us closer.
+            We’re a team of teachers, school administrators, developers and (above all) parents who care deeply about removing
+            barriers that hinder teacher/family partnership. Our lives are surrounded by technology—why not take what we’re
+            already using to connect with marginalized families?
+          </p>
+          <p>
+            And that’s exactly what we see. The truth is, English language development (ELD) students and their families already
+            work hard to learn a new language and a new culture. Making it easier to communicate with their child’s school brings
+            all of us closer, and opens the door for their child to flourish.
           </p>
         </section>
 
