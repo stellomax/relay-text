@@ -1,6 +1,7 @@
 import { allRows, db, Staff } from "@/lib/db";
 import { json, withAdmin } from "@/lib/http";
 import { isSuperAdmin } from "@/lib/staff";
+import { TOPICS, toneOf, topicOf } from "@/lib/topics";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -166,6 +167,37 @@ export const GET = withAdmin(async (req, me) => {
     teachers: b.teachers.size,
   });
 
+  // What texts were about in the last 30 days (one topic per message) and the tone of parents' replies
+  const topicCount = new Map<string, number>();
+  let tagged = 0;
+  const tone = { positive: 0, neutral: 0, concern: 0 };
+  if (!schoolId || staffIds.length) {
+    const rows = await allRows<{ contact_id: string; direction: string; body_en: string | null; sent_by: string | null }>((a, b) => {
+      let q = supa
+        .from("messages")
+        .select("id, contact_id, direction, body_en, sent_by")
+        .gte("created_at", new Date(d30).toISOString())
+        .order("id")
+        .range(a, b);
+      if (schoolId) q = q.in("staff_id", staffIds);
+      return q;
+    });
+    for (const m of rows) {
+      if (!m.body_en || m.sent_by === "opt-in confirmation") continue;
+      const k = topicOf(m.body_en);
+      if (k) {
+        tagged++;
+        topicCount.set(k, (topicCount.get(k) || 0) + 1);
+      }
+      if (m.direction === "inbound") tone[toneOf(m.body_en)]++;
+    }
+  }
+  const topics = {
+    messages: tagged,
+    list: TOPICS.map((t) => ({ key: t.key, label: t.label, count: topicCount.get(t.key) || 0 })).sort((a, b) => b.count - a.count),
+    tone,
+  };
+
   const active = staff.filter((s) => s.status === "active");
   const teachers = active
     .map((s) => ({
@@ -204,5 +236,6 @@ export const GET = withAdmin(async (req, me) => {
     },
     messages: { sent30, replies30, weeks, days },
     rates: { current: counts(cur), previous: prev.any ? counts(prev) : null },
+    topics,
   });
 });

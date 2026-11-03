@@ -28,6 +28,7 @@ type Summary = {
   };
   messages: { sent30: number; replies30: number; weeks: Week[]; days?: Week[] };
   rates?: { current: Rates; previous: Rates | null };
+  topics?: { messages: number; list: { key: string; label: string; count: number }[]; tone: { positive: number; neutral: number; concern: number } };
 };
 
 const fmt = (n: number) => n.toLocaleString();
@@ -113,8 +114,7 @@ export default function AdminDashboard() {
                 <span className="kpi-value">{fmt(p.total)}</span>
                 {p.total ? (
                   <>
-                    <span className="kpi-sub">{fmt(p.canText)} we are able to contact</span>
-                    <span className="kpi-sub">{fmt(needTranslation(s.languages))} need translation{otherLangs(s.languages) > 0 && ` · ${plural(otherLangs(s.languages), "language", "languages")}`}</span>
+                    <span className="kpi-sub">{fmt(p.canText)} have given consent to text</span>
                   </>
                 ) : (
                   <span className="kpi-sub">Upload your list to start</span>
@@ -165,12 +165,12 @@ export default function AdminDashboard() {
 
               <section className="panel">
                 <div className="panel-head">
-                  <h2>Parents list</h2>
-                  <a className="panel-link" href="/admin/parents">
+                  <h2>What conversations are about</h2>
+                  <a className="panel-link" href="/inbox">
                     Open
                   </a>
                 </div>
-                <ListHealth p={p} />
+                <Topics t={s.topics} />
               </section>
 
               <section className="panel wide">
@@ -470,52 +470,52 @@ function Languages({ langs, total }: { langs: { code: string; count: number }[];
   );
 }
 
-// One segmented bar: who can be texted, who needs consent, who opted out.
-function ListHealth({ p }: { p: Summary["parents"] }) {
-  if (!p.total)
-    return (
-      <div className="panel-empty">
-        <p>No parents yet.</p>
-        <a className="pill-btn" href="/admin/parents?upload=1">
-          Upload a Spreadsheet
-        </a>
-      </div>
-    );
-  const segs = [
-    { key: "ok", label: "Can be texted", n: p.canText },
-    { key: "consent", label: "Need consent", n: p.needsConsent },
-    { key: "out", label: "Opted out", n: p.optedOut },
-  ].filter((x) => x.n > 0);
+// Topics: share of last-30-day texts about each topic (one topic per text; texts like "Thank you" aren't counted),
+// then the tone of parents' replies as one segmented bar.
+function Topics({ t }: { t?: Summary["topics"] }) {
+  if (!t || !t.messages) return <p className="panel-empty">Once teachers and parents start texting, the main topics show here.</p>;
+  const max = Math.max(1, ...t.list.map((x) => x.count));
+  const toneTotal = t.tone.positive + t.tone.neutral + t.tone.concern;
+  const tones = [
+    { key: "positive", label: "Positive", n: t.tone.positive },
+    { key: "neutral", label: "Neutral", n: t.tone.neutral },
+    { key: "concern", label: "Needs attention", n: t.tone.concern },
+  ];
   return (
-    <div className="health">
-      <div className="health-big">
-        {pct(p.canText, p.total)}%<span> can be texted</span>
-      </div>
-      <div className="seg" role="img" aria-label={segs.map((x) => `${x.label}: ${x.n}`).join(", ")}>
-        {segs.map((x) => (
-          <span key={x.key} className={`seg-part ${x.key}`} style={{ flexGrow: x.n }} title={`${x.label}: ${fmt(x.n)}`} />
-        ))}
-      </div>
-      <ul className="health-keys">
-        {[
-          { key: "ok", label: "Can be texted", n: p.canText },
-          { key: "consent", label: "Need consent", n: p.needsConsent },
-          { key: "out", label: "Opted out (replied STOP)", n: p.optedOut },
-        ].map((x) => (
-          <li key={x.key}>
-            <i className={`sw ${x.key}`} /> {x.label}
-            <strong>{fmt(x.n)}</strong>
+    <div className="topics">
+      <p className="topics-sub">Share of {plural(t.messages, "text", "texts")} about each topic, last 30 days</p>
+      <ul className="topic-list">
+        {t.list.map((x) => (
+          <li key={x.key} title={`${fmt(x.count)} of ${fmt(t.messages)} texts`}>
+            <span className="topic-n">{x.label}</span>
+            <span className="topic-bar">
+              <i style={{ width: `${(x.count / max) * 100}%` }} />
+            </span>
+            <span className="topic-p">{pct(x.count, t.messages)}%</span>
           </li>
         ))}
       </ul>
-      {p.needsConsent > 0 && (
-        <a className="health-fix" href="/admin/parents?status=consent">
-          Confirm consent for {plural(p.needsConsent, "parent", "parents")} →
-        </a>
+      {toneTotal > 0 && (
+        <div className="tone">
+          <span className="tone-label">Tone of parent replies</span>
+          <div className="seg" role="img" aria-label={tones.map((x) => `${x.label}: ${pct(x.n, toneTotal)}%`).join(", ")}>
+            {tones.filter((x) => x.n > 0).map((x) => (
+              <span key={x.key} className={`seg-part tone-${x.key}`} style={{ flexGrow: x.n }} title={`${x.label}: ${fmt(x.n)}`} />
+            ))}
+          </div>
+          <ul className="tone-keys">
+            {tones.map((x) => (
+              <li key={x.key}>
+                <i className={`sw tone-${x.key}`} /> {x.label} <strong>{pct(x.n, toneTotal)}%</strong>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );
 }
+
 
 function TeacherList({ s }: { s: Summary }) {
   const list = s.teachers.list;
