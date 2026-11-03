@@ -71,7 +71,7 @@ const FAQ = [
   },
   {
     q: "Do parents need an app?",
-    a: "No. Families get regular text messages on the phone they already have, including older phones and flip phones. There’s no app, account or password.",
+    a: "No. In our experience, if you ask someone to download an app you lose half of them instantly. Families get regular text messages on the phone they already have, including older phones and flip phones. There’s no app, account or password.",
   },
   {
     q: "Does IT need to be involved?",
