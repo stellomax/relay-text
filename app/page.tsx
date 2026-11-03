@@ -163,11 +163,20 @@ export default function Landing() {
 
           <figure className="lp-photo lp-hero-photo">
             <img
-              src="/hero-teacher-2.jpg"
-              alt="A teacher smiling as she types on her laptop at her classroom desk, with a text message to a parent about Friday's photo day"
-              width={1269}
-              height={1240}
+              src="/hero-teacher-3.jpg"
+              alt="A teacher smiling as she types a message on her laptop at her classroom desk"
+              width={1254}
+              height={1254}
             />
+            <div className="lp-notif lp-photo-notif lp-sent-notif" aria-hidden>
+              <div className="lp-notif-top">
+                <span className="lp-notif-app">Relay</span>
+                <span>now</span>
+              </div>
+              <div className="lp-notif-from">To: Ms. Rivera</div>
+              <div className="lp-notif-body">Hi Ms. Rivera! Sofia presented her volcano project today and did a wonderful job.</div>
+              <div className="lp-sent-tag">Sent in Spanish ✓</div>
+            </div>
           </figure>
         </section>
 
