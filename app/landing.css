@@ -48,6 +48,8 @@
 .lp-btn.small { padding: 9px 18px; font-size: 16px; }
 .lp-btn.ghost { background: transparent; color: var(--purple) !important; border-color: var(--lilac-2); }
 .lp-btn.ghost:hover { background: var(--lilac); border-color: var(--lilac); }
+.lp-btn.outline { background: #fff; color: var(--purple) !important; border-color: var(--purple); }
+.lp-btn.outline:hover { background: var(--lilac); border-color: var(--purple); }
 .lp-btn.light { background: #fff; color: var(--purple) !important; border-color: #fff; }
 .lp-btn.light:hover { background: var(--lilac); border-color: var(--lilac); }
 .lp-btn.outline-light { background: transparent; border-color: rgba(255, 255, 255, 0.55); }
