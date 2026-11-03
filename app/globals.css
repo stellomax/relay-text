@@ -807,8 +807,9 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .dash-table tr:last-child td { border-bottom: 0; }
 .dash-table .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .dash-table .tag-admin { margin-left: 8px; }
-.mini { display: inline-block; width: 70px; height: 8px; margin-right: 10px; vertical-align: 1px; }
-.mini-bar { display: block; height: 100%; background: #7a2bb8; border-radius: 0 3px 3px 0; min-width: 2px; }
+/* Bars sit right beside the number and grow out to the left */
+.mini { display: inline-flex; justify-content: flex-end; width: 70px; height: 8px; margin-right: 10px; vertical-align: 1px; }
+.mini-bar { display: block; height: 100%; background: #7a2bb8; border-radius: 3px 0 0 3px; min-width: 2px; }
 .mini-bar.replies { background: #1f9e89; }
 .dash-table .center { text-align: center; font-variant-numeric: tabular-nums; }
 
