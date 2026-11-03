@@ -41,8 +41,8 @@ export default function AboutPage() {
           <h1>When families and teachers understand each other, students thrive.</h1>
         </section>
 
-        <section className="lp-about-why lp-about-who" aria-labelledby="who">
-          <h2 id="who">Who we are</h2>
+        <section className="lp-about-why lp-about-who">
+          <p>Our team passionately believes this statement. In fact, it’s why we built {BRAND} in the first place.</p>
           <p>
             We’re a team of teachers, school administrators and developers who care deeply about using technology to connect with
             marginalized families. English language development (ELD) students and their families already work hard to learn a
