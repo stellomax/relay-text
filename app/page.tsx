@@ -66,12 +66,12 @@ const FAQ = [
     a: "No. Every text goes out from a Relay number, never from a teacher’s own phone, so parents never see a teacher’s personal cell number. Protecting the privacy of teachers and families is at the heart of how Relay is built.",
   },
   {
-    q: "Do parents need an app?",
-    a: "No. Families get regular text messages on the phone they already have, including older phones and flip phones. There’s no app, account or password.",
-  },
-  {
     q: "Is this more work for teachers?",
     a: "Simplicity guided every decision we made. If teachers can text, they can use Relay. It looks and works like the Messages app. They write in English, and Relay handles the language barrier in both directions.",
+  },
+  {
+    q: "Do parents need an app?",
+    a: "No. Families get regular text messages on the phone they already have, including older phones and flip phones. There’s no app, account or password.",
   },
   {
     q: "Does IT need to be involved?",
