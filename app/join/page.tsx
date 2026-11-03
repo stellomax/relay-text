@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import LegalPage from "@/components/LegalPage";
 import LanguageSelect from "@/components/LanguageSelect";
-import { BRAND, COMPANY } from "@/lib/brand";
+import { BRAND, COMPANY_DISPLAY } from "@/lib/brand";
 import { formatPhoneInput } from "@/lib/phone";
 
 // Public sign-up page: how parents and guardians opt in to school text messages.
@@ -133,7 +133,7 @@ export default function Join() {
         <label className="consent">
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
           <span>
-            I agree to receive text messages from {BRAND} ({COMPANY}) on behalf of my child’s school about my child and school
+            I agree to receive text messages from {BRAND} ({COMPANY_DISPLAY}) on behalf of my child’s school about my child and school
             matters, such as attendance, events, reminders and replies to my questions. Message frequency varies. Message
             and data rates may apply. Reply HELP for help. Reply STOP to opt out at any time. Consent is not a condition of
             enrollment. See our <a href="/terms">Terms &amp; Conditions</a> and <a href="/privacy">Privacy Policy</a>.
