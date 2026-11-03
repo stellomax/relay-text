@@ -215,15 +215,15 @@ export default function Landing() {
             <dl>
               <div>
                 <dt>What matters most to parents</dt>
-                <dd>Is my child fitting in? Are they falling behind? I know it’s tough, what can I do to help?</dd>
+                <dd>Is my child fitting in? Are they falling behind? I know it’s tough, how do I communicate with the teachers to help my child?</dd>
               </div>
               <div>
                 <dt>What matters most to teachers</dt>
-                <dd>Are parents aware of the assignments and opportunities? How can I help them?</dd>
+                <dd>Are parents aware of the assignments and opportunities? How can I help them, while protecting my cell number (and my sanity)?</dd>
               </div>
               <div>
                 <dt>What matters most to admins</dt>
-                <dd>Are our teachers empowered to effectively educate? Are parents being pulled in?</dd>
+                <dd>Are our teachers empowered to effectively educate? Are parents being pulled in? What does the data show?</dd>
               </div>
             </dl>
           </div>
