@@ -407,9 +407,9 @@ function Languages({ langs, total }: { langs: { code: string; count: number }[];
   if (!total || !others.length)
     return <p className="panel-empty">{total ? "Every parent on the list speaks English." : "Languages appear here once parents are on the list."}</p>;
   const sum = others.reduce((a, l) => a + l.count, 0);
-  // Up to 10 languages, each with its own color. With more than 10, the smallest fold into "Other languages".
-  const MAX = PIE_COLORS.length;
-  const shown = others.length <= MAX ? others : others.slice(0, MAX - 1);
+  // The top 7 languages, each with its own color; any others share one gray "Other languages" slice.
+  const MAX = 7;
+  const shown = others.slice(0, MAX);
   const rest = others.slice(shown.length);
   const rows = [
     ...shown.map((l, i) => ({ key: l.code, name: languageName(l.code), count: l.count, color: PIE_COLORS[i] })),
