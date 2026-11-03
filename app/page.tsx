@@ -139,7 +139,7 @@ export default function Landing() {
                 <span>now</span>
               </div>
               <div className="lp-notif-from">To: Ms. Rivera</div>
-              <div className="lp-notif-body">Hi! Reminder: the photo day is this Friday. Please send back the signed permission form.</div>
+              <div className="lp-notif-body">Hi! Reminder: the field trip is this Friday. Please send back the signed permission form.</div>
             </div>
           </figure>
         </section>
@@ -161,7 +161,7 @@ export default function Landing() {
               </div>
               <div className="lp-notif-from">From: Mrs. Wright</div>
               <div className="lp-notif-body" lang="es">
-                ¡Hola! Recordatorio: el día de fotos es el viernes. Por favor envíe el formulario firmado.
+                ¡Hola! Recordatorio: la excursión es este viernes. Por favor, envíe el formulario de permiso firmado.
               </div>
             </div>
             <figcaption>
