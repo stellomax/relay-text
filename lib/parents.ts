@@ -1,5 +1,6 @@
 import { db, Contact, Staff } from "./db";
 import { toE164 } from "./phone";
+import { inMySchool, schoolLimit } from "./staff";
 import { isLanguageCode } from "./languages";
 
 // One parent in the school's Parents list. Admins add, edit and delete them; everyone else chooses from the list.
@@ -19,10 +20,10 @@ export type Parent = {
 
 const NO_SCHOOL = "00000000-0000-0000-0000-000000000000";
 
-// Teachers see their own school's parents. Admins see every school (optionally filtered).
+// Teachers and admins see their own school's parents. Super admins see every school (optionally filtered).
 export function parentsQuery(me: Staff, schoolFilter?: string | null) {
   let q = db().from("parents").select("*");
-  if (me.role !== "admin") {
+  if (me.role !== "admin" || schoolLimit(me) !== undefined) {
     q = me.school_id ? q.eq("school_id", me.school_id) : q.is("school_id", null);
   } else if (schoolFilter === "none") {
     q = q.is("school_id", null);
@@ -33,7 +34,7 @@ export function parentsQuery(me: Staff, schoolFilter?: string | null) {
 }
 
 export function canSeeParent(me: Staff, p: Pick<Parent, "school_id">): boolean {
-  return me.role === "admin" || (p.school_id || null) === (me.school_id || null);
+  return me.role === "admin" ? inMySchool(me, p.school_id) : (p.school_id || null) === (me.school_id || null);
 }
 
 // Student names arrive as a list or as text separated by commas, semicolons or "and".

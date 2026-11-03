@@ -455,6 +455,7 @@ export default function AdminPage() {
                 onChange={(e) => setAdding({ ...adding, email: e.target.value })}
               />
             )}
+            {(data?.schools || []).length > 1 && (
             <label className="ios-row select-row">
               <span className="ios-row-label">school</span>
               <select value={adding.school_id} onChange={(e) => setAdding({ ...adding, school_id: e.target.value })}>
@@ -467,6 +468,7 @@ export default function AdminPage() {
                 ))}
               </select>
             </label>
+            )}
           </div>
           <div className="ios-group">
             <label className="ios-row switch-row">
@@ -587,6 +589,7 @@ function PersonSheet({
             <input type="email" autoComplete="off" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} />
           </label>
         )}
+        {schools.length > 1 && (
         <label className="ios-row">
           <span className="ios-row-label">school</span>
           <select value={f.school_id} onChange={(e) => setF({ ...f, school_id: e.target.value })}>
@@ -598,6 +601,7 @@ function PersonSheet({
             ))}
           </select>
         </label>
+        )}
         
         <label className="ios-row switch-row">
           <span>Admin</span>

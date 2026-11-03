@@ -1,6 +1,6 @@
-import { db, Contact } from "@/lib/db";
+import { db, Contact, Staff } from "@/lib/db";
 import { json, withAuth } from "@/lib/http";
-import { canWrite, resolveScope, scoped } from "@/lib/staff";
+import { canWrite, resolveScope, scoped, staffInMySchool } from "@/lib/staff";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +17,9 @@ async function load(id: string): Promise<Contact | null> {
 }
 
 export const GET = withAuth(async (req, me) => {
-  const { data, error } = await scoped(db().from("contacts").select("*"), resolveScope(req, me)).order("parent_name");
+  const scope = resolveScope(req, me);
+  if (scope.readOnly && !(await staffInMySchool(me, scope.staffId))) return json({ contacts: [] });
+  const { data, error } = await scoped(db().from("contacts").select("*"), scope).order("parent_name");
   if (error) throw new Error(error.message);
   return json({ contacts: data || [] });
 });
@@ -35,15 +37,16 @@ export const PATCH = withAuth(async (req, me) => {
 });
 
 // Admins: move a family (and their whole conversation) to a teacher, or back to the main number.
-async function move(me: { role: string }, body: Record<string, unknown>) {
+async function move(me: Staff, body: Record<string, unknown>) {
   if (me.role !== "admin") return json({ error: "Only admins can move families between teachers." }, 403);
   const existing = body.id ? await load(String(body.id)) : null;
-  if (!existing) return json({ error: "Family not found." }, 404);
+  if (!existing || !(await staffInMySchool(me, existing.staff_id))) return json({ error: "Family not found." }, 404);
   const target = body.staff_id ? String(body.staff_id) : null;
   if (target === existing.staff_id) return json({ contact: existing });
   if (target) {
     const { data: t } = await db().from("staff").select("id, status").eq("id", target).maybeSingle();
     if (!t || t.status !== "active") return json({ error: "That teacher's account isn't active." }, 400);
+    if (!(await staffInMySchool(me, target))) return json({ error: "You can only move families to teachers in your school." }, 403);
   }
   if (await duplicate(target, existing.phone, existing.id)) {
     return json({ error: "That teacher already has a family with this phone number." }, 400);

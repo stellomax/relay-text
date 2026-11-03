@@ -1,6 +1,6 @@
 import { db, Contact, Message, Staff } from "@/lib/db";
 import { json, withAuth } from "@/lib/http";
-import { resolveScope, scoped } from "@/lib/staff";
+import { inMySchool, resolveScope, scoped, staffInMySchool } from "@/lib/staff";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +9,8 @@ export const dynamic = "force-dynamic";
 export const GET = withAuth(async (req, me) => {
   const supa = db();
   const scope = resolveScope(req, me);
+  // Admins can only open the inboxes of teachers in their own school.
+  if (scope.readOnly && !(await staffInMySchool(me, scope.staffId))) return json({ error: "Inbox not found." }, 404);
   const [{ data: contacts, error: e1 }, { data: messages, error: e2 }] = await Promise.all([
     scoped(supa.from("contacts").select("*"), scope),
     scoped(
@@ -45,7 +47,8 @@ export const GET = withAuth(async (req, me) => {
   // For the admin inbox picker.
   let inboxes: { id: string; label: string; sub?: string }[] | undefined;
   if (me.role === "admin") {
-    const { data: staff } = await supa.from("staff").select("id, name, school, status").order("name");
+    const { data: staffAll } = await supa.from("staff").select("id, name, school, school_id, status").order("name");
+    const staff = (staffAll || []).filter((s) => inMySchool(me, s.school_id));
     inboxes = [
       { id: me.id, label: "My Messages" },
       ...((staff || []) as Pick<Staff, "id" | "name" | "school" | "status">[])
