@@ -452,3 +452,9 @@ i.rep { background: #1f9e89; }
   .lp-hero-photo { margin-top: 8px; }
   .lp-hero-photo .lp-sent-notif { left: 10px; right: auto; bottom: 30px; width: calc(100% - 20px); }
 }
+
+/* about 90px between the hero (bottom of the photo credit) and "Families can reach…" on wide screens */
+@media (min-width: 981px) {
+  .lp-hero { padding-bottom: 40px; }
+  .lp-noapp { padding-top: 50px; }
+}
