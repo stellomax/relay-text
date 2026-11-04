@@ -18,7 +18,9 @@ export default function AuthTabs({ initial }: { initial: Tab }) {
 
   return (
     <div className="login">
-      <img src="/relay-text-logo.png" alt="RelayText" className="login-logo" />
+      <a href="/" className="login-logo-link" aria-label="Relay home page">
+        <img src="/relay-text-logo.png" alt="Relay" className="login-logo" />
+      </a>
       <p className="login-tag">{tab === "login" ? "Text families in their own language." : "Create your teacher account."}</p>
       <div className="segmented auth-tabs" role="tablist" aria-label="Sign in or sign up">
         <button type="button" role="tab" aria-selected={tab === "login"} className={tab === "login" ? "on" : ""} onClick={() => pick("login")}>
