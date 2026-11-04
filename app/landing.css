@@ -345,12 +345,16 @@
 
 /* contact page: Bring Relay to your school */
 .ct {
-  /* one column: the pitch on top, the form below it */
-  max-width: 760px; margin: 0 auto; padding: clamp(28px, 5vw, 64px) clamp(16px, 4vw, 48px) clamp(56px, 8vw, 96px);
-  display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(28px, 4vw, 44px); align-items: start;
+  /* side by side: the pitch on the left, the form on the right (stacked at 900px and narrower) */
+  max-width: 1180px; margin: 0 auto; padding: clamp(28px, 5vw, 64px) clamp(16px, 4vw, 48px) clamp(56px, 8vw, 96px);
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 520px); gap: clamp(28px, 5vw, 72px); align-items: start;
 }
 .lp .ct-pitch h1 { font-size: clamp(32px, 5vw, 48px); line-height: 1.08; letter-spacing: -0.03em; margin: 0; max-width: none; }
-@media (min-width: 640px) { .lp .ct-pitch h1 { white-space: nowrap; } }
+@media (max-width: 900px) {
+  .ct { max-width: 760px; grid-template-columns: minmax(0, 1fr); gap: clamp(28px, 4vw, 44px); }
+}
+/* the title stays on one line when it has the full width (stacked layout) */
+@media (min-width: 640px) and (max-width: 900px) { .lp .ct-pitch h1 { white-space: nowrap; } }
 .ct-pitch .lp-lede { margin-top: 18px; }
 .ct-alt { margin-top: 26px; color: var(--ink-2); font-size: 15px; }
 .ct-alt a { color: var(--purple); font-weight: 600; }
