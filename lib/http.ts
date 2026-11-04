@@ -1,4 +1,4 @@
-import { getSession } from "./session";
+import { getSession, SESSION_COOKIE } from "./session";
 import type { Staff } from "./db";
 import { isSuperAdmin, staffByEmail } from "./staff";
 
@@ -22,7 +22,13 @@ export function withAuth(handler: (req: Request, me: Staff) => Promise<Response>
     if (!session) return json({ error: "Please sign in." }, 401);
     try {
       const me = await staffByEmail(session.email);
-      if (!me || me.status !== "active") return json({ error: "Your account isn't active. Please sign in again." }, 401);
+      if (!me || me.status !== "active") {
+        // The cookie is signed but its account is gone or turned off: clear it, or the home page
+        // keeps sending this browser to the inbox, which sends it back to Sign In.
+        const res = json({ error: "Your account isn't active. Please sign in again." }, 401);
+        res.headers.append("set-cookie", `${SESSION_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`);
+        return res;
+      }
       if (opts.admin && me.role !== "admin") return json({ error: "Admins only." }, 403);
       if (opts.superAdmin && (me.role !== "admin" || !isSuperAdmin(me.email))) return json({ error: "Super admins only." }, 403);
       return await handler(req, me);
