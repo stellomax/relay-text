@@ -26,7 +26,9 @@ export default function ForgotPassword() {
 
   return (
     <div className="login">
-      <img src="/relay-text-logo.png" alt="Relay" className="login-logo" />
+      <a href="/" className="login-logo-link" aria-label="Relay home page">
+        <img src="/relay-text-logo.png" alt="Relay" className="login-logo" />
+      </a>
       {sent ? (
         <div className="done-card">
           <p className="done-title">Check your email</p>
