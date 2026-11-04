@@ -9,6 +9,8 @@ export async function api<T = any>(path: string, opts: { method?: string; body?:
     cache: "no-store",
   });
   if (res.status === 401 && typeof window !== "undefined") {
+    // Clear the old sign-in first, so the home page doesn't bounce back to the inbox.
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
     window.location.href = "/login";
     throw new Error("Please sign in.");
   }
