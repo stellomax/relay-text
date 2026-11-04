@@ -41,7 +41,7 @@ export default function Thread({
   const [messages, setMessages] = useState<Pending[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [draft, setDraft] = useState("");
-  const [showTranslations, setShowTranslations] = useState(true);
+  const [showTranslations, setShowTranslations] = useState(false);
   const [openError, setOpenError] = useState<string | null>(null);
   const [sendError, setSendError] = useState("");
   const scroller = useRef<HTMLDivElement>(null);
