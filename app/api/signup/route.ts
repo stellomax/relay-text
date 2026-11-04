@@ -85,6 +85,10 @@ export async function POST(req: Request) {
     }
     if (await staffByEmail(email)) return json({ error: "An account with this email already exists. Sign in instead." }, 400);
 
+    // A school's reusable code can be passed around, so those sign-ups wait for an admin to approve them
+    // (and only get a texting number then). A one-time code was made for this person, so it's active right away.
+    const needsApproval = inv.id === "school" && !isBuiltInAdmin(email);
+
     const userId = await upsertAuthUser(email, password);
     const ins = await db()
       .from("staff")
@@ -96,7 +100,7 @@ export async function POST(req: Request) {
         area_code: inv.area_code,
         user_id: userId,
         role: inv.role === "admin" || isBuiltInAdmin(email) ? "admin" : "teacher",
-        status: "active",
+        status: needsApproval ? "pending" : "active",
         join_code: newJoinCode(),
         last_seen_at: new Date().toISOString(),
       })
@@ -108,6 +112,7 @@ export async function POST(req: Request) {
     if (inv.id !== "school") {
       await db().from("invites").update({ used_at: new Date().toISOString(), used_by: me.id }).eq("id", inv.id);
     }
+    if (needsApproval) return json({ ok: true, pending: true, school: inv.school });
     await assignNumber(me, baseUrlFromRequest(req)).catch((e) => console.error("number on signup", e));
 
     const token = await createSessionToken(email, me.role);

@@ -91,6 +91,7 @@ function SignupForm() {
   const [check, setCheck] = useState<null | { valid: boolean; name?: string; school?: string | null }>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [waiting, setWaiting] = useState<null | { school?: string | null }>(null);
 
   // Check the code once all 5 digits are in, and greet the teacher by name.
   useEffect(() => {
@@ -140,12 +141,28 @@ function SignupForm() {
       body: JSON.stringify(f),
     });
     const data = await res.json().catch(() => ({}));
+    if (res.ok && data.pending) {
+      setWaiting({ school: data.school });
+      return;
+    }
     if (res.ok) {
       window.location.href = "/inbox";
       return;
     }
     setError(data.error || `Sign-up failed (error ${res.status}).`);
     setBusy(false);
+  }
+
+  if (waiting) {
+    return (
+      <div className="login-form done-card">
+        <p className="done-title">Thanks, your account is set up!</p>
+        <p>
+          An admin {waiting.school ? `at ${waiting.school} ` : ""}needs to approve it before you can sign in. Let them know you’ve signed up. Once
+          it’s approved, sign in with the email and password you just chose.
+        </p>
+      </div>
+    );
   }
 
 
