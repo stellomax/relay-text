@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 // Plain-language disclosure for schools and districts (e.g. Colorado's Student Data Transparency and
 // Security Act, C.R.S. 22-16-108). Keep it in step with supabase/schema.sql and the Privacy Policy.
-const UPDATED = "November 4, 2026";
+const UPDATED = "November 5, 2026";
 
 const ELEMENTS = [
   {
@@ -219,7 +219,13 @@ export default function StudentData() {
 
       <h2>Keeping and deleting it</h2>
       <ul>
-        <li>We keep information only while the school uses {BRAND}, or for a shorter time if the school asks.</li>
+        <li>
+          Text messages are deleted automatically after 2 years, or after the period set in the school’s or district’s contract.
+          Parent details stay on the Parents list while the school uses {BRAND}.
+        </li>
+        <li>
+          If a parent replied STOP, we keep only their phone number and the opt-out, so they are never texted again.
+        </li>
         <li>
           When a school or district asks, or its contract ends, we securely delete its student and family information
           within 30 days, unless its contract says otherwise, and confirm in writing.

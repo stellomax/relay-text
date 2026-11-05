@@ -40,7 +40,13 @@ async function clean(b: Record<string, unknown>, id?: string) {
     else if (!(await codeIsFree(c, id))) return { error: `Code ${c} is already in use. Pick another.` };
     else signup_code = c;
   }
-  return { row: { name, district, area_code, ...(signup_code !== undefined ? { signup_code } : {}) } };
+  let retention: { retention_months?: number } = {};
+  if (b.retention_months !== undefined) {
+    const m = Number(b.retention_months);
+    if (![0, 12, 24, 36, 60].includes(m)) return { error: "Choose how long to keep messages." };
+    retention = { retention_months: m };
+  }
+  return { row: { name, district, area_code, ...(signup_code !== undefined ? { signup_code } : {}), ...retention } };
 }
 
 // Create a school. Leave the code blank to generate one.

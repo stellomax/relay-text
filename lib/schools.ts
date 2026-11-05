@@ -7,6 +7,7 @@ export type School = {
   area_code: string | null;
   signup_code: string | null;
   active: boolean;
+  retention_months?: number;
   created_at: string;
 };
 

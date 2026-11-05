@@ -279,3 +279,9 @@ alter table public.audit_log enable row level security;
 
 -- Bumped to sign someone out everywhere (sign-out, password change or reset, account turned off).
 alter table public.staff add column if not exists session_version integer not null default 0;
+
+-- ============================================================================
+-- Message retention (Nov 2026). Each school keeps messages for retention_months (default 24);
+-- 0 = keep until the contract ends. A daily job deletes older messages. Safe to run again.
+-- ============================================================================
+alter table public.schools add column if not exists retention_months integer not null default 24;
