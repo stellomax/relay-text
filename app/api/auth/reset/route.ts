@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   const token = String(body.access_token || "");
   const password = String(body.password || "");
   if (!token) return json({ error: "This reset link isn't complete. Please request a new one." }, 400);
-  if (password.length < 8) return json({ error: "Choose a password of at least 8 characters." }, 400);
+  if (password.length < 12) return json({ error: "Choose a password of at least 12 characters." }, 400);
 
   const { data, error } = await authClient().auth.getUser(token);
   if (error || !data.user?.email) {

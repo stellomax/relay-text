@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { json, withSuper } from "@/lib/http";
+import { clientIp, limited, record, TOO_MANY } from "@/lib/ratelimit";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,9 @@ const clip = (v: unknown, n: number) => String(v ?? "").trim().replace(/\s+/g, "
 export async function POST(req: Request) {
   const b = await req.json().catch(() => ({}));
   if (b.website) return json({ ok: true }); // hidden field: only bots fill it in
+  const ip = `ip:${clientIp(req)}`;
+  if (await limited([{ kind: "contact", key: ip, max: 5, minutes: 60 }])) return json({ error: TOO_MANY }, 429);
+  await record("contact", ip);
   const row = {
     first_name: clip(b.first_name, 80),
     last_name: clip(b.last_name, 80),

@@ -2,7 +2,7 @@
 export const SESSION_COOKIE = "rt_session";
 export const SESSION_DAYS = 7;
 
-export type Session = { email: string; exp: number; role?: "admin" | "teacher" };
+export type Session = { email: string; exp: number; role?: "admin" | "teacher"; purpose?: "mfa" };
 
 function secret(): string {
   return process.env.SESSION_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
@@ -51,6 +51,7 @@ export async function verifySessionToken(token: string | undefined | null): Prom
   if (diff !== 0) return null;
   try {
     const s = JSON.parse(new TextDecoder().decode(fromB64url(body))) as Session;
+    if (s.purpose) return null; // a two-step sign-in ticket is not a session
     return s.exp > Date.now() ? s : null;
   } catch {
     return null;
@@ -68,4 +69,32 @@ function readCookie(req: Request, name: string): string | null {
 
 export async function getSession(req: Request): Promise<Session | null> {
   return verifySessionToken(readCookie(req, SESSION_COOKIE));
+}
+
+// Short-lived ticket between "password OK" and "authenticator code OK" for two-step sign-in. Not a session.
+export async function createMfaTicket(email: string): Promise<string> {
+  const payload: Session = { email, purpose: "mfa", exp: Date.now() + 5 * 60 * 1000 };
+  const body = b64url(new TextEncoder().encode(JSON.stringify(payload)));
+  return `${body}.${await hmac(body)}`;
+}
+
+export async function verifyMfaTicket(token: string): Promise<string | null> {
+  if (!token || !secret()) return null;
+  const [body, sig] = token.split(".");
+  if (!body || !sig) return null;
+  const expected = await hmac(body);
+  if (expected.length !== sig.length) return null;
+  let diff = 0;
+  for (let i = 0; i < sig.length; i++) diff |= expected.charCodeAt(i) ^ sig.charCodeAt(i);
+  if (diff !== 0) return null;
+  try {
+    const s = JSON.parse(new TextDecoder().decode(fromB64url(body))) as Session;
+    return s.purpose === "mfa" && s.exp > Date.now() ? s.email : null;
+  } catch {
+    return null;
+  }
+}
+
+export function sessionCookie(token: string): string {
+  return `${SESSION_COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_DAYS * 86400}`;
 }

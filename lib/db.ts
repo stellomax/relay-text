@@ -47,6 +47,8 @@ export type Staff = {
   join_code: string | null;
   last_seen_at: string | null;
   created_at: string;
+  mfa_secret?: string | null;
+  mfa_enabled?: boolean;
 };
 
 export type Message = {

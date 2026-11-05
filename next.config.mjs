@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Keep the prototype deploy from failing on lint/type nits.
+  // Lint isn't set up yet, but type errors must stop a deploy.
   eslint: { ignoreDuringBuilds: true },
-  typescript: { ignoreBuildErrors: true },
+  typescript: { ignoreBuildErrors: false },
 };
 
 export default nextConfig;

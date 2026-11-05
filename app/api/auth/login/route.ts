@@ -1,7 +1,8 @@
 import { env, baseUrlFromRequest } from "@/lib/config";
 import { db, Staff } from "@/lib/db";
 import { json, errorMessage } from "@/lib/http";
-import { createSessionToken, SESSION_COOKIE, SESSION_DAYS } from "@/lib/session";
+import { createMfaTicket, createSessionToken, SESSION_COOKIE, SESSION_DAYS } from "@/lib/session";
+import { clientIp, limited, record, TOO_MANY } from "@/lib/ratelimit";
 import { authClient } from "@/lib/supabaseAuth";
 import { isBuiltInAdmin, newJoinCode, staffByEmail } from "@/lib/staff";
 import { assignNumber } from "@/lib/numbers";
@@ -15,6 +16,15 @@ export async function POST(req: Request) {
     const email = String(body.email || "").trim().toLowerCase();
     const password = String(body.password || "");
     if (!email || !password) return json({ error: "Enter your email and password." }, 400);
+    const ip = `ip:${clientIp(req)}`;
+    if (
+      await limited([
+        { kind: "login_fail", key: `email:${email}`, max: 5, minutes: 15 },
+        { kind: "login_fail", key: ip, max: 20, minutes: 15 },
+      ])
+    ) {
+      return json({ error: TOO_MANY }, 429);
+    }
     if (!env.supabaseUrl || !env.supabaseServiceKey) {
       return json(
         { error: "The app isn't connected to Supabase yet. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Vercel, then redeploy." },
@@ -28,6 +38,7 @@ export async function POST(req: Request) {
       const code = (error as { code?: string } | null)?.code || "";
       console.error("Sign-in error:", error?.status, code, error?.message);
       if (msg.includes("invalid login") || code === "invalid_credentials") {
+        await record("login_fail", `email:${email}`, ip);
         return json({ error: "That email and password didn't match a Relay login." }, 401);
       }
       if (msg.includes("not confirmed") || code === "email_not_confirmed") {
@@ -36,7 +47,7 @@ export async function POST(req: Request) {
       if (msg.includes("api key") || msg.includes("apikey") || error?.status === 401) {
         return json({ error: "Supabase rejected the app's key. Check SUPABASE_SERVICE_ROLE_KEY in Vercel, then redeploy." }, 500);
       }
-      return json({ error: `Supabase: ${error?.message || "sign-in failed"}` }, 500);
+      return json({ error: "Sign-in isn't working right now. Please try again, or ask your Relay admin." }, 500);
     }
 
     // Find (or, for built-in admins, create) the staff record.
@@ -71,6 +82,11 @@ export async function POST(req: Request) {
     }
     await db().from("staff").update({ user_id: data.user.id, last_seen_at: new Date().toISOString() }).eq("id", me.id);
 
+    // Two-step sign-in: ask for the authenticator code before creating a session.
+    if (me.mfa_enabled && me.mfa_secret) {
+      return json({ mfa: true, ticket: await createMfaTicket(email) });
+    }
+
     const role = isBuiltInAdmin(email) ? "admin" : me.role;
     const token = await createSessionToken(email, role);
     // Admins start on the teacher list; teachers start in their inbox.
@@ -89,6 +105,6 @@ export async function POST(req: Request) {
     if (/relation .*staff.* does not exist|staff.*schema cache/i.test(msg)) {
       return json({ error: "The database needs updating. Run the latest supabase/schema.sql in the Supabase SQL Editor." }, 500);
     }
-    return json({ error: `Sign-in error: ${msg}` }, 500);
+    return json({ error: "Sign-in isn't working right now. Please try again, or ask your Relay admin." }, 500);
   }
 }

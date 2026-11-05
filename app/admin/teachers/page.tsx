@@ -23,6 +23,7 @@ type Person = {
   join_link: string | null;
   builtInAdmin: boolean;
   superAdmin: boolean;
+  mfa_enabled?: boolean;
   families: number;
   messages30d: number;
   last_seen_at: string | null;
@@ -147,7 +148,7 @@ export default function AdminPage() {
       } else if (r.number?.note || r.numberError) {
         setNotice({ title: "Number", lines: [r.numberError ? `Couldn't assign a number: ${r.numberError}` : r.number.note] });
       }
-      if (action === "update" || action === "delete" || action === "transfer_number") setOpen(null);
+      if (action === "update" || action === "delete" || action === "transfer_number" || action === "reset_mfa") setOpen(null);
       await load();
     } catch (e: any) {
       setError(e.message);
@@ -756,6 +757,25 @@ function PersonSheet({
           View Inbox
           <ChevronRight size={13} className="row-chev" />
         </a>
+        <div className="ios-row">
+          <span>Two-step sign-in</span>
+          <span className="muted" style={{ marginLeft: "auto" }}>
+            {p.mfa_enabled ? "On" : "Off"}
+          </span>
+        </div>
+        {viewerIsSuper && p.mfa_enabled && (
+          <button
+            className="ios-row action-row"
+            disabled={!!busy}
+            title="Use this if they lost their phone. Turns off their two-step sign-in so they can sign in with just their password and set it up again in Settings."
+            onClick={() =>
+              confirm(`Reset two-step sign-in for ${p.name}? They'll sign in with just their password until they set it up again. Only do this if you've confirmed it's really them.`) &&
+              onAct("reset_mfa")
+            }
+          >
+            Reset Two-Step Sign-In
+          </button>
+        )}
         <button className="ios-row action-row" disabled={!!busy} onClick={() => onAct("reset_password")}>
           {busy === "reset_password" ? "Working…" : "Reset Password"}
         </button>

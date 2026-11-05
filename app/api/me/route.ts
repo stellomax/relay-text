@@ -3,6 +3,7 @@ import { json, withAuth } from "@/lib/http";
 import { authClient, findAuthUserId, setPassword } from "@/lib/supabaseAuth";
 import { db } from "@/lib/db";
 import { isSuperAdmin } from "@/lib/staff";
+import { limited, record, TOO_MANY } from "@/lib/ratelimit";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export const GET = withAuth(async (req, me) => {
       school: me.school,
       role: me.role,
       is_super: me.role === "admin" && isSuperAdmin(me.email),
+      mfa_enabled: !!me.mfa_enabled,
       phone_number: me.phone_number,
       phone_placeholder: me.phone_placeholder,
       texting_live: twilioConfigured(),
@@ -29,9 +31,13 @@ export const POST = withAuth(async (req, me) => {
   const b = await req.json().catch(() => ({}));
   if (b.newPassword !== undefined) {
     const next = String(b.newPassword || "");
-    if (next.length < 8) return json({ error: "Choose a password of at least 8 characters." }, 400);
+    if (next.length < 12) return json({ error: "Choose a password of at least 12 characters." }, 400);
+    if (await limited([{ kind: "login_fail", key: `email:${me.email}`, max: 5, minutes: 15 }])) return json({ error: TOO_MANY }, 429);
     const check = await authClient().auth.signInWithPassword({ email: me.email, password: String(b.currentPassword || "") });
-    if (check.error) return json({ error: "Your current password isn't right." }, 400);
+    if (check.error) {
+      await record("login_fail", `email:${me.email}`);
+      return json({ error: "Your current password isn't right." }, 400);
+    }
     const uid = me.user_id || (await findAuthUserId(me.email));
     if (!uid) return json({ error: "Couldn't find your login." }, 500);
     await setPassword(uid, next);

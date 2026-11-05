@@ -17,6 +17,7 @@ type Me = {
   phone_number: string | null;
   phone_placeholder: boolean;
   join_link: string | null;
+  mfa_enabled?: boolean;
 };
 
 function Row({ title, check, demo }: { title: string; check: Check; demo?: boolean }) {
@@ -197,6 +198,7 @@ export default function SetupPage() {
               </button>
             </div>
             {pwMsg && <p className="ios-footnote">{pwMsg}</p>}
+            <TwoStep enabled={!!me.mfa_enabled} isAdmin={me.role === "admin"} />
           </>
         )}
       </div>
@@ -205,7 +207,7 @@ export default function SetupPage() {
         <Sheet
           title="Change Password"
           onCancel={() => setPw(null)}
-          action={{ label: "Save", onClick: changePassword, busy: pwBusy, disabled: !pw.current || pw.next.length < 8 }}
+          action={{ label: "Save", onClick: changePassword, busy: pwBusy, disabled: !pw.current || pw.next.length < 12 }}
         >
           <div className="ios-group">
             <input
@@ -228,5 +230,119 @@ export default function SetupPage() {
         </Sheet>
       )}
     </div>
+  );
+}
+
+// Two-step sign-in: after the password, a 6-digit code from an authenticator app on the person's phone.
+function TwoStep({ enabled: initial, isAdmin }: { enabled: boolean; isAdmin: boolean }) {
+  const [enabled, setEnabled] = useState(initial);
+  const [setup, setSetup] = useState<{ qr: string; key: string; url: string } | null>(null);
+  const [turningOff, setTurningOff] = useState(false);
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+  const [err, setErr] = useState("");
+
+  async function start() {
+    setBusy(true);
+    setErr("");
+    setMsg("");
+    try {
+      setSetup(await api("/api/me/mfa", { body: { action: "start" } }));
+      setCode("");
+    } catch (e: any) {
+      setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function finish(action: "confirm" | "off") {
+    setBusy(true);
+    setErr("");
+    try {
+      await api("/api/me/mfa", { body: { action, code } });
+      setEnabled(action === "confirm");
+      setSetup(null);
+      setTurningOff(false);
+      setCode("");
+      setMsg(action === "confirm" ? "Two-step sign-in is on. You'll enter a code from your app each time you sign in." : "Two-step sign-in is off.");
+    } catch (e: any) {
+      setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const codeInput = (
+    <label className="ios-row">
+      <span className="ios-row-label">code</span>
+      <input
+        inputMode="numeric"
+        autoComplete="one-time-code"
+        maxLength={6}
+        placeholder="6-digit code"
+        value={code}
+        onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+        autoFocus
+      />
+    </label>
+  );
+
+  return (
+    <>
+      <p className="ios-section">Two-step sign-in</p>
+      <div className="ios-group">
+        <div className="ios-row">
+          <span>{enabled ? "On" : "Off"}</span>
+          <span className={`status-pill ${enabled ? "active" : "disabled"}`} style={{ marginLeft: "auto" }}>
+            {enabled ? "Protected" : isAdmin ? "Recommended" : "Optional"}
+          </span>
+        </div>
+        {!enabled && !setup && (
+          <button className="ios-row action-row" disabled={busy} onClick={start}>
+            {busy ? "Working…" : "Set Up Two-Step Sign-In"}
+          </button>
+        )}
+        {setup && (
+          <>
+            <div className="ios-row mfa-setup">
+              <img src={setup.qr} alt="QR code for your authenticator app" width={180} height={180} />
+              <span className="ios-row-hint">
+                1. On your phone, open an authenticator app (Google Authenticator, Microsoft Authenticator or 1Password).
+                <br />
+                2. Scan this code. Can’t scan? Enter this key instead: <code>{setup.key}</code>
+                <br />
+                3. Type the 6-digit code the app shows.
+              </span>
+            </div>
+            {codeInput}
+            <button className="ios-row action-row" disabled={busy || code.length !== 6} onClick={() => finish("confirm")}>
+              {busy ? "Checking…" : "Turn On"}
+            </button>
+          </>
+        )}
+        {enabled && !turningOff && (
+          <button className="ios-row danger" onClick={() => setTurningOff(true)}>
+            Turn Off Two-Step Sign-In
+          </button>
+        )}
+        {enabled && turningOff && (
+          <>
+            {codeInput}
+            <button className="ios-row danger" disabled={busy || code.length !== 6} onClick={() => finish("off")}>
+              {busy ? "Checking…" : "Confirm Turn Off"}
+            </button>
+          </>
+        )}
+      </div>
+      <p className="ios-footnote">
+        {enabled
+          ? "Lost your phone? Ask a super admin to reset two-step sign-in for your account."
+          : `After your password, Relay asks for a code from an app on your phone, so a stolen password alone can't get in.${isAdmin ? " Strongly recommended for admins." : ""}`}
+      </p>
+      {msg && <p className="ios-footnote">{msg}</p>}
+      {err && <p className="sheet-error">{err}</p>}
+    </>
   );
 }
