@@ -13,11 +13,19 @@ type School = {
   area_code: string | null;
   signup_code: string | null;
   active: boolean;
+  retention_months?: number;
   teachers: number;
   parents: number;
 };
-type Form = { id?: string; name: string; district: string; area_code: string; signup_code: string; active: boolean };
-const EMPTY: Form = { name: "", district: "", area_code: "", signup_code: "", active: true };
+type Form = { id?: string; name: string; district: string; area_code: string; signup_code: string; active: boolean; retention_months: number };
+const EMPTY: Form = { name: "", district: "", area_code: "", signup_code: "", active: true, retention_months: 24 };
+const RETENTION = [
+  { v: 12, label: "1 year" },
+  { v: 24, label: "2 years (default)" },
+  { v: 36, label: "3 years" },
+  { v: 60, label: "5 years" },
+  { v: 0, label: "Until the contract ends" },
+];
 
 // Super admins: create schools and manage each school's reusable sign-up code.
 export default function SchoolsPage() {
@@ -103,6 +111,7 @@ export default function SchoolsPage() {
       area_code: s.area_code || "",
       signup_code: s.signup_code || "",
       active: s.active,
+      retention_months: typeof s.retention_months === "number" ? s.retention_months : 24,
     });
 
   const q = search.trim().toLowerCase();
@@ -232,6 +241,24 @@ export default function SchoolsPage() {
               />
             </label>
           </div>
+
+          <p className="ios-section">Message history</p>
+          <div className="ios-group">
+            <label className="ios-row">
+              <span className="ios-row-label">keep for</span>
+              <select value={form.retention_months} onChange={(e) => setForm({ ...form, retention_months: Number(e.target.value) })}>
+                {RETENTION.map((r) => (
+                  <option key={r.v} value={r.v}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <p className="ios-footnote">
+            Older messages are deleted automatically each night. Parents who replied STOP stay blocked. Match this to the school’s contract or
+            records schedule.
+          </p>
 
           <p className="ios-section">Sign-up code</p>
           <div className="ios-group">
