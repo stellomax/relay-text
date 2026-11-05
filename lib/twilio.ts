@@ -67,6 +67,12 @@ export async function buyNumber(opts: { areaCode?: string | null; friendlyName: 
   return { phone: bought.phone_number as string, sid: bought.sid as string, note: note.trim() };
 }
 
+// Change the label on a number in the Twilio console (e.g. after it moves to another teacher).
+export async function renameNumber(sid: string, friendlyName: string) {
+  if (!twilioConfigured()) return;
+  await twilio(`${API()}/IncomingPhoneNumbers/${sid}.json`, "POST", { FriendlyName: friendlyName.slice(0, 64) });
+}
+
 export async function releaseNumber(sid: string) {
   await twilio(`${API()}/IncomingPhoneNumbers/${sid}.json`, "DELETE");
 }

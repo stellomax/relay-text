@@ -1054,3 +1054,9 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .wipe-btn:disabled { background: #f3b6b1; cursor: not-allowed; }
 .wipe-ok { margin: 0; font-weight: 600; color: #1e7b34; }
 .wipe-confirm-text { background: #f6f6f8; border-radius: 10px; padding: 10px 12px; font-size: 14px; line-height: 1.45; color: var(--label-2); }
+
+/* Transfer to New Teacher (Manage Teachers → Edit) */
+.transfer-box { border-top: 0.5px solid var(--separator); background: #fafafc; }
+.transfer-box .ios-row { background: transparent; }
+.transfer-warn { margin: 0; padding: 8px 16px; font-size: 14px; line-height: 1.4; color: #8a1c14; background: #fdecea; }
+.transfer-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 10px 16px 12px; }

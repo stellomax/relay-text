@@ -41,6 +41,20 @@ type Data = {
 };
 type Notice = { title: string; lines: string[]; copy?: string; big?: string } | null;
 
+// Hover text explaining what each button does to the teacher's number and conversations.
+const TIP = {
+  delete:
+    "Permanently deletes this teacher's account and login. Their Relay number is released back to Twilio: the monthly charge stops, and parents who text it will no longer reach Relay. Their conversations move to the Main number inbox, where admins can still read them. This can't be undone. To keep the number for a replacement, use Transfer to New Teacher first.",
+  turnOff:
+    "Stops this teacher from signing in. Nothing else changes: they keep their Relay number (still billed, and still counts toward the 49-number limit), their conversations stay where they are, and parents' replies still arrive in their inbox, which admins can view. Turn the account back on anytime.",
+  turnOn: "Lets this teacher sign in again, with the same number and conversations as before.",
+  decline: "Turns down this sign-up. They can't sign in, and no number is bought for them.",
+  release:
+    "Gives this number back to Twilio. The monthly charge stops and it frees a spot under the 49-number limit, but parents who text it will no longer reach Relay, and you can't count on getting the same number back. Conversations stay in this teacher's inbox.",
+  transfer:
+    "Moves this number to another teacher, such as a replacement, so parents keep texting the same number. Their conversations can move too. No number is bought or released.",
+};
+
 type SortKey = "name" | "school" | "role" | "number" | "families" | "messages30d" | "last_seen_at" | "status";
 const COLUMNS: { key: SortKey; label: string; num?: boolean }[] = [
   { key: "name", label: "Teacher" },
@@ -121,10 +135,19 @@ export default function AdminPage() {
           lines: [`Give this to ${p.name}. They can change it in Settings after signing in.`],
           copy: `Sign in to Relay at relaytext.io with ${p.email}\nTemporary password: ${r.tempPassword}`,
         });
+      } else if (action === "transfer_number") {
+        setNotice({
+          title: "Number Transferred",
+          lines: [
+            `${r.number} now belongs to ${r.to}.`,
+            r.moved ? `${r.moved} conversation${r.moved === 1 ? "" : "s"} moved to ${r.to}, with their history.` : "No conversations were moved.",
+            `Parents aren't told automatically. It's a good idea for ${r.to} to send a quick hello introducing themselves.`,
+          ],
+        });
       } else if (r.number?.note || r.numberError) {
         setNotice({ title: "Number", lines: [r.numberError ? `Couldn't assign a number: ${r.numberError}` : r.number.note] });
       }
-      if (action === "update" || action === "delete") setOpen(null);
+      if (action === "update" || action === "delete" || action === "transfer_number") setOpen(null);
       await load();
     } catch (e: any) {
       setError(e.message);
@@ -270,7 +293,7 @@ export default function AdminPage() {
                         <button className="pill-btn" disabled={!!busy} onClick={() => act(p, "approve")}>
                           {busy === "approve" ? "Approving…" : "Approve"}
                         </button>
-                        <button className="pill-btn ghost" disabled={!!busy} onClick={() => act(p, "disable")}>
+                        <button className="pill-btn ghost" disabled={!!busy} onClick={() => act(p, "disable")} title={TIP.decline}>
                           Decline
                         </button>
                       </span>
@@ -359,6 +382,7 @@ export default function AdminPage() {
                         {data.viewerIsSuper && !p.builtInAdmin && (
                           <button
                             className="link-btn row-link danger-text"
+                            title={TIP.delete}
                             onClick={(e) => {
                               e.stopPropagation();
                               if (
@@ -402,6 +426,7 @@ export default function AdminPage() {
       {open && (
         <PersonSheet
           person={open}
+          people={data?.staff || []}
           schools={data?.schools || []}
           autoBuy={!!data?.autoBuy}
           busy={busy}
@@ -518,6 +543,7 @@ export default function AdminPage() {
 
 function PersonSheet({
   person: p,
+  people,
   schools,
   autoBuy,
   busy,
@@ -527,6 +553,7 @@ function PersonSheet({
 }: {
   viewerIsSuper: boolean;
   person: Person;
+  people: Person[];
   schools: SchoolOpt[];
   autoBuy: boolean;
   busy: string;
@@ -546,6 +573,26 @@ function PersonSheet({
     f.school_id !== (p.school_id || "") ||
     f.admin !== (p.role === "admin");
   const canEditEmail = viewerIsSuper && !p.builtInAdmin;
+  const [transfer, setTransfer] = useState<{ to: string; move: boolean } | null>(null);
+  const hasRealNumber = !!p.phone_number && !p.phone_placeholder;
+  const targets = people
+    .filter((x) => x.id !== p.id && x.status !== "disabled" && x.school_id === p.school_id)
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const target = transfer ? targets.find((x) => x.id === transfer.to) : undefined;
+  const targetHasNumber = !!target?.phone_number && !target.phone_placeholder;
+  function doTransfer() {
+    if (!transfer || !target) return;
+    const lines = [
+      `Transfer ${prettyPhone(p.phone_number!)} from ${p.name} to ${target.name}?`,
+      "",
+      `• Parents who text this number will reach ${target.name}.`,
+      transfer.move ? `• ${p.name}'s conversations and their history move to ${target.name}.` : `• ${p.name}'s conversations stay in their inbox.`,
+      `• ${p.name} will have no number.`,
+      targetHasNumber ? `• ${target.name}'s current number, ${prettyPhone(target.phone_number!)}, will be released back to Twilio.` : "",
+    ].filter((l, i) => l || i === 1);
+    if (!confirm(lines.join("\n"))) return;
+    onAct("transfer_number", { to: target.id, moveConversations: transfer.move, replaceExisting: targetHasNumber });
+  }
 
   return (
     <Sheet
@@ -626,10 +673,57 @@ function PersonSheet({
             {busy === "assign_number" ? "Working…" : p.phone_placeholder ? "Get Real Number" : "Assign Number"}
           </button>
         )}
+        {hasRealNumber && !transfer && (
+          <button
+            className="ios-row action-row"
+            disabled={!!busy || targets.length === 0}
+            title={targets.length ? TIP.transfer : "There's no other active teacher at this school to give the number to."}
+            onClick={() => setTransfer({ to: "", move: true })}
+          >
+            Transfer to New Teacher…
+          </button>
+        )}
+        {transfer && (
+          <div className="transfer-box">
+            <label className="ios-row">
+              <span className="ios-row-label">give to</span>
+              <select value={transfer.to} onChange={(e) => setTransfer({ ...transfer, to: e.target.value })} autoFocus>
+                <option value="">Choose a teacher…</option>
+                {targets.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                    {t.status === "pending" ? " (waiting for approval)" : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="ios-row switch-row">
+              <span>
+                Move {p.name.split(" ")[0]}’s conversations too
+                <span className="ios-row-hint">Recommended. The new teacher sees the full history with each parent.</span>
+              </span>
+              <input type="checkbox" className="ios-switch" checked={transfer.move} onChange={(e) => setTransfer({ ...transfer, move: e.target.checked })} />
+            </label>
+            {targetHasNumber && (
+              <p className="transfer-warn">
+                {target!.name} already has {prettyPhone(target!.phone_number!)}. That number will be released back to Twilio and replaced with this one.
+              </p>
+            )}
+            <div className="transfer-actions">
+              <button className="pill-btn ghost" onClick={() => setTransfer(null)} disabled={busy === "transfer_number"}>
+                Cancel
+              </button>
+              <button className="pill-btn" disabled={!target || !!busy} onClick={doTransfer}>
+                {busy === "transfer_number" ? "Transferring…" : "Transfer Number"}
+              </button>
+            </div>
+          </div>
+        )}
         {p.phone_number && (
           <button
             className="ios-row danger"
             disabled={!!busy}
+            title={p.phone_placeholder ? undefined : TIP.release}
             onClick={() =>
               confirm(
                 p.phone_placeholder
@@ -666,7 +760,7 @@ function PersonSheet({
           {busy === "reset_password" ? "Working…" : "Reset Password"}
         </button>
         {p.status === "disabled" ? (
-          <button className="ios-row action-row" disabled={!!busy} onClick={() => onAct("enable")}>
+          <button className="ios-row action-row" disabled={!!busy} onClick={() => onAct("enable")} title={TIP.turnOn}>
             Turn On Account
           </button>
         ) : (
@@ -674,7 +768,12 @@ function PersonSheet({
             <button
               className="ios-row danger"
               disabled={!!busy}
-              onClick={() => confirm(`Turn off ${p.name}'s account? They won't be able to sign in.`) && onAct("disable")}
+              title={TIP.turnOff}
+              onClick={() =>
+                confirm(
+                  `Turn off ${p.name}'s account? They won't be able to sign in. They keep their number and conversations, and parents' replies still arrive in their inbox. You can turn it back on anytime.`
+                ) && onAct("disable")
+              }
             >
               Turn Off Account
             </button>
@@ -688,6 +787,7 @@ function PersonSheet({
             <button
               className="ios-row danger"
               disabled={!!busy}
+              title={TIP.delete}
               onClick={() =>
                 confirm(
                   `Delete ${p.name}? Their login is removed and their texting number is released. Their families and conversations move to the main number, where admins can still see them. This can't be undone.`
@@ -697,7 +797,7 @@ function PersonSheet({
               {busy === "delete" ? "Deleting…" : "Delete Teacher"}
             </button>
           </div>
-          <p className="ios-footnote">Super admins only. To pause someone instead, use Turn Off Account.</p>
+          <p className="ios-footnote">Super admins only. To pause someone instead, use Turn Off Account. To keep their number for a replacement, use Transfer to New Teacher first.</p>
         </>
       )}
     </Sheet>
