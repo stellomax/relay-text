@@ -239,3 +239,20 @@ alter table public.staff         add column if not exists demo boolean not null 
 alter table public.parents       add column if not exists demo boolean not null default false;
 alter table public.contacts      add column if not exists demo boolean not null default false;
 alter table public.parent_groups add column if not exists demo boolean not null default false;
+
+-- ============================================================================
+-- Security (Nov 2026): rate limits and two-step sign-in. Safe to run again.
+-- ============================================================================
+-- One row per attempt we want to limit (sign-in, sign-up, parent sign-up, forms). Old rows are cleaned up by the app.
+create table if not exists public.security_events (
+  id          bigint generated always as identity primary key,
+  kind        text not null,               -- e.g. 'login_fail', 'optin', 'signup', 'contact', 'forgot', 'mfa_fail'
+  key         text not null,               -- e.g. 'ip:1.2.3.4' or 'email:name@school.org'
+  created_at  timestamptz not null default now()
+);
+create index if not exists security_events_lookup_idx on public.security_events (kind, key, created_at desc);
+alter table public.security_events enable row level security;
+
+-- Two-step sign-in (authenticator app codes). The secret is stored encrypted by the app.
+alter table public.staff add column if not exists mfa_secret  text;
+alter table public.staff add column if not exists mfa_enabled boolean not null default false;

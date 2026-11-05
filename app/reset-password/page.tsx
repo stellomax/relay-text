@@ -65,7 +65,7 @@ export default function ResetPassword() {
             <div className="ios-group">
               <input
                 type="password"
-                placeholder="New password (at least 8 characters)"
+                placeholder="New password (at least 12 characters)"
                 autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPasswordValue(e.target.value)}

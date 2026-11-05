@@ -43,8 +43,9 @@ export const GET = withAdmin(async (req, me) => {
     schools: lim === undefined ? schools || [] : (schools || []).filter((x) => x.id === lim),
     viewerIsSuper: isSuperAdmin(me.email),
     invites: mine(invites),
-    staff: mine(staff as Staff[]).map((s) => ({
+    staff: mine(staff as Staff[]).map(({ mfa_secret: _secret, ...s }) => ({
       ...s,
+      mfa_enabled: !!s.mfa_enabled,
       builtInAdmin: isBuiltInAdmin(s.email),
       superAdmin: isSuperAdmin(s.email),
       families: families.get(s.id) || 0,
@@ -197,6 +198,14 @@ export const PATCH = withAdmin(async (req, me) => {
         }
       }
       return json({ ok: true, number: number.phone_number, to: to.name, moved });
+    }
+    case "reset_mfa": {
+      // Lost phone: turn off someone's two-step sign-in so they can set it up again.
+      if (!isSuperAdmin(me.email)) return json({ error: "Only super admins can reset two-step sign-in." }, 403);
+      if (s.id === me.id) return json({ error: "Turn off your own two-step sign-in in Settings." }, 400);
+      const { error } = await supa.from("staff").update({ mfa_enabled: false, mfa_secret: null }).eq("id", s.id);
+      if (error) throw new Error(error.message);
+      return json({ ok: true });
     }
     case "delete": {
       if (!isSuperAdmin(me.email)) return json({ error: "Only super admins can delete teachers." }, 403);

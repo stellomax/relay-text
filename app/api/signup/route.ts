@@ -7,6 +7,7 @@ import { assignNumber } from "@/lib/numbers";
 import { schoolByCode, schoolById } from "@/lib/schools";
 import { isPersonalEmail, REQUIRE_SCHOOL_EMAIL } from "@/lib/schoolEmail";
 import { createSessionToken, SESSION_COOKIE, SESSION_DAYS } from "@/lib/session";
+import { clientIp, limited, record, TOO_MANY } from "@/lib/ratelimit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -60,7 +61,11 @@ async function openInvite(code: string): Promise<Invite | null> {
 // Public: check a sign-up code as it's typed, to greet the teacher by name.
 export async function GET(req: Request) {
   const code = (new URL(req.url).searchParams.get("code") || "").trim();
+  const ip = `ip:${clientIp(req)}`;
+  // Stop anyone guessing 5-digit codes.
+  if (await limited([{ kind: "code_bad", key: ip, max: 20, minutes: 15 }])) return json({ valid: false, error: TOO_MANY }, 429);
   const inv = await openInvite(code).catch(() => null);
+  if (!inv && /^\d{5}$/.test(code)) await record("code_bad", ip);
   return json(inv ? { valid: true, name: inv.name, school: inv.school } : { valid: false });
 }
 
@@ -74,12 +79,23 @@ export async function POST(req: Request) {
     const email = String(b.email || "").trim().toLowerCase();
     const password = String(b.password || "");
 
+    const ip = `ip:${clientIp(req)}`;
+    if (
+      await limited([
+        { kind: "code_bad", key: ip, max: 20, minutes: 15 },
+        { kind: "signup", key: ip, max: 10, minutes: 60 },
+      ])
+    ) {
+      return json({ error: TOO_MANY }, 429);
+    }
+    await record("signup", ip);
     const inv = await openInvite(code);
+    if (!inv) await record("code_bad", ip);
     if (!inv) return json({ error: "That sign-up code isn't valid or has already been used. Check it with your Relay admin." }, 400);
     if (!name) return json({ error: "Enter your name." }, 400);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Enter a valid email address." }, 400);
     if (REQUIRE_SCHOOL_EMAIL && isPersonalEmail(email)) return json({ error: "Please use your school email address, not a personal one." }, 400);
-    if (password.length < 8) return json({ error: "Choose a password of at least 8 characters." }, 400);
+    if (password.length < 12) return json({ error: "Choose a password of at least 12 characters." }, 400);
     if (b.confirmPassword !== undefined && String(b.confirmPassword) !== password) {
       return json({ error: "The passwords don't match." }, 400);
     }

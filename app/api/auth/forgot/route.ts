@@ -2,6 +2,7 @@ import { baseUrlFromRequest } from "@/lib/config";
 import { json } from "@/lib/http";
 import { authClient } from "@/lib/supabaseAuth";
 import { staffByEmail } from "@/lib/staff";
+import { clientIp, limited, record, TOO_MANY } from "@/lib/ratelimit";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,17 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const email = String(body.email || "").trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Enter the email you sign in with." }, 400);
+
+  const ip = `ip:${clientIp(req)}`;
+  if (
+    await limited([
+      { kind: "forgot", key: `email:${email}`, max: 3, minutes: 60 },
+      { kind: "forgot", key: ip, max: 10, minutes: 60 },
+    ])
+  ) {
+    return json({ error: TOO_MANY }, 429);
+  }
+  await record("forgot", `email:${email}`, ip);
 
   try {
     const me = await staffByEmail(email);

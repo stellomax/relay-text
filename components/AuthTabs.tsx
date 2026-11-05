@@ -43,22 +43,74 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [ticket, setTicket] = useState("");
+  const [code, setCode] = useState("");
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError("");
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    const res = ticket
+      ? await fetch("/api/auth/mfa", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ ticket, code }),
+        })
+      : await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
     const data = await res.json().catch(() => ({}));
-    if (res.ok) window.location.href = data.home || "/inbox";
+    if (res.ok && data.mfa) {
+      setTicket(data.ticket);
+      setCode("");
+      setBusy(false);
+    } else if (res.ok) window.location.href = data.home || "/inbox";
     else {
+      if (data.restart) {
+        setTicket("");
+        setPassword("");
+      }
       setError(data.error || `Sign in failed (error ${res.status}). Please send this to your Relay admin.`);
       setBusy(false);
     }
+  }
+
+  if (ticket) {
+    return (
+      <form onSubmit={submit} className="login-form">
+        <p className="login-tag">Enter the 6-digit code from your authenticator app.</p>
+        <div className="ios-group">
+          <input
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            placeholder="6-digit code"
+            maxLength={6}
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            autoFocus
+            required
+          />
+        </div>
+        {error && <p className="login-error">{error}</p>}
+        <button className="ios-button" disabled={busy || code.length !== 6}>
+          {busy ? "Checking…" : "Verify"}
+        </button>
+        <p className="forgot-link">
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              setTicket("");
+              setError("");
+            }}
+          >
+            ‹ Back
+          </a>
+        </p>
+      </form>
+    );
   }
 
   return (
@@ -124,8 +176,8 @@ function SignupForm() {
       ? "Please enter the 5-digit sign-up code from your Relay admin."
       : personal
         ? "Please use your school email address, not a personal one."
-        : f.password.length < 8
-          ? "Please choose a password with at least 8 characters."
+        : f.password.length < 12
+          ? "Please choose a password with at least 12 characters."
           : f.password !== f.confirmPassword
             ? "The passwords don’t match."
             : "";
@@ -204,7 +256,7 @@ function SignupForm() {
           type="password"
           placeholder="Choose a password (8+ characters)"
           autoComplete="new-password"
-          minLength={8}
+          minLength={12}
           value={f.password}
           onChange={(e) => setF({ ...f, password: e.target.value })}
           required
