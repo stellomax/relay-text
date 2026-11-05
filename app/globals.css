@@ -1039,3 +1039,18 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .kpis .kpi:nth-child(2) { background: #e9f1fc; border-color: #d2e1f5; } /* Outreach: blue */
 .kpis .kpi:nth-child(3) { background: #e6f5ef; border-color: #cbe8dc; } /* Engagement: green */
 .kpis .kpi:nth-child(4) { background: #fcf1e1; border-color: #f0dcbc; } /* Involvement: amber */
+
+/* Delete All School Data (Manage Schools) */
+.wipe-sheet .sheet-body { display: flex; flex-direction: column; gap: 12px; }
+.wipe-warn { background: #fdecea; border: 1px solid #f1c0bd; color: #8a1c14; border-radius: 12px; padding: 12px 14px; font-size: 15px; line-height: 1.45; }
+.wipe-lead { margin: 4px 0 0; font-weight: 600; }
+.wipe-list { margin: 0; padding-left: 22px; line-height: 1.6; }
+.wipe-check { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; line-height: 1.4; cursor: pointer; }
+.wipe-check input { margin-top: 3px; width: 18px; height: 18px; flex: none; accent-color: var(--red); }
+.wipe-type { display: flex; flex-direction: column; gap: 6px; font-size: 15px; }
+.wipe-type input { font: inherit; padding: 10px 12px; border: 1px solid #d8d8de; border-radius: 10px; background: #fff; }
+.wipe-type input:focus { outline: 2px solid var(--red); outline-offset: 0; border-color: transparent; }
+.wipe-btn { appearance: none; border: 0; border-radius: 12px; padding: 13px 16px; font: inherit; font-weight: 600; font-size: 16px; color: #fff; background: var(--red); cursor: pointer; }
+.wipe-btn:disabled { background: #f3b6b1; cursor: not-allowed; }
+.wipe-ok { margin: 0; font-weight: 600; color: #1e7b34; }
+.wipe-confirm-text { background: #f6f6f8; border-radius: 10px; padding: 10px 12px; font-size: 14px; line-height: 1.45; color: var(--label-2); }
