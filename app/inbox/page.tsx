@@ -164,10 +164,15 @@ export default function Messages() {
     }
   }
 
+  // Simulated replies: only before real texting is on, or on demo data. Deleting a conversation: admins only.
+  const canSimulate = !!selected && (!me?.texting_live || !!(selected as Contact & { demo?: boolean }).demo);
+  const canDelete = me?.role === "admin";
   const conversationActions: ConversationActions | null = selected
     ? {
         name: selected.parent_name,
         readOnly,
+        canSimulate,
+        canDelete,
         onInfo: () => setSheet("info"),
         onDemo: () => setSheet("demo"),
         onDelete: () => deleteConversation(selected),
@@ -307,7 +312,7 @@ export default function Messages() {
             onBack={back}
             onChanged={load}
             onOpenInfo={() => setSheet("info")}
-            onOpenDemo={() => setSheet("demo")}
+            onOpenDemo={canSimulate ? () => setSheet("demo") : undefined}
             refreshKey={refreshKey}
             readOnly={readOnly}
             ownerLabel={currentInbox?.label}

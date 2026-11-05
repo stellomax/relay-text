@@ -256,3 +256,26 @@ alter table public.security_events enable row level security;
 -- Two-step sign-in (authenticator app codes). The secret is stored encrypted by the app.
 alter table public.staff add column if not exists mfa_secret  text;
 alter table public.staff add column if not exists mfa_enabled boolean not null default false;
+
+-- ============================================================================
+-- Security round 2 (Nov 2026): activity log and signing out everywhere. Safe to run again.
+-- ============================================================================
+-- Who did what: viewing another inbox, moving/deleting conversations, Parents list changes, teacher changes, etc.
+create table if not exists public.audit_log (
+  id           bigint generated always as identity primary key,
+  actor_id     uuid,
+  actor_email  text not null,
+  action       text not null,         -- e.g. 'inbox.view', 'conversation.delete', 'staff.transfer_number'
+  target_type  text,                  -- 'staff', 'contact', 'parent', 'school', 'inbox'
+  target_id    text,
+  target_label text,                  -- a name, so the log still reads well after something is deleted
+  school_id    uuid,
+  detail       jsonb,
+  created_at   timestamptz not null default now()
+);
+create index if not exists audit_log_created_idx on public.audit_log (created_at desc);
+create index if not exists audit_log_school_idx on public.audit_log (school_id, created_at desc);
+alter table public.audit_log enable row level security;
+
+-- Bumped to sign someone out everywhere (sign-out, password change or reset, account turned off).
+alter table public.staff add column if not exists session_version integer not null default 0;

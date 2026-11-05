@@ -16,12 +16,15 @@ export type Me = {
   phone_number: string | null;
   phone_placeholder: boolean;
   join_link: string | null;
+  texting_live?: boolean;
 };
 
 export type ConversationActions = {
   name: string;
   readOnly: boolean;
   onInfo: () => void;
+  canSimulate?: boolean;
+  canDelete?: boolean;
   onDemo: () => void;
   onDelete: () => void;
 };
@@ -102,12 +105,16 @@ export default function MainMenu({
               </button>
               {!conversation.readOnly && (
                 <>
-                  <button role="menuitem" onClick={run(conversation.onDemo)}>
-                    Simulate Parent Reply <Bubble />
-                  </button>
-                  <button role="menuitem" className="danger" onClick={run(conversation.onDelete)}>
-                    Delete Conversation <Trash />
-                  </button>
+                  {conversation.canSimulate !== false && (
+                    <button role="menuitem" onClick={run(conversation.onDemo)}>
+                      Simulate Parent Reply <Bubble />
+                    </button>
+                  )}
+                  {conversation.canDelete !== false && (
+                    <button role="menuitem" className="danger" onClick={run(conversation.onDelete)}>
+                      Delete Conversation <Trash />
+                    </button>
+                  )}
                 </>
               )}
             </div>
@@ -129,6 +136,9 @@ export default function MainMenu({
                   Manage Schools <Building />
                 </a>
               )}
+              <a role="menuitem" href="/admin/activity">
+                Activity Log <Info />
+              </a>
               {me?.is_super && (
                 <a role="menuitem" href="/admin/requests">
                   School Requests <Inbox />

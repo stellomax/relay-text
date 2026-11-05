@@ -3,7 +3,8 @@ import { allRows, db, Staff } from "@/lib/db";
 import { json, withAdmin, errorMessage } from "@/lib/http";
 import { autoBuyEnabled, assignNumber, unassignNumber, type AssignResult } from "@/lib/numbers";
 import { renameNumber } from "@/lib/twilio";
-import { cleanAreaCode, inMySchool, isBuiltInAdmin, isSuperAdmin, newJoinCode, schoolLimit, staffByEmail, staffById, tempPassword } from "@/lib/staff";
+import { withAudit } from "@/lib/audit";
+import { cleanAreaCode, endAllSessions, inMySchool, isBuiltInAdmin, isSuperAdmin, newJoinCode, schoolLimit, staffByEmail, staffById, tempPassword } from "@/lib/staff";
 import { newFreeCode, schoolById } from "@/lib/schools";
 import { authClient, findAuthUserId, setPassword, upsertAuthUser } from "@/lib/supabaseAuth";
 
@@ -57,7 +58,14 @@ export const GET = withAdmin(async (req, me) => {
 
 // Add someone. mode "direct": create the account now with a temporary password (shown once).
 // Otherwise: create a 5-digit sign-up code for them to use at /signup (good for 30 days, one use).
-export const POST = withAdmin(async (req, me) => {
+export const POST = withAdmin(withAudit(addStaff, (b, me) => ({
+  action: b.mode === "direct" ? "staff.add" : "staff.invite",
+  targetType: "staff",
+  targetLabel: [b.name, b.email].filter(Boolean).join(" ") || null,
+  schoolId: schoolLimit(me) !== undefined ? me.school_id || null : b.school_id || null,
+})));
+
+async function addStaff(req: Request, me: Staff): Promise<Response> {
   const b = await req.json().catch(() => ({}));
   // Admins add people to their own school only.
   if (schoolLimit(me) !== undefined) b.school_id = schoolLimit(me);
@@ -80,7 +88,7 @@ export const POST = withAdmin(async (req, me) => {
     if (!/duplicate|unique/i.test(error.message)) throw new Error(error.message);
   }
   return json({ error: "Couldn't create a unique code. Try again." }, 500);
-});
+}
 
 // Cancel an unused sign-up code.
 export const DELETE = withAdmin(async (req, me) => {
@@ -94,7 +102,33 @@ export const DELETE = withAdmin(async (req, me) => {
 });
 
 // Actions on one person: approve, disable, enable, update, assign_number, release_number, transfer_number, reset_password, delete.
-export const PATCH = withAdmin(async (req, me) => {
+const STAFF_ACTIONS: Record<string, string> = {
+  approve: "approved",
+  disable: "turned off",
+  enable: "turned on",
+  update: "edited",
+  assign_number: "assigned a number to",
+  release_number: "released the number of",
+  transfer_number: "transferred the number of",
+  reset_password: "reset the password of",
+  reset_mfa: "reset two-step sign-in for",
+  delete: "deleted",
+};
+
+export const PATCH = withAdmin(withAudit(patchStaff, async (b, me) => {
+  if (!STAFF_ACTIONS[b.action] || !b.id) return null;
+  const t = await staffById(String(b.id));
+  if (!t) return null;
+  const detail: Record<string, unknown> = {};
+  if (b.action === "update") for (const k of ["name", "email", "school_id", "role"]) if (b[k] !== undefined && b[k] !== (t as any)[k]) detail[k] = b[k];
+  if (b.action === "transfer_number") {
+    const to = b.to ? await staffById(String(b.to)) : null;
+    detail.to = to?.name || b.to;
+  }
+  return { action: `staff.${b.action}`, targetType: "staff", targetId: t.id, targetLabel: `${t.name} (${t.email})`, schoolId: t.school_id || null, detail };
+}));
+
+async function patchStaff(req: Request, me: Staff): Promise<Response> {
   const b = await req.json().catch(() => ({}));
   const s = b.id ? await staffById(String(b.id)) : null;
   if (!s || !inMySchool(me, s.school_id)) return json({ error: "Person not found." }, 404);
@@ -116,6 +150,7 @@ export const PATCH = withAdmin(async (req, me) => {
       if (s.id === me.id) return json({ error: "You can't turn off your own account." }, 400);
       if (isBuiltInAdmin(s.email)) return json({ error: "Built-in admins can't be turned off." }, 400);
       await supa.from("staff").update({ status: "disabled" }).eq("id", s.id);
+      await endAllSessions(s);
       return json({ ok: true });
     }
     case "enable": {
@@ -205,6 +240,7 @@ export const PATCH = withAdmin(async (req, me) => {
       if (s.id === me.id) return json({ error: "Turn off your own two-step sign-in in Settings." }, 400);
       const { error } = await supa.from("staff").update({ mfa_enabled: false, mfa_secret: null }).eq("id", s.id);
       if (error) throw new Error(error.message);
+      await endAllSessions(s);
       return json({ ok: true });
     }
     case "delete": {
@@ -235,12 +271,13 @@ export const PATCH = withAdmin(async (req, me) => {
         const created = await upsertAuthUser(s.email, password);
         await supa.from("staff").update({ user_id: created }).eq("id", s.id);
       }
+      await endAllSessions(s);
       return json({ ok: true, tempPassword: password });
     }
     default:
       return json({ error: "Unknown action." }, 400);
   }
-});
+}
 
 async function addDirectly(req: Request, b: Record<string, unknown>) {
   const name = String(b.name || "").trim().slice(0, 100);

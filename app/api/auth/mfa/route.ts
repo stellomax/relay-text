@@ -42,6 +42,6 @@ export async function POST(req: Request) {
   await db().from("staff").update({ last_seen_at: new Date().toISOString() }).eq("id", me.id);
   const role = isBuiltInAdmin(email) ? "admin" : me.role;
   const res = json({ ok: true, home: role === "admin" ? "/admin" : "/inbox" });
-  res.headers.append("set-cookie", sessionCookie(await createSessionToken(email, role)));
+  res.headers.append("set-cookie", sessionCookie(await createSessionToken(email, role, me.session_version ?? 0)));
   return res;
 }

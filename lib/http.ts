@@ -22,10 +22,10 @@ export function withAuth(handler: (req: Request, me: Staff) => Promise<Response>
     if (!session) return json({ error: "Please sign in." }, 401);
     try {
       const me = await staffByEmail(session.email);
-      if (!me || me.status !== "active") {
+      if (!me || me.status !== "active" || (session.sv ?? 0) !== (me.session_version ?? 0)) {
         // The cookie is signed but its account is gone or turned off: clear it, or the home page
         // keeps sending this browser to the inbox, which sends it back to Sign In.
-        const res = json({ error: "Your account isn't active. Please sign in again." }, 401);
+        const res = json({ error: me && me.status === "active" ? "Please sign in again." : "Your account isn't active. Please sign in again." }, 401);
         res.headers.append("set-cookie", `${SESSION_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`);
         return res;
       }

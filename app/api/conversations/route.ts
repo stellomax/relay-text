@@ -1,6 +1,7 @@
 import { db, Contact, Message, Staff } from "@/lib/db";
 import { json, withAuth } from "@/lib/http";
-import { inMySchool, resolveScope, scoped, staffInMySchool } from "@/lib/staff";
+import { inMySchool, isSuperAdmin, resolveScope, scoped, staffById, staffInMySchool } from "@/lib/staff";
+import { logAudit } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,21 @@ export const GET = withAuth(async (req, me) => {
   const scope = resolveScope(req, me);
   // Admins can only open the inboxes of teachers in their own school.
   if (scope.readOnly && !(await staffInMySchool(me, scope.staffId))) return json({ error: "Inbox not found." }, 404);
+  // Record when someone opens an inbox that isn't their own (once per half hour per inbox).
+  if (scope.staffId !== me.id) {
+    const owner = scope.staffId ? await staffById(scope.staffId) : null;
+    await logAudit(
+      me,
+      {
+        action: "inbox.view",
+        targetType: "inbox",
+        targetId: scope.staffId || "main",
+        targetLabel: owner ? owner.name : "Main number",
+        schoolId: owner ? owner.school_id || null : null,
+      },
+      { dedupeMinutes: 30 },
+    );
+  }
   const [{ data: contacts, error: e1 }, { data: messages, error: e2 }] = await Promise.all([
     scoped(supa.from("contacts").select("*"), scope),
     scoped(
@@ -54,7 +70,7 @@ export const GET = withAuth(async (req, me) => {
       ...((staff || []) as Pick<Staff, "id" | "name" | "school" | "status">[])
         .filter((s) => s.id !== me.id && s.status !== "pending")
         .map((s) => ({ id: s.id, label: s.name, sub: s.school || undefined })),
-      { id: "unassigned", label: "Main number (no teacher)" },
+      ...(isSuperAdmin(me.email) ? [{ id: "unassigned", label: "Main number (no teacher)" }] : []),
     ];
   }
 

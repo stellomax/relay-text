@@ -88,7 +88,7 @@ export async function POST(req: Request) {
     }
 
     const role = isBuiltInAdmin(email) ? "admin" : me.role;
-    const token = await createSessionToken(email, role);
+    const token = await createSessionToken(email, role, me.session_version ?? 0);
     // Admins start on the teacher list; teachers start in their inbox.
     const res = json({ ok: true, home: role === "admin" ? "/admin" : "/inbox" });
     res.headers.append(

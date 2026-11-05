@@ -131,7 +131,7 @@ export async function POST(req: Request) {
     if (needsApproval) return json({ ok: true, pending: true, school: inv.school });
     await assignNumber(me, baseUrlFromRequest(req)).catch((e) => console.error("number on signup", e));
 
-    const token = await createSessionToken(email, me.role);
+    const token = await createSessionToken(email, me.role, me.session_version ?? 0);
     const res = json({ ok: true });
     res.headers.append(
       "set-cookie",
