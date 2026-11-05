@@ -224,6 +224,10 @@ export default function StudentData() {
           When a school or district asks, or its contract ends, we securely delete its student and family information
           within 30 days, unless its contract says otherwise, and confirm in writing.
         </li>
+        <li>
+          Backup copies kept by our database provider and delivery logs kept by our texting provider are removed on those
+          providers’ own schedules; they are not used for anything else in the meantime.
+        </li>
         <li>A parent can reply STOP at any time to stop receiving texts.</li>
       </ul>
 
