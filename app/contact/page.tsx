@@ -45,6 +45,7 @@ export default function ContactPage() {
         <nav aria-label="Footer">
           <a href="/join">Parents: sign up for texts</a>
           <a href="/privacy">Privacy Policy</a>
+          <a href="/student-data">Student Data</a>
           <a href="/terms">Terms &amp; Conditions</a>
         </nav>
       </footer>

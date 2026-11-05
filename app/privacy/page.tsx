@@ -65,7 +65,8 @@ export default function Privacy() {
         When {BRAND} is used by a school, information about students and families is handled on the school’s behalf and
         in support of the school’s educational purposes, consistent with the Family Educational Rights and Privacy Act
         (FERPA) and applicable state student-privacy laws. {BRAND} does not use student or family information for
-        advertising.
+        advertising. Our <a href="/student-data">Student Data Disclosure</a> lists exactly what we collect, why, and who
+        we share it with.
       </p>
 
       <h2>Retention and security</h2>
