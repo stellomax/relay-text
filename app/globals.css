@@ -321,6 +321,17 @@ a { color: var(--tint); text-decoration: none; }
 .legal-body li { margin-bottom: 6px; }
 .legal-body a { text-decoration: underline; }
 .legal-updated, .legal-small { font-size: 13px; color: var(--label-3); }
+.legal-table-wrap { overflow-x: auto; margin: 10px 0 14px; }
+.legal-table { width: 100%; border-collapse: collapse; font-size: 15px; line-height: 1.45; }
+.legal-table th { text-align: left; font-size: 13px; font-weight: 600; color: var(--label-3); padding: 8px 10px 8px 0; border-bottom: 0.5px solid var(--separator); }
+.legal-table td { vertical-align: top; color: var(--label-2); padding: 10px 10px 10px 0; border-bottom: 0.5px solid var(--separator); }
+.legal-table td:first-child { width: 30%; }
+.legal-table td strong { color: var(--label); }
+@media (max-width: 560px) {
+  .legal-table thead { display: none; }
+  .legal-table tr { display: block; padding: 10px 0; border-bottom: 0.5px solid var(--separator); }
+  .legal-table td { display: block; width: auto !important; border: 0; padding: 2px 0; }
+}
 .legal-foot { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; padding: 18px 20px calc(18px + var(--safe-b)); border-top: 0.5px solid var(--separator); font-size: 14px; }
 .join-form { display: flex; flex-direction: column; gap: 16px; margin-top: 22px; }
 .join-form label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; color: var(--label); }

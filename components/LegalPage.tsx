@@ -17,6 +17,7 @@ export default function LegalPage({ title, children, updated = true }: { title: 
       <footer className="legal-foot">
         <a href="/join">Sign up for texts</a>
         <a href="/privacy">Privacy Policy</a>
+        <a href="/student-data">Student Data</a>
         <a href="/terms">Terms &amp; Conditions</a>
         <span className="legal-copy">
           {BRAND} is a service of {COMPANY}
