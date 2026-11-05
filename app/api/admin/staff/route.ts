@@ -2,6 +2,7 @@ import { baseUrlFromRequest } from "@/lib/config";
 import { allRows, db, Staff } from "@/lib/db";
 import { json, withAdmin, errorMessage } from "@/lib/http";
 import { autoBuyEnabled, assignNumber, unassignNumber, type AssignResult } from "@/lib/numbers";
+import { renameNumber } from "@/lib/twilio";
 import { cleanAreaCode, inMySchool, isBuiltInAdmin, isSuperAdmin, newJoinCode, schoolLimit, staffByEmail, staffById, tempPassword } from "@/lib/staff";
 import { newFreeCode, schoolById } from "@/lib/schools";
 import { authClient, findAuthUserId, setPassword, upsertAuthUser } from "@/lib/supabaseAuth";
@@ -91,7 +92,7 @@ export const DELETE = withAdmin(async (req, me) => {
   return json({ ok: true });
 });
 
-// Actions on one person: approve, disable, enable, update, assign_number, release_number, reset_password.
+// Actions on one person: approve, disable, enable, update, assign_number, release_number, transfer_number, reset_password, delete.
 export const PATCH = withAdmin(async (req, me) => {
   const b = await req.json().catch(() => ({}));
   const s = b.id ? await staffById(String(b.id)) : null;
@@ -152,6 +153,50 @@ export const PATCH = withAdmin(async (req, me) => {
       const { error } = await supa.from("staff").update(update).eq("id", s.id);
       if (error) throw new Error(error.message);
       return json({ ok: true });
+    }
+    case "transfer_number": {
+      // Give this teacher's real number to another teacher (e.g. their replacement), so parents keep texting the same number.
+      if (!s.phone_number || s.phone_placeholder || !s.phone_sid) return json({ error: "This teacher doesn't have a real Relay number to transfer." }, 400);
+      const to = b.to ? await staffById(String(b.to)) : null;
+      if (!to || to.id === s.id || !inMySchool(me, to.school_id)) return json({ error: "Choose the teacher to receive the number." }, 400);
+      if (to.status === "disabled") return json({ error: `${to.name}'s account is turned off. Turn it on first.` }, 400);
+      if (to.phone_number && !to.phone_placeholder) {
+        if (!b.replaceExisting) return json({ error: `${to.name} already has a number. Confirm replacing it.` }, 400);
+        await unassignNumber(to); // releases their current number
+      }
+      const number = { phone_number: s.phone_number, phone_sid: s.phone_sid };
+      let r = await supa.from("staff").update({ phone_number: null, phone_sid: null, phone_placeholder: false }).eq("id", s.id);
+      if (r.error) throw new Error(r.error.message);
+      r = await supa.from("staff").update({ ...number, phone_placeholder: false }).eq("id", to.id);
+      if (r.error) {
+        await supa.from("staff").update(number).eq("id", s.id); // put it back
+        throw new Error(r.error.message);
+      }
+      await renameNumber(number.phone_sid, `Relay – ${to.name || to.email}`).catch((e) => console.error("rename number", e));
+
+      // Move the old teacher's conversations (and their message history) to the new teacher.
+      let moved = 0;
+      if (b.moveConversations !== false) {
+        const theirs = await allRows<{ id: string; phone: string }>((a, z) =>
+          supa.from("contacts").select("id, phone").eq("staff_id", s.id).order("id").range(a, z),
+        );
+        const { data: mine } = await supa.from("contacts").select("id, phone").eq("staff_id", to.id);
+        const existing = new Map((mine || []).map((c) => [c.phone, c.id]));
+        for (const c of theirs) {
+          const keep = existing.get(c.phone);
+          if (keep) {
+            // The new teacher already talks to this parent: merge the history into that conversation.
+            const m = await supa.from("messages").update({ contact_id: keep }).eq("contact_id", c.id);
+            if (m.error) throw new Error(m.error.message);
+            await supa.from("contacts").delete().eq("id", c.id);
+          } else {
+            const u = await supa.from("contacts").update({ staff_id: to.id }).eq("id", c.id);
+            if (u.error) throw new Error(u.error.message);
+          }
+          moved++;
+        }
+      }
+      return json({ ok: true, number: number.phone_number, to: to.name, moved });
     }
     case "delete": {
       if (!isSuperAdmin(me.email)) return json({ error: "Only super admins can delete teachers." }, 403);
