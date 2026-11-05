@@ -32,7 +32,7 @@ export default function Thread({
   onBack: () => void;
   onChanged: () => void;
   onOpenInfo: () => void;
-  onOpenDemo: () => void;
+  onOpenDemo?: () => void;
   refreshKey: number;
   readOnly?: boolean;
   ownerLabel?: string;
@@ -248,9 +248,11 @@ export default function Thread({
         </footer>
       ) : (
       <footer className="composer">
-        <button className="plus-btn" onClick={onOpenDemo} aria-label="Demo: simulate a reply" title="Demo: simulate a reply from this parent">
-          <Plus />
-        </button>
+        {onOpenDemo && (
+          <button className="plus-btn" onClick={onOpenDemo} aria-label="Demo: simulate a reply" title="Demo: simulate a reply from this parent">
+            <Plus />
+          </button>
+        )}
         <div className="pill">
           <textarea
             ref={input}

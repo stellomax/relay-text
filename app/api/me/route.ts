@@ -2,7 +2,8 @@ import { baseUrlFromRequest, twilioConfigured } from "@/lib/config";
 import { json, withAuth } from "@/lib/http";
 import { authClient, findAuthUserId, setPassword } from "@/lib/supabaseAuth";
 import { db } from "@/lib/db";
-import { isSuperAdmin } from "@/lib/staff";
+import { endAllSessions, isSuperAdmin } from "@/lib/staff";
+import { createSessionToken, sessionCookie } from "@/lib/session";
 import { limited, record, TOO_MANY } from "@/lib/ratelimit";
 
 export const dynamic = "force-dynamic";
@@ -41,7 +42,11 @@ export const POST = withAuth(async (req, me) => {
     const uid = me.user_id || (await findAuthUserId(me.email));
     if (!uid) return json({ error: "Couldn't find your login." }, 500);
     await setPassword(uid, next);
-    return json({ ok: true });
+    // Sign out every other device, and keep this one signed in.
+    const sv = await endAllSessions(me);
+    const res = json({ ok: true });
+    res.headers.append("set-cookie", sessionCookie(await createSessionToken(me.email, me.role, sv)));
+    return res;
   }
   const update: Record<string, string> = {};
   if (typeof b.name === "string" && b.name.trim()) update.name = b.name.trim().slice(0, 100);

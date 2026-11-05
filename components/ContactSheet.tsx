@@ -121,9 +121,9 @@ export default function ContactSheet({
           <p className="ios-footnote">Admins only. The whole conversation moves to that teacher’s Messages.</p>
         </>
       )}
-      {!readOnly && (
+      {!readOnly && isAdmin && (
         <div className="ios-group">
-          <button className="ios-row danger" onClick={remove}>
+          <button className="ios-row danger" onClick={remove} title="Admins only. Removes this conversation and all its messages. It's recorded in the Activity Log.">
             Delete Conversation
           </button>
         </div>

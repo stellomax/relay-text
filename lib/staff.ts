@@ -29,7 +29,7 @@ export function inMySchool(me: Staff, schoolId: string | null | undefined): bool
 }
 // Is this teacher in the admin's school? (Always true for super admins.)
 export async function staffInMySchool(me: Staff, staffId: string | null): Promise<boolean> {
-  if (!staffId) return true; // the shared main number
+  if (!staffId) return isSuperAdmin(me.email); // the shared main number: super admins only (it mixes every school)
   if (schoolLimit(me) === undefined || staffId === me.id) return true;
   const s = await staffById(staffId);
   return !!s && inMySchool(me, s.school_id);
@@ -74,20 +74,32 @@ export type Scope = { staffId: string | null; readOnly: boolean };
 export function resolveScope(req: Request, me: Staff): Scope {
   const as = new URL(req.url).searchParams.get("as");
   if (!as || as === me.id || me.role !== "admin") return { staffId: me.id, readOnly: false };
-  if (as === "unassigned") return { staffId: null, readOnly: false };
+  if (as === "unassigned") return isSuperAdmin(me.email) ? { staffId: null, readOnly: false } : { staffId: me.id, readOnly: false };
   return { staffId: as, readOnly: true };
 }
 
 export function canRead(me: Staff, contact: Pick<Contact, "staff_id">): boolean {
+  if (contact.staff_id === null) return me.role === "admin" && isSuperAdmin(me.email);
   return me.role === "admin" || contact.staff_id === me.id;
 }
 
 // Teachers write only to their own families. Admins also handle the shared main number; other teachers' threads are view-only.
 export function canWrite(me: Staff, contact: Pick<Contact, "staff_id">): boolean {
-  return contact.staff_id === me.id || (me.role === "admin" && contact.staff_id === null);
+  return contact.staff_id === me.id || (me.role === "admin" && contact.staff_id === null && isSuperAdmin(me.email));
 }
 
 // Apply a scope to a Supabase query on a table with a staff_id column.
 export function scoped<T extends { eq: Function; is: Function }>(q: T, scope: Scope): T {
   return scope.staffId ? q.eq("staff_id", scope.staffId) : q.is("staff_id", null);
+}
+
+// Sign someone out everywhere: every existing session cookie for them stops working. Returns the new version.
+export async function endAllSessions(staff: Pick<Staff, "id" | "session_version">): Promise<number> {
+  const next = (staff.session_version ?? 0) + 1;
+  const { error } = await db().from("staff").update({ session_version: next }).eq("id", staff.id);
+  if (error) {
+    console.error("end sessions", error.message); // column missing until schema.sql is run
+    return staff.session_version ?? 0;
+  }
+  return next;
 }

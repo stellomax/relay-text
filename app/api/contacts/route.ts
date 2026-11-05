@@ -1,5 +1,6 @@
 import { db, Contact, Staff } from "@/lib/db";
 import { json, withAuth } from "@/lib/http";
+import { logAudit } from "@/lib/audit";
 import { canWrite, resolveScope, scoped, staffInMySchool } from "@/lib/staff";
 
 export const dynamic = "force-dynamic";
@@ -54,6 +55,13 @@ async function move(me: Staff, body: Record<string, unknown>) {
   const { data, error } = await db().from("contacts").update({ staff_id: target }).eq("id", existing.id).select("*").single();
   if (error) return json({ error: error.message }, 400);
   await db().from("messages").update({ staff_id: target }).eq("contact_id", existing.id);
+  await logAudit(me, {
+    action: "conversation.move",
+    targetType: "contact",
+    targetId: existing.id,
+    targetLabel: existing.parent_name,
+    detail: { from: existing.staff_id || "main number", to: target || "main number" },
+  });
   return json({ contact: data });
 }
 
@@ -61,7 +69,17 @@ export const DELETE = withAuth(async (req, me) => {
   const id = new URL(req.url).searchParams.get("id");
   const existing = id ? await load(id) : null;
   if (!existing || !canWrite(me, existing)) return json({ error: "Family not found." }, 404);
+  // Conversations are school records: only admins can delete one (teachers can't erase a history).
+  if (me.role !== "admin") return json({ error: "Only an admin can delete a conversation." }, 403);
+  const { count } = await db().from("messages").select("id", { count: "exact", head: true }).eq("contact_id", existing.id);
   const { error } = await db().from("contacts").delete().eq("id", existing.id);
   if (error) throw new Error(error.message);
+  await logAudit(me, {
+    action: "conversation.delete",
+    targetType: "contact",
+    targetId: existing.id,
+    targetLabel: existing.parent_name,
+    detail: { messages: count ?? 0, phone_last4: existing.phone.slice(-4) },
+  });
   return json({ ok: true });
 });

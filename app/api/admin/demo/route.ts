@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { json, withSuper } from "@/lib/http";
 import { loadDemo, wipeDemo } from "@/lib/demo";
+import { logAudit } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -17,12 +18,18 @@ export const GET = withSuper(async () => {
   return json({ ready: teachers !== null && parents !== null && conversations !== null, teachers, parents, conversations });
 });
 
-export const POST = withSuper(async (req) => {
+export const POST = withSuper(async (req, me) => {
   const body = await req.json().catch(() => ({}));
-  if (body.action === "wipe") return json({ ok: true, removed: await wipeDemo() });
+  if (body.action === "wipe") {
+    const removed = await wipeDemo();
+    await logAudit(me, { action: "demo.remove", targetType: "school", schoolId: null, detail: removed });
+    return json({ ok: true, removed });
+  }
   if (body.action === "load") {
     if (!body.schoolId) return json({ error: "Choose a school." }, 400);
-    return json({ ok: true, loaded: await loadDemo(String(body.schoolId)) });
+    const loaded = await loadDemo(String(body.schoolId));
+    await logAudit(me, { action: "demo.load", targetType: "school", targetId: String(body.schoolId), targetLabel: loaded.school, schoolId: String(body.schoolId) });
+    return json({ ok: true, loaded });
   }
   return json({ error: "Unknown action." }, 400);
 });

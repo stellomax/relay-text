@@ -49,6 +49,7 @@ export type Staff = {
   created_at: string;
   mfa_secret?: string | null;
   mfa_enabled?: boolean;
+  session_version?: number;
 };
 
 export type Message = {

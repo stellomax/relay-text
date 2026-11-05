@@ -1,6 +1,6 @@
 import { json } from "@/lib/http";
 import { authClient, setPassword } from "@/lib/supabaseAuth";
-import { staffByEmail } from "@/lib/staff";
+import { endAllSessions, staffByEmail } from "@/lib/staff";
 import { db } from "@/lib/db";
 import { createSessionToken, SESSION_COOKIE, SESSION_DAYS } from "@/lib/session";
 
@@ -29,7 +29,8 @@ export async function POST(req: Request) {
   }
   await db().from("staff").update({ user_id: data.user.id, last_seen_at: new Date().toISOString() }).eq("id", me.id);
 
-  const sessionToken = await createSessionToken(me.email, me.role);
+  const sv = await endAllSessions(me); // a reset signs out every other device
+  const sessionToken = await createSessionToken(me.email, me.role, sv);
   const res = json({ ok: true, home: me.role === "admin" ? "/admin" : "/inbox" });
   res.headers.append("set-cookie", `${SESSION_COOKIE}=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_DAYS * 86400}`);
   return res;

@@ -1,5 +1,6 @@
 import { allRows, db, Staff } from "@/lib/db";
 import { json, withAdmin, withAuth } from "@/lib/http";
+import { withAudit } from "@/lib/audit";
 import { canSeeParent, cleanParent, findParentByPhone, parentsQuery, schoolKey, syncConversations, type Parent } from "@/lib/parents";
 import { schoolLimit } from "@/lib/staff";
 
@@ -44,7 +45,13 @@ async function schoolFor(me: Staff, raw: unknown): Promise<string | null> {
 const consentNote = (me: Staff, how: string) => `confirmed by ${me.email} (${how})`;
 
 // Add one parent, or upload a whole list ({ action: "import", rows: [...] }).
-export const POST = withAdmin(async (req, me) => {
+export const POST = withAdmin(withAudit(addParents, (b) =>
+  b.action === "import"
+    ? { action: "parents.import", targetType: "parent", detail: { rows: Array.isArray(b.rows) ? b.rows.length : 0 } }
+    : { action: "parents.add", targetType: "parent", targetLabel: String(b.parent_name || "") || null },
+));
+
+async function addParents(req: Request, me: Staff): Promise<Response> {
   const body = await req.json().catch(() => ({}));
   if (body.action === "import") return importRows(me, body);
   const c = cleanParent(body);
@@ -63,7 +70,7 @@ export const POST = withAdmin(async (req, me) => {
     .single();
   if (error) return json({ error: /duplicate/.test(error.message) ? "A parent with this phone number is already on the list." : error.message }, 400);
   return json({ parent: data });
-});
+}
 
 // CSV upload: new phone numbers are added; numbers already on the list are updated.
 async function importRows(me: Staff, body: Record<string, unknown>) {
@@ -136,7 +143,12 @@ async function importRows(me: Staff, body: Record<string, unknown>) {
   return json({ added: inserts.length, updated: updates.length, problems, school: schoolKey(school_id) });
 }
 
-export const PATCH = withAdmin(async (req, me) => {
+export const PATCH = withAdmin(withAudit(editParent, async (b) => {
+  const { data: p } = await db().from("parents").select("parent_name, school_id").eq("id", String(b.id || "")).maybeSingle();
+  return p ? { action: "parents.edit", targetType: "parent", targetId: String(b.id), targetLabel: p.parent_name, schoolId: p.school_id } : null;
+}));
+
+async function editParent(req: Request, me: Staff): Promise<Response> {
   const body = await req.json().catch(() => ({}));
   const { data: found } = await db().from("parents").select("*").eq("id", String(body.id || "")).maybeSingle();
   const existing = found as Parent | null;
@@ -155,10 +167,16 @@ export const PATCH = withAdmin(async (req, me) => {
   if (error) return json({ error: error.message }, 400);
   await syncConversations(data as Parent);
   return json({ parent: data });
-});
+}
 
 // Delete one or more parents ({ ids: [...] }). Past conversations stay in Messages.
-export const DELETE = withAdmin(async (req, me) => {
+export const DELETE = withAdmin(withAudit(deleteParents, (b) => ({
+  action: "parents.delete",
+  targetType: "parent",
+  detail: { requested: Array.isArray(b.ids) ? b.ids.length : 0 },
+})));
+
+async function deleteParents(req: Request, me: Staff): Promise<Response> {
   const body = await req.json().catch(() => ({}));
   const ids: string[] = (Array.isArray(body.ids) ? body.ids : []).map(String).filter(Boolean).slice(0, 10000);
   if (!ids.length) return json({ error: "Choose at least one parent." }, 400);
@@ -172,4 +190,4 @@ export const DELETE = withAdmin(async (req, me) => {
     deleted += count || 0;
   }
   return json({ ok: true, deleted });
-});
+}

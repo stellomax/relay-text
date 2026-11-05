@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { json, withSuper } from "@/lib/http";
 import { deleteSchoolData, previewSchoolData } from "@/lib/schoolData";
+import { logAudit } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -21,5 +22,14 @@ export const POST = withSuper(async (req, me) => {
   if (String(b.confirmName || "").trim() !== school.name.trim()) {
     return json({ error: `Type the school's name exactly (${school.name}) to confirm.` }, 400);
   }
-  return json({ ok: true, deleted: await deleteSchoolData(String(b.id), me) });
+  const deleted = await deleteSchoolData(String(b.id), me);
+  await logAudit(me, {
+    action: "school.delete_all_data",
+    targetType: "school",
+    targetId: String(b.id),
+    targetLabel: school.name,
+    schoolId: deleted.schoolDeleted ? null : String(b.id),
+    detail: { teachers: deleted.teachers, parents: deleted.parents, conversations: deleted.conversations, messages: deleted.messages },
+  });
+  return json({ ok: true, deleted });
 });
