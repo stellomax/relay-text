@@ -1,7 +1,7 @@
 import { BRAND, COMPANY, LAST_UPDATED } from "@/lib/brand";
 
 // Simple, readable layout for the public Privacy Policy, Terms and sign-up pages.
-export default function LegalPage({ title, children, updated = true }: { title: string; children: React.ReactNode; updated?: boolean }) {
+export default function LegalPage({ title, children, updated = true, wide = false }: { title: string; children: React.ReactNode; updated?: boolean; wide?: boolean }) {
   return (
     <div className="legal">
       <header className="legal-head">
@@ -9,7 +9,7 @@ export default function LegalPage({ title, children, updated = true }: { title: 
           <img src="/relay-text-logo.png" alt={BRAND} />
         </a>
       </header>
-      <main className="legal-body">
+      <main className={`legal-body${wide ? " wide" : ""}`}>
         <h1>{title}</h1>
         {updated && <p className="legal-updated">Last updated {LAST_UPDATED}</p>}
         {children}
