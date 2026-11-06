@@ -2,6 +2,8 @@
 // Every other language Google Translate supports is listed after these (see /api/languages).
 // Codes are Google Translate codes.
 export const LANGUAGES: { code: string; name: string; native: string }[] = [
+  // English first, so it is easy to find (no translation for these parents)
+  { code: "en", name: "English", native: "English" },
   { code: "es", name: "Spanish", native: "Español" },
   { code: "ar", name: "Arabic", native: "العربية" },
   { code: "zh-CN", name: "Chinese (Simplified)", native: "中文" },
@@ -32,7 +34,6 @@ export const LANGUAGES: { code: string; name: string; native: string }[] = [
   { code: "de", name: "German", native: "Deutsch" },
   { code: "ckb", name: "Kurdish (Sorani)", native: "کوردی" },
   { code: "uz", name: "Uzbek", native: "Oʻzbek" },
-  { code: "en", name: "English", native: "English" },
 ];
 
 export type Language = { code: string; name: string; native?: string };
