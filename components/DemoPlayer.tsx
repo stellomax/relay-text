@@ -232,14 +232,24 @@ export default function DemoPlayer() {
               </a>
             </>
           ) : idx > 0 ? (
-            <button
-              type="button"
-              className={`lp-btn dm-next${waiting ? " ready" : " busy"}`}
-              onClick={next}
-              aria-label={waiting ? undefined : "Message on its way"}
-            >
-              <span className="dm-next-label">Continue conversation ›</span>
-            </button>
+            <span className="dm-next-wrap">
+              {/* after the first message only: an arrow that nudges toward the button, so people know to keep going */}
+              {idx === 1 && waiting && (
+                <span className="dm-hint" aria-hidden>
+                  <svg viewBox="0 0 48 24" width="48" height="24">
+                    <path d="M2 12h38M30 3l10 9-10 9" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              )}
+              <button
+                type="button"
+                className={`lp-btn dm-next${waiting ? " ready" : " busy"}`}
+                onClick={next}
+                aria-label={waiting ? undefined : "Message on its way"}
+              >
+                <span className="dm-next-label">Continue conversation ›</span>
+              </button>
+            </span>
           ) : null}
         </div>
 
