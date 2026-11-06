@@ -15,10 +15,10 @@ const DAYS = 60; // daily chart
 export const GET = withAdmin(async (req, me) => {
   const supa = db();
   const asked = new URL(req.url).searchParams.get("school");
-  const { data: schoolRows } = await supa.from("schools").select("id, name").order("name");
+  const { data: schoolRows } = await supa.from("schools").select("id, name, district").order("name");
   const lim = schoolLimit(me);
   // Admins (not super admins) only ever see their own school.
-  const schools = ((schoolRows || []) as { id: string; name: string }[]).filter((s) => lim === undefined || s.id === lim);
+  const schools = ((schoolRows || []) as { id: string; name: string; district?: string | null }[]).filter((s) => lim === undefined || s.id === lim);
   const schoolId =
     lim !== undefined ? lim || NO_SCHOOL_ID : asked === "all" ? null : asked && schools.some((s) => s.id === asked) ? asked : me.school_id || null;
 

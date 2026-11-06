@@ -5,11 +5,13 @@ import Sheet from "@/components/Sheet";
 import { ChevronRight, Plus } from "@/components/icons";
 import AdminHeader, { AdminTitle } from "@/components/AdminHeader";
 import { api } from "@/lib/client";
+import SchoolOptions from "@/components/SchoolOptions";
 
 type School = {
   id: string;
   name: string;
   district: string | null;
+  district_id?: string | null;
   area_code: string | null;
   signup_code: string | null;
   active: boolean;
@@ -17,8 +19,9 @@ type School = {
   teachers: number;
   parents: number;
 };
-type Form = { id?: string; name: string; district: string; area_code: string; signup_code: string; active: boolean; retention_months: number };
-const EMPTY: Form = { name: "", district: "", area_code: "", signup_code: "", active: true, retention_months: 24 };
+type District = { id: string; name: string; schools: number };
+type Form = { id?: string; name: string; district_id: string; area_code: string; signup_code: string; active: boolean; retention_months: number };
+const EMPTY: Form = { name: "", district_id: "", area_code: "", signup_code: "", active: true, retention_months: 24 };
 const RETENTION = [
   { v: 12, label: "1 year" },
   { v: 24, label: "2 years (default)" },
@@ -38,10 +41,18 @@ export default function SchoolsPage() {
   const [isSuper, setIsSuper] = useState(false);
   const [search, setSearch] = useState("");
   const [wipe, setWipe] = useState<{ id: string; name: string } | null>(null);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [districtNote, setDistrictNote] = useState("");
+  const [dForm, setDForm] = useState<{ id?: string; name: string } | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const d = await api<{ schools: School[]; signupUrl: string; viewerIsSuper: boolean }>("/api/admin/schools");
+      const [d, ds] = await Promise.all([
+        api<{ schools: School[]; signupUrl: string; viewerIsSuper: boolean }>("/api/admin/schools"),
+        api<{ districts: District[]; error?: string }>("/api/admin/districts").catch((e) => ({ districts: [] as District[], error: e.message })),
+      ]);
+      setDistricts(ds.districts || []);
+      setDistrictNote(ds.error || "");
       setSchools(d.schools);
       setSignupUrl(d.signupUrl);
       setIsSuper(!!d.viewerIsSuper);
@@ -77,6 +88,33 @@ export default function SchoolsPage() {
     }
   }
 
+  async function saveDistrict() {
+    if (!dForm) return;
+    setBusy(true);
+    setError("");
+    try {
+      await api("/api/admin/districts", { method: dForm.id ? "PATCH" : "POST", body: dForm });
+      setDForm(null);
+      await load();
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removeDistrict() {
+    if (!dForm?.id || !confirm(`Delete ${dForm.name}? This can't be undone.`)) return;
+    try {
+      await api(`/api/admin/districts?id=${dForm.id}`, { method: "DELETE" });
+      flash(`Deleted ${dForm.name}`);
+      setDForm(null);
+      await load();
+    } catch (e: any) {
+      setError(e.message);
+    }
+  }
+
   async function newCode() {
     if (!form?.id) return;
     if (!confirm("Generate a new code? The current code stops working right away.")) return;
@@ -107,7 +145,7 @@ export default function SchoolsPage() {
     setForm({
       id: s.id,
       name: s.name,
-      district: s.district || "",
+      district_id: s.district_id || "",
       area_code: s.area_code || "",
       signup_code: s.signup_code || "",
       active: s.active,
@@ -124,9 +162,14 @@ export default function SchoolsPage() {
       <div className="settings-body admin-wide">
         <AdminTitle
           title="Manage Schools"
-          sub={schools ? `${schools.length} ${schools.length === 1 ? "school" : "schools"} · each has a sign-up code teachers use to join` : undefined}
+          sub={
+            schools
+              ? `${districts.length ? `${districts.length} ${districts.length === 1 ? "district" : "districts"} · ` : ""}${schools.length} ${schools.length === 1 ? "school" : "schools"} · each school has a sign-up code teachers use to join`
+              : undefined
+          }
         />
-        {error && !form && <p className="sheet-error">{error}</p>}
+        {error && !form && !dForm && <p className="sheet-error">{error}</p>}
+        {districtNote && <p className="sheet-error">{districtNote}</p>}
         {!schools && !error && <p className="ios-footnote top">Loading…</p>}
         {schools && (
           <>
@@ -140,7 +183,10 @@ export default function SchoolsPage() {
               />
               {isSuper && (
                 <span className="toolbar-actions">
-                  <button className="pill-btn add-pill" onClick={() => setForm({ ...EMPTY })}>
+                  <button className="pill-btn add-pill outline-pill" onClick={() => setDForm({ name: "" })}>
+                    <Plus size={16} /> Add District
+                  </button>
+                  <button className="pill-btn add-pill" onClick={() => setForm({ ...EMPTY, district_id: districts.length === 1 ? districts[0].id : "" })}>
                     <Plus size={16} /> Add School
                   </button>
                 </span>
@@ -161,11 +207,24 @@ export default function SchoolsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {shown.map((s) => (
+                  {groupByDistrict(shown, districts).map(({ key, label, district, list }) => [
+                    <tr key={`d-${key}`} className="district-row">
+                      <td colSpan={7}>
+                        <span className="district-name">{label}</span>
+                        <span className="district-count">
+                          {list.length} {list.length === 1 ? "school" : "schools"}
+                        </span>
+                        {isSuper && district && (
+                          <button className="link-btn row-link" onClick={() => setDForm({ id: district.id, name: district.name })}>
+                            Edit district
+                          </button>
+                        )}
+                      </td>
+                    </tr>,
+                    ...list.map((s) => (
                     <tr key={s.id} className={s.active ? "" : "off"} onClick={() => isSuper && edit(s)}>
                       <td>
                         <span className="cell-name">{s.name}</span>
-                        {s.district && <span className="cell-sub">{s.district}</span>}
                       </td>
                       <td>
                         <span className={`code-cell ${s.active && s.signup_code ? "" : "code-off"}`}>{s.signup_code || "—"}</span>
@@ -193,7 +252,24 @@ export default function SchoolsPage() {
                         )}
                       </td>
                     </tr>
-                  ))}
+                    )),
+                  ])}
+                  {!q &&
+                    districts
+                      .filter((d) => !shown.some((s) => s.district_id === d.id))
+                      .map((d) => (
+                        <tr key={`empty-${d.id}`} className="district-row">
+                          <td colSpan={7}>
+                            <span className="district-name">{d.name}</span>
+                            <span className="district-count">No schools yet</span>
+                            {isSuper && (
+                              <button className="link-btn row-link" onClick={() => setDForm({ id: d.id, name: d.name })}>
+                                Edit district
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
                   {shown.length === 0 && (
                     <tr className="empty-row">
                       <td colSpan={7}>{q ? "No schools match." : "No schools yet. Click Add School to create one."}</td>
@@ -212,6 +288,42 @@ export default function SchoolsPage() {
         )}
       </div>
 
+      {dForm && (
+        <Sheet
+          title={dForm.id ? dForm.name || "District" : "New District"}
+          onCancel={() => {
+            setDForm(null);
+            setError("");
+          }}
+          action={{ label: dForm.id ? "Save" : "Add", onClick: saveDistrict, busy, disabled: !dForm.name.trim() }}
+        >
+          <div className="ios-group">
+            <label className="ios-row">
+              <span className="ios-row-label">name</span>
+              <input
+                value={dForm.name}
+                onChange={(e) => setDForm({ ...dForm, name: e.target.value })}
+                placeholder="Douglas County School District"
+                autoFocus={!dForm.id}
+              />
+            </label>
+          </div>
+          <p className="ios-footnote">
+            Every school belongs to a district. Parents agree to receive texts from their school’s district when they sign up, so use the
+            district’s full official name.
+          </p>
+          {dForm.id && (
+            <div className="ios-group">
+              <button className="ios-row danger" onClick={removeDistrict}>
+                Delete District
+              </button>
+            </div>
+          )}
+          {dForm.id && <p className="ios-footnote">A district can only be deleted when it has no schools.</p>}
+          {error && <p className="sheet-error">{error}</p>}
+        </Sheet>
+      )}
+
       {form && (
         <Sheet
           title={form.id ? form.name || "School" : "New School"}
@@ -219,7 +331,7 @@ export default function SchoolsPage() {
             setForm(null);
             setError("");
           }}
-          action={{ label: form.id ? "Save" : "Add", onClick: save, busy, disabled: !form.name.trim() }}
+          action={{ label: form.id ? "Save" : "Add", onClick: save, busy, disabled: !form.name.trim() || !form.district_id }}
         >
           <div className="ios-group">
             <label className="ios-row">
@@ -228,7 +340,14 @@ export default function SchoolsPage() {
             </label>
             <label className="ios-row">
               <span className="ios-row-label">district</span>
-              <input value={form.district} onChange={(e) => setForm({ ...form, district: e.target.value })} placeholder="Optional" />
+              <select value={form.district_id} onChange={(e) => setForm({ ...form, district_id: e.target.value })}>
+                <option value="">{districts.length ? "Choose a district" : "Add a district first"}</option>
+                {districts.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="ios-row">
               <span className="ios-row-label">area code</span>
@@ -488,6 +607,24 @@ function DeleteSchoolData({ school, onClose }: { school: { id: string; name: str
 }
 
 // Super admins: load a full set of sample teachers, parents and conversations for sales demos, and remove it before going live.
+// Schools grouped under their district for the table: districts in name order, then any school without one.
+function groupByDistrict(list: School[], districts: District[]) {
+  const byId = new Map(districts.map((d) => [d.id, d]));
+  const groups = new Map<string, School[]>();
+  for (const s of list) {
+    const k = s.district_id && byId.has(s.district_id) ? s.district_id : "none";
+    groups.set(k, [...(groups.get(k) || []), s]);
+  }
+  return [...groups.entries()]
+    .map(([key, schools]) => ({
+      key,
+      district: byId.get(key) || null,
+      label: byId.get(key)?.name || "No district",
+      list: schools.sort((a, b) => a.name.localeCompare(b.name)),
+    }))
+    .sort((a, b) => (a.key === "none" ? 1 : b.key === "none" ? -1 : a.label.localeCompare(b.label)));
+}
+
 function DemoData({ schools, onChange }: { schools: School[]; onChange: () => void }) {
   const [status, setStatus] = useState<{ ready: boolean; teachers: number | null; parents: number | null; conversations: number | null } | null>(null);
   const [schoolId, setSchoolId] = useState("");
@@ -553,11 +690,7 @@ function DemoData({ schools, onChange }: { schools: School[]; onChange: () => vo
             <label>
               School
               <select value={schoolId} onChange={(e) => setSchoolId(e.target.value)}>
-                {schools.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
+                <SchoolOptions schools={schools} />
               </select>
             </label>
             <button className="pill-btn" disabled={!!busy || !schoolId} onClick={() => run("load")}>

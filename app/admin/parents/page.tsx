@@ -10,8 +10,9 @@ import { languageName, parseLanguage, rememberLanguages, type Language } from "@
 import { formatPhoneInput, prettyPhone, toE164 } from "@/lib/phone";
 import { mapColumns, parseCsv } from "@/lib/csv";
 import type { Parent } from "@/lib/parents";
+import SchoolOptions from "@/components/SchoolOptions";
 
-type School = { id: string; name: string };
+type School = { id: string; name: string; district?: string | null };
 type SortKey = "name" | "students" | "language" | "school" | "status";
 
 const status = (p: Parent) => (p.opted_out ? "out" : !p.consent_at ? "consent" : "ok");
@@ -413,11 +414,7 @@ function ParentSheet({
               <span className="ios-row-label wide">School</span>
               <select value={f.school_id} onChange={(e) => setF({ ...f, school_id: e.target.value })}>
                 <option value="">No school</option>
-                {schools.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
+                <SchoolOptions schools={schools} />
               </select>
             </label>
           )}
@@ -604,11 +601,7 @@ function ImportSheet({ schools, defaultSchool, onClose }: { schools: School[]; d
                 <span className="ios-row-label wide">School</span>
                 <select value={school} onChange={(e) => setSchool(e.target.value)}>
                   <option value="">No school</option>
-                  {schools.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
+                  <SchoolOptions schools={schools} />
                 </select>
               </label>
             </div>

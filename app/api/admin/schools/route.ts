@@ -26,9 +26,17 @@ export const GET = withAdmin(async (req, me) => {
   });
 });
 
-async function clean(b: Record<string, unknown>, id?: string) {
+async function clean(b: Record<string, unknown>, id?: string, requireDistrict = false) {
   const name = String(b.name || "").trim().slice(0, 120);
-  const district = String(b.district || "").trim().slice(0, 120) || null;
+  // Each school belongs to a district (districts table). The school keeps a copy of the district's name.
+  let districtFields: { district_id?: string; district?: string } = {};
+  if (b.district_id) {
+    const { data: d, error } = await db().from("districts").select("id, name").eq("id", String(b.district_id)).maybeSingle();
+    if (error || !d) return { error: "Choose the school's district." };
+    districtFields = { district_id: d.id, district: d.name };
+  } else if (requireDistrict) {
+    return { error: "Choose the school's district." };
+  }
   const area_code = cleanAreaCode(b.area_code);
   if (!name) return { error: "Enter the school's name." };
   if (b.area_code && !area_code) return { error: "Enter a 3-digit area code, like 303." };
@@ -46,13 +54,13 @@ async function clean(b: Record<string, unknown>, id?: string) {
     if (![0, 12, 24, 36, 60].includes(m)) return { error: "Choose how long to keep messages." };
     retention = { retention_months: m };
   }
-  return { row: { name, district, area_code, ...(signup_code !== undefined ? { signup_code } : {}), ...retention } };
+  return { row: { name, ...districtFields, area_code, ...(signup_code !== undefined ? { signup_code } : {}), ...retention } };
 }
 
 // Create a school. Leave the code blank to generate one.
 export const POST = withSuper(async (req) => {
   const b = await req.json().catch(() => ({}));
-  const c = await clean({ ...b, signup_code: b.signup_code || (await newFreeCode()) });
+  const c = await clean({ ...b, signup_code: b.signup_code || (await newFreeCode()) }, undefined, true);
   if ("error" in c) return json({ error: c.error }, 400);
   const { data, error } = await db().from("schools").insert({ ...c.row, active: true }).select("*").single();
   if (error) return json({ error: /duplicate|unique/i.test(error.message) ? "A school with that name already exists." : error.message }, 400);
