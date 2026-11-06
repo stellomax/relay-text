@@ -220,3 +220,26 @@
 .dm-next.busy .dm-next-label { opacity: 0.45; }
 /* the pop-up always uses dark text, whatever section opened it */
 .dm-modal { color: var(--ink, #241133); text-align: left; }
+
+/* after the first message: a purple arrow beside Continue, nudging toward it (components/DemoPlayer.tsx) */
+.dm-next-wrap { position: relative; display: inline-flex; }
+.dm-hint {
+  position: absolute; right: calc(100% + 14px); top: 50%; color: var(--purple, #6a02a0); display: flex; pointer-events: none;
+  animation: dm-hint-in 0.4s ease-out both, dm-hint-x 1.1s ease-in-out 0.4s infinite;
+}
+@keyframes dm-hint-in { from { opacity: 0; transform: translate(-12px, -50%); } to { opacity: 1; transform: translate(0, -50%); } }
+@keyframes dm-hint-x { 0%, 100% { transform: translate(0, -50%); } 50% { transform: translate(10px, -50%); } }
+@media (max-width: 900px) {
+  /* the button is full width here, so the arrow sits above it and points down */
+  .dm-next-wrap { display: flex; width: 100%; }
+  .dm-hint { right: auto; left: 50%; top: auto; bottom: calc(100% + 4px); animation: dm-hint-in-y 0.4s ease-out both, dm-hint-y 1.1s ease-in-out 0.4s infinite; }
+  .dm-hint svg { transform: rotate(90deg); }
+  @keyframes dm-hint-in-y { from { opacity: 0; transform: translate(-50%, -12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  @keyframes dm-hint-y { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 8px); } }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dm-hint { animation: none; transform: translate(0, -50%); }
+}
+@media (prefers-reduced-motion: reduce) and (max-width: 900px) {
+  .dm-hint { transform: translate(-50%, 0); }
+}
