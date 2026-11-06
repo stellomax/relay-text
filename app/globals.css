@@ -1125,3 +1125,9 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .intake-remaining div { display: flex; gap: 8px; flex-wrap: wrap; }
 .intake-remaining .intake-secondary { height: 34px; font-size: 14px; }
 .intake-back { border: 0; background: none; color: var(--brand); font-size: 16px; font-weight: 600; cursor: pointer; padding: 8px 0; }
+
+/* Upload Parents → "which column is which?" step */
+.map-table td { vertical-align: middle; }
+.map-table select { width: 100%; min-width: 170px; font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line, #ddd); background: #fff; }
+.map-example { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.help-callout { background: #f5effa; border: 1px solid #e4d4f2; border-radius: 12px; padding: 14px 16px; margin: 0 0 22px; font-size: 16px; line-height: 1.5; }

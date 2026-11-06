@@ -17,14 +17,36 @@ export default function UploadHelp() {
       <div className="settings-body help-body">
         <h1 className="help-title">How to bulk upload parents</h1>
         <p className="help-lead">
-          Add a whole class, grade or school at once in four steps. It takes about 10 minutes the first time.
+          Add a whole class, grade or school at once. Upload the list your school already has, or fill in our template. Excel and CSV
+          files both work.
         </p>
+
+        <div className="help-callout">
+          <strong>We’ll do your first upload with you.</strong> Email{" "}
+          <a href="mailto:relay@stellomark.com">relay@stellomark.com</a> and our team will help you get the list out of your system
+          and into Relay.
+        </div>
 
         <section className="help-step">
           <span className="help-num">1</span>
           <div>
-            <h2>Download the template</h2>
-            <p>It’s an Excel file with the right columns already set up, and a dropdown for languages.</p>
+            <h2>Get your list</h2>
+            <p>
+              <strong>Easiest: export it from your student information system</strong> (Infinite Campus, PowerSchool, Skyward, Synergy,
+              Aeries or another). Run a student or guardian contact report, save it as Excel or CSV, and upload it as it is. One row per
+              student with Guardian 1 and Guardian 2 columns is fine. Include these if you can:
+            </p>
+            <ul className="help-list">
+              <li>Student first and last name</li>
+              <li>Each parent or guardian’s name and <strong>mobile (cell) number</strong></li>
+              <li>
+                <strong>Home language</strong> or language of correspondence (codes like SPA or VIE are fine)
+              </li>
+              <li>School name, if the file covers more than one school</li>
+            </ul>
+            <p>
+              <strong>Or start from our template:</strong> an Excel file with the columns set up and a dropdown for languages.
+            </p>
             <a className="template-card" href="/relay-parents-template.xlsx" download>
               <span className="template-icon">XLSX</span>
               <span>
@@ -38,8 +60,8 @@ export default function UploadHelp() {
         <section className="help-step">
           <span className="help-num">2</span>
           <div>
-            <h2>Fill it in: one parent per row</h2>
-            <p>Start on row 2 and keep the headings in row 1.</p>
+            <h2>Using the template? Fill it in, one parent per row</h2>
+            <p>Start on row 2 and keep the headings in row 1. Then save it (Excel format is fine, no need to convert).</p>
             <div className="table-wrap">
               <table className="staff-table help-table">
                 <thead>
@@ -73,7 +95,7 @@ export default function UploadHelp() {
                   </tr>
                   <tr>
                     <td className="col-name">Language</td>
-                    <td>The language they read best. Click the cell and pick from the dropdown arrow, or type a language that isn’t listed.</td>
+                    <td>The language they read best. Pick from the dropdown arrow, or type a language that isn’t listed. Blank means English.</td>
                     <td>Spanish</td>
                   </tr>
                 </tbody>
@@ -89,40 +111,24 @@ export default function UploadHelp() {
         <section className="help-step">
           <span className="help-num">3</span>
           <div>
-            <h2>Save it as a CSV file</h2>
-            <p>Relay reads CSV files. Make sure the <strong>Parents</strong> sheet is showing, then:</p>
-            <ul className="help-list">
-              <li>
-                <strong>Excel (Windows):</strong> File → Save As → in “Save as type”, choose <strong>CSV UTF-8 (Comma delimited)</strong> → Save. If
-                Excel warns that some features will be lost, click <strong>Yes</strong> or <strong>Keep Current Format</strong>.
-              </li>
-              <li>
-                <strong>Excel (Mac):</strong> File → Save As → File Format: <strong>CSV UTF-8 (Comma delimited)</strong> → Save.
-              </li>
-              <li>
-                <strong>Google Sheets:</strong> File → Download → <strong>Comma-separated values (.csv)</strong>.
-              </li>
-              <li>
-                <strong>Numbers (Mac):</strong> File → Export To → <strong>CSV</strong> → Next → Save.
-              </li>
-            </ul>
-            <p className="help-note">Choose “CSV UTF-8” when you see it. It keeps accents and other alphabets (é, ñ, ü) correct.</p>
-          </div>
-        </section>
-
-        <section className="help-step">
-          <span className="help-num">4</span>
-          <div>
             <h2>Upload it to Relay</h2>
             <ol className="help-list">
               <li>
-                Go to <strong>Manage Parents</strong> and click <strong>Upload CSV</strong>.
+                Go to <strong>Manage Parents</strong> and click <strong>Upload Parents</strong>.
               </li>
-              <li>Choose the school these parents belong to.</li>
-              <li>Click the upload box and pick the CSV file you saved.</li>
+              <li>Choose the school these parents belong to (skipped if your file has a School column).</li>
+              <li>Click the upload box and pick your Excel or CSV file.</li>
               <li>
-                Check the summary. Any rows with a problem (for example a missing phone number) are listed with the reason. Fix them in your
-                file and upload again later.
+                If Relay can’t tell which column is which, it asks once (for example, “which column is the mobile number?”) and remembers
+                your answer for next time.
+              </li>
+              <li>
+                If a language in your file isn’t recognized (like “Somali-Maay” or a district code), Relay lists each one so you can say
+                what it is, once, instead of fixing every row.
+              </li>
+              <li>
+                Check the summary. Rows with a problem (for example a missing phone number) are listed with the reason. Fix them in your file
+                and upload again later.
               </li>
               <li>
                 Tick the box confirming these parents agreed to receive texts, then click <strong>Add Parents</strong>.
@@ -146,8 +152,20 @@ export default function UploadHelp() {
               <strong>Same parent, different schools:</strong> each school keeps its own list, so the parent appears once in each school.
             </li>
             <li>
-              <strong>Using your own spreadsheet?</strong> That’s fine too. It just needs columns headed Parent Name, Student Name, Phone and
-              Language, in any order.
+              <strong>Brothers and sisters:</strong> if the same parent number appears on several rows (one per child), Relay keeps one
+              entry for that parent with all of their children.
+            </li>
+            <li>
+              <strong>Two parents for one student?</strong> Each parent with a mobile number gets their own entry, in their own language
+              if your file has one for them.
+            </li>
+            <li>
+              <strong>Home and work numbers:</strong> Relay uses the cell or mobile number first. Home phones are used only when there’s
+              no mobile number; emergency contacts are left out.
+            </li>
+            <li>
+              <strong>No language?</strong> Parents with a blank language are set to English. You can change anyone later on the Parents
+              list.
             </li>
             <li>
               <strong>Made a mistake?</strong> Fix the row in your file and upload it again, or click Edit next to the parent on the Parents
