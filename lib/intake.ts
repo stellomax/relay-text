@@ -16,7 +16,7 @@ export type Field = {
   required?: boolean; // needed before the form can be submitted
 };
 
-export type Section = { id: string; title: string; intro?: string; fields: Field[]; uploads?: UploadKind[] };
+export type Section = { id: string; tab: string; title: string; intro?: string; fields: Field[]; uploads?: UploadKind[] };
 
 export type UploadKind = "ein_letter" | "consent_wording" | "optout_list" | "logo" | "dpa" | "questionnaire" | "other";
 
@@ -48,6 +48,7 @@ const rep = (n: 1 | 2): Field[] => {
 export const SECTIONS: Section[] = [
   {
     id: "identity",
+    tab: "District",
     title: "1. District identity",
     intro:
       "Carriers check these details against IRS and state records, so they must match exactly. Even a small difference (“School District No. 1” vs. “SD 1”) can cause a rejection.",
@@ -67,6 +68,7 @@ export const SECTIONS: Section[] = [
   },
   {
     id: "contacts",
+    tab: "Contacts",
     title: "2. Authorized contacts",
     intro:
       "The texting registry asks for one or two district employees who can confirm the district is real and approve texting in its name. Review notices go to these email addresses.",
@@ -79,6 +81,7 @@ export const SECTIONS: Section[] = [
   },
   {
     id: "consent",
+    tab: "Consent",
     title: "3. Parent consent to receive texts",
     intro:
       "Relay may only text parents who agreed to receive texts. Consent can come from parents signing up on the district's Relay sign-up page, or from district records showing parents gave clear permission (for example on enrollment forms). Carriers must approve both. A “reply YES” text can't be used as consent.",
@@ -94,6 +97,7 @@ export const SECTIONS: Section[] = [
   },
   {
     id: "signup",
+    tab: "Sign-up page",
     title: "4. District sign-up page for parents",
     intro:
       "Relay will set up a parent sign-up page in the district's name, for example “Douglas County School District, powered by Relay.” Carriers require it to show the district's name and links to its terms and privacy pages.",
@@ -110,6 +114,7 @@ export const SECTIONS: Section[] = [
   },
   {
     id: "scope",
+    tab: "Scope",
     title: "5. Scope and timing",
     intro: "These answers size the setup. Each teacher gets a private Relay texting number; more than 49 teachers needs an extra carrier review.",
     fields: [
@@ -124,6 +129,7 @@ export const SECTIONS: Section[] = [
   },
   {
     id: "it",
+    tab: "IT & privacy",
     title: "6. IT and privacy",
     intro: "Relay is glad to complete the district's review and sign its data privacy agreement. Relay's Student Data Disclosure is at relaytext.io/student-data.",
     fields: [
@@ -144,6 +150,15 @@ export const AUTH_FIELDS: Field[] = [
 ];
 
 export const AUTHORIZATION_TEXT = `By submitting this form, the district authorizes Relay (${COMPANY}) to register the district as a texting brand with Twilio and U.S. mobile carriers, and to send text messages to parents on the district's behalf, using the information in this form. I confirm I am authorized to give this permission for the district.`;
+
+// The form shows one tab per section, plus a last tab for the authorization.
+export const AUTH_TAB = { id: "authorize", tab: "Authorize", title: "7. Authorization" };
+export const TABS = [...SECTIONS.map(({ id, tab, title }) => ({ id, tab, title })), AUTH_TAB];
+
+// Which tab a field (or "auth_agree") is on.
+export function tabOf(fieldId: string): string {
+  return SECTIONS.find((s) => s.fields.some((f) => f.id === fieldId))?.id || AUTH_TAB.id;
+}
 
 export const ALL_FIELDS: Field[] = [...SECTIONS.flatMap((s) => s.fields), ...AUTH_FIELDS];
 const FIELD_IDS = new Set(ALL_FIELDS.map((f) => f.id));

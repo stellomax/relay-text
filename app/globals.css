@@ -1102,3 +1102,13 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .intake-answers dd { margin: 2px 0 0; white-space: pre-wrap; }
 .intake-answers h3 { margin: 22px 0 4px; font-size: 17px; }
 .intake-preview { background: #fff6e0; color: #7a5200 !important; padding: 12px 14px; border-radius: 12px; }
+.intake-tabs { display: flex; gap: 6px; overflow-x: auto; margin: 14px 0 4px; padding: 4px 0 8px; scrollbar-width: thin; scroll-margin-top: 56px; }
+.intake-tab { position: relative; flex: 0 0 auto; display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px 0 8px; border-radius: 19px; border: 1px solid #c6c6c8; background: var(--bg); color: var(--label); font-size: 14px; font-weight: 600; cursor: pointer; }
+.intake-tab.on { background: var(--brand); border-color: var(--brand); color: #fff; }
+.intake-tab-num { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 11px; background: var(--grouped-bg); color: var(--label-2); font-size: 12px; }
+.intake-tab.on .intake-tab-num { background: rgba(255, 255, 255, 0.25); color: #fff; }
+.intake-tab-dot { position: absolute; top: 4px; right: 6px; width: 8px; height: 8px; border-radius: 4px; background: var(--red); }
+.intake-tabbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.intake-nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 6px; }
+.intake-next { width: auto; padding: 0 22px; }
+.intake-back { border: 0; background: none; color: var(--brand); font-size: 16px; font-weight: 600; cursor: pointer; padding: 8px 0; }
