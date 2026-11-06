@@ -5,7 +5,7 @@ export default function LegalPage({ title, children, updated = true, wide = fals
   return (
     <div className="legal">
       <header className="legal-head">
-        <a href="/join" aria-label={BRAND}>
+        <a href="/" aria-label={`${BRAND} home page`}>
           <img src="/relay-text-logo.png" alt={BRAND} />
         </a>
       </header>
