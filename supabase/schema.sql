@@ -309,3 +309,30 @@ update public.schools s set district_id = d.id
 update public.schools s set district = d.name
   from public.districts d
   where s.district_id = d.id and s.district is distinct from d.name;
+
+-- ============================================================================
+-- District onboarding intake (Nov 2026). A super admin creates a private link per district
+-- (relaytext.io/intake/<token>); the district fills it in over several visits and submits it.
+-- Answers are kept as JSON (field ids in lib/intake.ts); attachments go in the private
+-- "district-intake" storage bucket. Safe to run again.
+-- ============================================================================
+create table if not exists public.district_intakes (
+  id            uuid primary key default gen_random_uuid(),
+  token         text not null unique,                  -- the secret in the link
+  district_id   uuid references public.districts(id) on delete set null,
+  district_name text not null,
+  answers       jsonb not null default '{}'::jsonb,
+  files         jsonb not null default '[]'::jsonb,    -- [{path, name, kind, size, uploaded_at}]
+  status        text not null default 'draft' check (status in ('draft', 'submitted', 'reviewed')),
+  submitted_at  timestamptz,
+  created_by    text,
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
+);
+create index if not exists district_intakes_created_idx on public.district_intakes (created_at desc);
+alter table public.district_intakes enable row level security;
+
+-- Private bucket for intake attachments (10 MB per file). Only the server (service role) reads or writes it.
+insert into storage.buckets (id, name, public, file_size_limit)
+  values ('district-intake', 'district-intake', false, 10485760)
+  on conflict (id) do nothing;
