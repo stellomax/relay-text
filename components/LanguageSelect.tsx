@@ -31,11 +31,15 @@ export default function LanguageSelect({
   onChange,
   className,
   id,
+  placeholder,
+  ariaLabel,
 }: {
   value: string;
   onChange: (code: string) => void;
   className?: string;
   id?: string;
+  placeholder?: string; // shown first, for "nothing chosen yet" (value "")
+  ariaLabel?: string;
 }) {
   const [all, setAll] = useState<Language[]>([]);
   useEffect(() => {
@@ -66,7 +70,8 @@ export default function LanguageSelect({
   const known = common.some((l) => l.code === value) || more.some((l) => l.code === value);
 
   return (
-    <select id={id} className={className} value={value} onChange={(e) => onChange(e.target.value)}>
+    <select id={id} className={className} value={value} onChange={(e) => onChange(e.target.value)} aria-label={ariaLabel}>
+      {placeholder != null && <option value="">{placeholder}</option>}
       {!known && value && <option value={value}>{languageName(value)}</option>}
       <optgroup label="Common languages">
         {common.map((l) => (
