@@ -11,6 +11,8 @@ import {
   progress,
   SECTIONS,
   submitProblems,
+  TABS,
+  tabOf,
   UPLOAD_LABELS,
   type Answers,
   type Field,
@@ -47,6 +49,32 @@ export default function IntakeForm({ token }: { token?: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [submittedAt, setSubmittedAt] = useState<string | null>(null);
   const [previewDone, setPreviewDone] = useState(false);
+  const [tab, setTab] = useState(0);
+  const [tabSaved, setTabSaved] = useState("");
+
+  // Open the tab named in the link (e.g. …#it), so a district can send each person straight to their part.
+  useEffect(() => {
+    const show = () => {
+      const i = TABS.findIndex((t) => t.id === window.location.hash.slice(1));
+      if (i >= 0) setTab(i);
+    };
+    show();
+    window.addEventListener("hashchange", show);
+    return () => window.removeEventListener("hashchange", show);
+  }, []);
+
+  function goTo(i: number) {
+    flush();
+    setTab(i);
+    setTabSaved("");
+    history.replaceState(null, "", `#${TABS[i].id}`);
+    document.querySelector(".intake-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function saveTab() {
+    const ok = await flush();
+    setTabSaved(ok ? (preview ? "Preview: answers stay only while this page is open." : `Saved ${time(new Date().toISOString())}`) : "Not saved. Check your connection and try again.");
+  }
   const dirty = useRef<Answers>({});
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -117,8 +145,11 @@ export default function IntakeForm({ token }: { token?: string }) {
     setSubmitError("");
     const problems = submitProblems(answers);
     if (Object.keys(problems).length) {
-      setSubmitError(`${Object.keys(problems).length} answer${Object.keys(problems).length === 1 ? "" : "s"} still needed (marked in red).`);
-      document.querySelector(".intake-bad")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      const n = Object.keys(problems).length;
+      const first = TABS.findIndex((t) => Object.keys(problems).some((k) => tabOf(k) === t.id));
+      setSubmitError(`${n} answer${n === 1 ? "" : "s"} still needed. Tabs with a red dot need attention.`);
+      if (first >= 0 && first !== tab) goTo(first);
+      setTimeout(() => document.querySelector(".intake-bad")?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
       return;
     }
     if (preview) {
@@ -176,6 +207,15 @@ export default function IntakeForm({ token }: { token?: string }) {
     if (!p) return "";
     if (p === "Required") return showAll ? "Required" : "";
     return touched[f.id] || showAll ? p : "";
+  };
+
+  // A tab is "done" when its required answers are in and nothing is invalid; "bad" after a failed submit.
+  const allProblems = submitProblems(answers);
+  const tabState = (id: string): "done" | "bad" | "" => {
+    const keys = Object.keys(allProblems).filter((k) => tabOf(k) === id);
+    if (keys.length) return showAll ? "bad" : "";
+    const fields = id === "authorize" ? ["auth_name"] : SECTIONS.find((s) => s.id === id)?.fields.map((f) => f.id) || [];
+    return fields.some((k) => (answers[k] || "").trim()) ? "done" : "";
   };
 
   const renderField = (f: Field) => {
@@ -252,7 +292,8 @@ export default function IntakeForm({ token }: { token?: string }) {
           about 3 weeks or more after you submit, and no texts can be sent until then.
         </p>
         <ul>
-          <li>Several people can fill in their parts using this same link. Your answers save automatically.</li>
+          <li>The form has 7 tabs. Fill them in any order, and save as you go: answers also save automatically.</li>
+          <li>Several people can fill in their parts using this same link. To send someone straight to one tab, open that tab and copy the address.</li>
           <li>Questions marked * are required. If you don’t know an answer, write “Not sure” and Relay will follow up.</li>
           <li>Keep this link private: anyone with it can see and change the answers. Questions? relay@stellomark.com</li>
         </ul>
@@ -274,35 +315,87 @@ export default function IntakeForm({ token }: { token?: string }) {
           </span>
         </div>
 
+        <nav className="intake-tabs" role="tablist" aria-label="Form sections">
+          {TABS.map((t, i) => {
+            const st = tabState(t.id);
+            return (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={i === tab}
+                className={`intake-tab${i === tab ? " on" : ""}`}
+                onClick={() => goTo(i)}
+              >
+                <span className="intake-tab-num">{st === "done" ? "✓" : i + 1}</span>
+                {t.tab}
+                {st === "bad" && <span className="intake-tab-dot" aria-label="needs attention" />}
+              </button>
+            );
+          })}
+        </nav>
+
         <form className="join-form" onSubmit={(e) => e.preventDefault()}>
-          {SECTIONS.map((s) => (
-            <section key={s.id} className="intake-section">
-              <h2>{s.title}</h2>
-              {s.intro && <p className="intake-intro">{s.intro}</p>}
-              {s.fields.map(renderField)}
-              {(s.uploads || []).map((k) => (
-                <Uploads key={k} kind={k} base={base} preview={preview} files={files.filter((f) => f.kind === k)} onChange={setFiles} />
-              ))}
+          {TABS[tab].id !== "authorize" ? (
+            SECTIONS.filter((s) => s.id === TABS[tab].id).map((s) => (
+              <section key={s.id} className="intake-section">
+                <h2>{s.title}</h2>
+                {s.intro && <p className="intake-intro">{s.intro}</p>}
+                {s.fields.map(renderField)}
+                {(s.uploads || []).map((k) => (
+                  <Uploads key={k} kind={k} base={base} preview={preview} files={files.filter((f) => f.kind === k)} onChange={setFiles} />
+                ))}
+              </section>
+            ))
+          ) : (
+            <section className="intake-section">
+              <h2>7. Authorization</h2>
+              <p className="intake-intro">To be completed by someone who can authorize texting in the district’s name, once the other tabs are done.</p>
+              {AUTH_FIELDS.map(renderField)}
+              <label className={`consent ${showAll && answers.auth_agree !== "yes" ? "intake-bad" : ""}`}>
+                <input type="checkbox" checked={answers.auth_agree === "yes"} onChange={(e) => setValue("auth_agree", e.target.checked ? "yes" : "")} />
+                <span>{AUTHORIZATION_TEXT}</span>
+              </label>
+              <Uploads kind="other" base={base} preview={preview} files={files.filter((f) => f.kind === "other")} onChange={setFiles} />
             </section>
-          ))}
+          )}
 
-          <section className="intake-section">
-            <h2>7. Authorization</h2>
-            <p className="intake-intro">To be completed by someone who can authorize texting in the district’s name.</p>
-            {AUTH_FIELDS.map(renderField)}
-            <label className={`consent ${showAll && answers.auth_agree !== "yes" ? "intake-bad" : ""}`}>
-              <input type="checkbox" checked={answers.auth_agree === "yes"} onChange={(e) => setValue("auth_agree", e.target.checked ? "yes" : "")} />
-              <span>{AUTHORIZATION_TEXT}</span>
-            </label>
-            <Uploads kind="other" base={base} preview={preview} files={files.filter((f) => f.kind === "other")} onChange={setFiles} />
-          </section>
+          <div className="intake-tabbar">
+            <button type="button" className="intake-attach" onClick={saveTab}>
+              Save this tab
+            </button>
+            {tabSaved && <span className="join-hint">{tabSaved}</span>}
+          </div>
 
-          {submitError && <p className="join-error">{submitError}</p>}
-          {preview && previewDone && <p className="join-ok">Everything required is filled in. (Preview only: nothing was sent.)</p>}
-          <button type="button" className="ios-button" onClick={submit} disabled={submitting}>
-            {submitting ? "Submitting…" : "Submit to Relay"}
-          </button>
-          <p className="legal-small">After you submit, the form is locked. Email relay@stellomark.com to make changes.</p>
+          {tab < TABS.length - 1 ? (
+            <div className="intake-nav">
+              {tab > 0 ? (
+                <button type="button" className="intake-back" onClick={() => goTo(tab - 1)}>
+                  ‹ Back
+                </button>
+              ) : (
+                <span />
+              )}
+              <button type="button" className="ios-button intake-next" onClick={() => goTo(tab + 1)}>
+                Next: {TABS[tab + 1].tab} ›
+              </button>
+            </div>
+          ) : (
+            <>
+              {submitError && <p className="join-error">{submitError}</p>}
+              {preview && previewDone && <p className="join-ok">Everything required is filled in. (Preview only: nothing was sent.)</p>}
+              <div className="intake-nav">
+                <button type="button" className="intake-back" onClick={() => goTo(tab - 1)}>
+                  ‹ Back
+                </button>
+                <button type="button" className="ios-button intake-next" onClick={submit} disabled={submitting}>
+                  {submitting ? "Submitting…" : "Submit to Relay"}
+                </button>
+              </div>
+              <p className="legal-small">After you submit, the form is locked. Email relay@stellomark.com to make changes.</p>
+            </>
+          )}
+          {tab < TABS.length - 1 && submitError && <p className="join-error">{submitError}</p>}
         </form>
       </div>
     </LegalPage>
