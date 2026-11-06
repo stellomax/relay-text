@@ -85,16 +85,10 @@ const SECURITY = [
   { t: "Checked code", d: "Every change is type-checked before it deploys, with exact package versions and automatic checks for known vulnerabilities." },
 ];
 
-const PROVIDERS = [
-  { name: "Twilio", role: "Text-message delivery", data: "Parent phone numbers and message text" },
-  { name: "Google Cloud Translation", role: "Translating messages", data: "Message text only (no names or phone numbers attached by us)" },
-  { name: "Supabase", role: "Database and staff sign-in", data: "All Relay data, encrypted at rest" },
-  { name: "Vercel", role: "Hosting the website and app", data: "Data passes through while staff use the app" },
-];
-
 const DOCS = [
   { t: "Data privacy agreement", d: "We'll sign your district's agreement or the national model agreement with your state's terms." },
   { t: "Security questionnaire", d: "Send us your district's vetting questionnaire; we answer quickly." },
+  { t: "Service provider list", d: "The providers we use to run Relay, shared with your district under a signed agreement." },
   { t: "Incident response summary", d: "How we detect, contain and report a security incident." },
   { t: "Message history export", d: "Admins can download a conversation or a school's messages themselves; we can also send one for a records request or district review." },
   { t: "Written deletion confirmation", d: "When a school or district asks, or its contract ends, we delete its data within 30 days and confirm in writing." },
@@ -192,36 +186,6 @@ export default function TrustPage() {
               district provides its own record of consent. Every text includes a way to opt out.
             </li>
           </ul>
-        </section>
-
-        <section className="lp-about-why" aria-labelledby="providers">
-          <h2 id="providers">Who helps us run {BRAND}</h2>
-          <p>
-            We share information only with these providers, only as needed to run {BRAND}. We'll tell contracted districts before
-            adding or changing one.
-          </p>
-          <div className="legal-table-wrap">
-            <table className="legal-table">
-              <thead>
-                <tr>
-                  <th>Provider</th>
-                  <th>What it does</th>
-                  <th>Information involved</th>
-                </tr>
-              </thead>
-              <tbody>
-                {PROVIDERS.map((p) => (
-                  <tr key={p.name}>
-                    <td>
-                      <strong>{p.name}</strong>
-                    </td>
-                    <td>{p.role}</td>
-                    <td>{p.data}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         </section>
 
         <section className="lp-about-why" aria-labelledby="incidents">
