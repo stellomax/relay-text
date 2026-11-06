@@ -3,7 +3,7 @@ import { LANGUAGES } from "@/lib/languages";
 
 // How to bulk upload parents: download the template, fill it in, save as CSV, upload.
 export default function UploadHelp() {
-  const langs = LANGUAGES.filter((l) => l.code !== "en").map((l) => l.name);
+  const langs = LANGUAGES.map((l) => l.name);
   return (
     <div className="settings">
       <header className="settings-bar">
