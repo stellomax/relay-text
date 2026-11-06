@@ -39,6 +39,9 @@ const WHAT: Record<string, string> = {
   "school.delete_all_data": "deleted all data for",
   "demo.load": "loaded demo data into",
   "demo.remove": "removed demo data",
+  "export.conversation": "exported the conversation with",
+  "export.school": "exported the message history of",
+  "retention.cleanup": "deleted messages past their retention period",
 };
 
 function details(e: Entry): string {

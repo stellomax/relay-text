@@ -429,6 +429,14 @@ export default function SchoolsPage() {
                 View Teachers
                 <ChevronRight size={13} className="row-chev" />
               </a>
+              <a
+                className="ios-row action-row"
+                href={`/api/admin/export?school=${form.id}`}
+                download
+                title="Every message from this school's teachers as a spreadsheet (CSV): for a records request, a district review, or a handover when a contract ends."
+              >
+                Export Message History (CSV)
+              </a>
               <button className="ios-row danger" onClick={() => setWipe({ id: form.id!, name: form.name })}>
                 Delete All School Data…
               </button>

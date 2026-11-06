@@ -89,6 +89,14 @@ export default function ContactSheet({
           <a className="ios-row action-row" href={contact.parent_id ? `/admin/parents?edit=${contact.parent_id}` : addLink}>
             {contact.parent_id ? "Edit on Parents List" : "Add to Parents List"}
           </a>
+          <a
+            className="ios-row action-row"
+            href={`/api/admin/export?contact=${contact.id}`}
+            download
+            title="Downloads every message in this conversation as a spreadsheet (CSV), for a records request or review. It's recorded in the Activity Log."
+          >
+            Export Conversation (CSV)
+          </a>
         </div>
       ) : (
         <p className="ios-footnote">
