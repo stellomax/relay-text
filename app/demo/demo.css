@@ -107,7 +107,7 @@
 .dm-compose.live .dm-compose-box { border-color: var(--purple); box-shadow: 0 0 0 3px var(--lilac-2); }
 .dm-compose.live .dm-compose-box::after, .dm-ph-box.live::after { content: ""; display: inline-block; width: 2px; height: 1.05em; background: currentColor; vertical-align: -2px; margin-left: 1px; animation: dm-caret 0.9s steps(1) infinite; }
 .dm-ph-box.live::after { order: 0; }
-.ph { color: #a29aab; }
+.ph { color: #6f6878; }
 .dm-send { background: var(--lilac-2); color: var(--purple); font-weight: 700; font-size: 14px; border-radius: 999px; padding: 9px 18px; transition: transform 0.12s, background 0.12s; }
 .dm-compose.live .dm-send { background: var(--purple); color: #fff; }
 .dm-send.press { transform: scale(0.92); }
@@ -152,17 +152,17 @@
 .dm-ph-head { display: flex; flex-direction: column; align-items: center; position: relative; padding: 4px 0 8px; border-bottom: 0.5px solid #d8d8dc; background: #f9f9f9; }
 .dm-back { position: absolute; left: 12px; top: 10px; color: #007aff; font-size: 34px; line-height: 0.8; font-weight: 300; }
 .dm-ph-name { font-size: 11.5px; margin-top: 4px; color: #1c1c1e; }
-.dm-ph-name i { font-style: normal; color: #8e8e93; }
+.dm-ph-name i { font-style: normal; color: #6e6e73; }
 .dm-ph-msgs { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 12px 10px; display: flex; flex-direction: column; gap: 7px; scrollbar-width: none; }
 .dm-ph-msgs::-webkit-scrollbar { display: none; }
-.dm-ph-meta { text-align: center; font-size: 10.5px; color: #8e8e93; margin: 2px 0 4px; line-height: 1.35; }
+.dm-ph-meta { text-align: center; font-size: 10.5px; color: #6e6e73; margin: 2px 0 4px; line-height: 1.35; }
 .dm-sms { max-width: 80%; padding: 7px 12px; border-radius: 17px; font-size: 14px; line-height: 1.32; }
 .dm-sms.in { align-self: flex-start; background: var(--gray-bubble); border-bottom-left-radius: 5px; }
 .dm-sms.out { align-self: flex-end; background: var(--sms-green); color: #fff; border-bottom-right-radius: 5px; }
 .dm-sms small { display: block; margin-top: 5px; padding-top: 4px; font-size: 11px; font-style: italic; opacity: 0.8; border-top: 1px solid rgba(0, 0, 0, 0.12); }
 .dm-sms.out small { border-top-color: rgba(255, 255, 255, 0.4); }
 .dm-disc { display: block; margin-top: 7px; font-size: 12px; color: #48484a; }
-.dm-delivered { align-self: flex-end; margin: -3px 2px 0 0; font-size: 10.5px; color: #8e8e93; font-weight: 600; }
+.dm-delivered { align-self: flex-end; margin: -3px 2px 0 0; font-size: 10.5px; color: #6e6e73; font-weight: 600; }
 .dm-ph-compose { display: flex; gap: 8px; align-items: flex-end; padding: 6px 10px 6px; }
 .dm-plus { width: 30px; height: 30px; border-radius: 50%; background: #e9e9eb; color: #6b6b70; display: grid; place-items: center; font-size: 20px; flex: none; }
 .dm-ph-box { flex: 1; min-height: 32px; border: 1px solid #c7c7cc; border-radius: 17px; padding: 5px 34px 5px 12px; font-size: 14px; line-height: 1.32; position: relative; }

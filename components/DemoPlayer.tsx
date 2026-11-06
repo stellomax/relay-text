@@ -187,7 +187,8 @@ export default function DemoPlayer() {
   return (
     <div className="dm">
       {/* the two screens */}
-      <div className="dm-stage" onClick={next} role="button" tabIndex={-1} aria-label="Play the next message">
+      {/* Clicking the screens also advances (mouse convenience); keyboard and screen-reader users use the Continue button. */}
+      <div className="dm-stage" onClick={next}>
         {/* the people */}
         <div className="dm-person tp">
           <Avatar who={TEACHER} size={84} />

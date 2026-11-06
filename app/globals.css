@@ -11,7 +11,7 @@
   --grouped-bg: #f2f2f7;
   --label: #000000;
   --label-2: #3c3c43;
-  --label-3: rgba(60, 60, 67, 0.6);
+  --label-3: rgba(60, 60, 67, 0.72); /* 4.5:1 on white (WCAG AA) */
   --label-4: rgba(60, 60, 67, 0.3);
   --separator: rgba(60, 60, 67, 0.29);
   --fill: rgba(118, 118, 128, 0.12);
