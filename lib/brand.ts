@@ -4,6 +4,9 @@ export const BRAND = "Relay";
 export const COMPANY = "StelloMark, LLC"; // company name on Terms, Privacy and the opt-in (Nov 2026: StelloMark everywhere)
 export const COMPANY_DISPLAY = "StelloMark, LLC"; // shown in marketing footers and the About page
 export const SITE = "relaytext.io";
+// Parents consent to texts from their school district (the sender), with Relay as the district's texting service.
+// Used when a school has no district set. Temporary default for the first district (Nov 2026).
+export const DEFAULT_DISTRICT = "Douglas County School District";
 export const CONTACT_EMAIL = "relay@stellomark.com";
 export const LAST_UPDATED = "October 31, 2026";
 
