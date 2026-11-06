@@ -1,0 +1,146 @@
+{
+  "base": "https://relaytext.io",
+  "at": "2026-11-06T19:37:17.740Z",
+  "pages": [
+    {
+      "path": "/",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "path": "/",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "path": "/about",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "path": "/about",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "path": "/why-it-works",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "path": "/why-it-works",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "path": "/trust",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "path": "/trust",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "path": "/contact",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "path": "/contact",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "path": "/teachers",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "path": "/teachers",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "path": "/student-data",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "path": "/student-data",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "path": "/privacy",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "path": "/privacy",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "path": "/terms",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "path": "/terms",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "path": "/join",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "path": "/join",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "path": "/login",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "path": "/login",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "path": "/signup",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "path": "/signup",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "path": "/forgot",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "path": "/forgot",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "path": "/demo",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "path": "/demo",
+      "width": 390,
+      "violations": []
+    }
+  ]
+}
