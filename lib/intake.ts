@@ -185,7 +185,7 @@ export function cleanAnswers(input: unknown): Answers {
   const out: Answers = {};
   if (!input || typeof input !== "object") return out;
   for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
-    if (!FIELD_IDS.has(k) && k !== "auth_agree") continue;
+    if (!FIELD_IDS.has(k) && k !== "auth_agree" && k !== "tabs_done") continue;
     out[k] = String(v ?? "").slice(0, 4000);
   }
   return out;
@@ -228,7 +228,33 @@ export function submitProblems(a: Answers): Record<string, string> {
     if (p) problems[f.id] = p;
   }
   if (a.auth_agree !== "yes") problems.auth_agree = "Please confirm the authorization.";
+  const open = incompleteTabs(a);
+  if (open.length) problems.tabs_done = `Complete these tabs first: ${open.map((t) => t.tab).join(", ")}.`;
   return problems;
+}
+
+// Field problems on one tab (required answers missing, wrong formats).
+export function tabProblems(a: Answers, tabId: string): Record<string, string> {
+  const all: Record<string, string> = {};
+  const rep2Started = ["rep2_first", "rep2_last", "rep2_email", "rep2_phone", "rep2_title"].some((k) => (a[k] || "").trim());
+  const fields = tabId === AUTH_TAB.id ? AUTH_FIELDS : SECTIONS.find((s) => s.id === tabId)?.fields || [];
+  for (const f of fields) {
+    const p = fieldProblem(f.id.startsWith("rep2_") && rep2Started ? { ...f, required: true } : f, a[f.id] || "");
+    if (p) all[f.id] = p;
+  }
+  return all;
+}
+
+// Tabs 1–6 are complete once saved with "Save this tab" and nothing on them is missing or invalid.
+// The saved tabs are kept in the answers as "tabs_done" (comma-separated tab ids).
+export function savedTabs(a: Answers): Set<string> {
+  return new Set((a.tabs_done || "").split(",").filter(Boolean));
+}
+export function tabComplete(a: Answers, tabId: string): boolean {
+  return savedTabs(a).has(tabId) && !Object.keys(tabProblems(a, tabId)).length;
+}
+export function incompleteTabs(a: Answers) {
+  return SECTIONS.filter((s) => !tabComplete(a, s.id));
 }
 
 export function fieldLabel(id: string): string {

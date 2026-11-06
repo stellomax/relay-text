@@ -10,7 +10,11 @@ import {
   MAX_FILE_MB,
   progress,
   SECTIONS,
+  incompleteTabs,
+  savedTabs,
   submitProblems,
+  tabComplete,
+  tabProblems,
   TABS,
   tabOf,
   UPLOAD_LABELS,
@@ -51,6 +55,7 @@ export default function IntakeForm({ token }: { token?: string }) {
   const [previewDone, setPreviewDone] = useState(false);
   const [tab, setTab] = useState(0);
   const [tabSaved, setTabSaved] = useState("");
+  const [checked, setChecked] = useState<Record<string, boolean>>({}); // tabs whose gaps are being shown
 
   // Open the tab named in the link (e.g. …#it), so a district can send each person straight to their part.
   useEffect(() => {
@@ -71,9 +76,24 @@ export default function IntakeForm({ token }: { token?: string }) {
     document.querySelector(".intake-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  // Save this tab. Tabs 1–6 are marked complete if nothing required is missing; otherwise the gaps are shown.
   async function saveTab() {
+    const id = TABS[tab].id;
+    const problems = tabProblems(answers, id);
+    const n = Object.keys(problems).length;
+    if (id !== "authorize") {
+      const saved = savedTabs(answers);
+      saved.add(id);
+      if (!n && answers.tabs_done !== [...saved].join(",")) setValue("tabs_done", [...saved].join(","));
+    }
+    setChecked((c) => ({ ...c, [id]: true }));
     const ok = await flush();
-    setTabSaved(ok ? (preview ? "Preview: answers stay only while this page is open." : `Saved ${time(new Date().toISOString())}`) : "Not saved. Check your connection and try again.");
+    const when = preview ? "Saved (preview: kept only while this page is open)." : `Saved ${time(new Date().toISOString())}.`;
+    if (!ok) return setTabSaved("Not saved. Check your connection and try again.");
+    if (n) {
+      setTabSaved(`${when} ${n} answer${n === 1 ? "" : "s"} on this tab still needed (marked in red) before it counts as complete.`);
+      setTimeout(() => document.querySelector(".intake-bad")?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
+    } else setTabSaved(id === "authorize" ? when : `${when} This tab is complete.`);
   }
   const dirty = useRef<Answers>({});
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -205,22 +225,22 @@ export default function IntakeForm({ token }: { token?: string }) {
   const problem = (f: Field) => {
     const p = fieldProblem(f, answers[f.id] || "");
     if (!p) return "";
-    if (p === "Required") return showAll ? "Required" : "";
-    return touched[f.id] || showAll ? p : "";
+    const shown = showAll || checked[tabOf(f.id)];
+    if (p === "Required") return shown ? "Required" : "";
+    return touched[f.id] || shown ? p : "";
   };
 
   // A tab is "done" when its required answers are in and nothing is invalid; "bad" after a failed submit.
-  const allProblems = submitProblems(answers);
+    const remaining = incompleteTabs(answers);
   const tabState = (id: string): "done" | "bad" | "" => {
-    const keys = Object.keys(allProblems).filter((k) => tabOf(k) === id);
-    if (keys.length) return showAll ? "bad" : "";
-    const fields = id === "authorize" ? ["auth_name"] : SECTIONS.find((s) => s.id === id)?.fields.map((f) => f.id) || [];
-    return fields.some((k) => (answers[k] || "").trim()) ? "done" : "";
+    if (id === "authorize") return "";
+    if (tabComplete(answers, id)) return "done";
+    return (showAll || checked[id]) && Object.keys(tabProblems(answers, id)).length ? "bad" : "";
   };
 
   const renderField = (f: Field) => {
     const v = answers[f.id] || "";
-    const p = f.id.startsWith("rep2_") && !showAll ? "" : problem(f);
+    const p = f.id.startsWith("rep2_") && !showAll && !checked.contacts ? "" : problem(f);
     const common = {
       id: f.id,
       value: v,
@@ -274,7 +294,7 @@ export default function IntakeForm({ token }: { token?: string }) {
   };
 
   return (
-    <LegalPage title="District onboarding" updated={false}>
+    <LegalPage title="District onboarding" updated={false} wide>
       <div className="intake">
         {preview ? (
           <p className="intake-preview">
@@ -292,7 +312,8 @@ export default function IntakeForm({ token }: { token?: string }) {
           about 3 weeks or more after you submit, and no texts can be sent until then.
         </p>
         <ul>
-          <li>The form has 7 tabs. Fill them in any order, and save as you go: answers also save automatically.</li>
+          <li>The form has 7 tabs. Fill them in any order and click “Save this tab” on each. A green check shows the tab is complete.</li>
+          <li>The authorization on the last tab can be submitted once tabs 1–6 are complete.</li>
           <li>Several people can fill in their parts using this same link. To send someone straight to one tab, open that tab and copy the address.</li>
           <li>Questions marked * are required. If you don’t know an answer, write “Not sure” and Relay will follow up.</li>
           <li>Keep this link private: anyone with it can see and change the answers. Questions? relay@stellomark.com</li>
@@ -324,10 +345,12 @@ export default function IntakeForm({ token }: { token?: string }) {
                 type="button"
                 role="tab"
                 aria-selected={i === tab}
-                className={`intake-tab${i === tab ? " on" : ""}`}
+                className={`intake-tab${i === tab ? " on" : ""}${st === "done" ? " done" : ""}`}
                 onClick={() => goTo(i)}
               >
-                <span className="intake-tab-num">{st === "done" ? "✓" : i + 1}</span>
+                <span className={`intake-tab-num${st === "done" ? " ok" : ""}`} aria-label={st === "done" ? "complete" : undefined}>
+                  {st === "done" ? "✓" : i + 1}
+                </span>
                 {t.tab}
                 {st === "bad" && <span className="intake-tab-dot" aria-label="needs attention" />}
               </button>
@@ -360,12 +383,7 @@ export default function IntakeForm({ token }: { token?: string }) {
             </section>
           )}
 
-          <div className="intake-tabbar">
-            <button type="button" className="intake-attach" onClick={saveTab}>
-              Save this tab
-            </button>
-            {tabSaved && <span className="join-hint">{tabSaved}</span>}
-          </div>
+          {tabSaved && <p className={`intake-saved${/still needed|Not saved/.test(tabSaved) ? " bad" : ""}`}>{tabSaved}</p>}
 
           {tab < TABS.length - 1 ? (
             <div className="intake-nav">
@@ -376,21 +394,44 @@ export default function IntakeForm({ token }: { token?: string }) {
               ) : (
                 <span />
               )}
-              <button type="button" className="ios-button intake-next" onClick={() => goTo(tab + 1)}>
-                Next: {TABS[tab + 1].tab} ›
-              </button>
+              <div className="intake-nav-right">
+                <button type="button" className="intake-secondary" onClick={() => goTo(tab + 1)}>
+                  Next: {TABS[tab + 1].tab} ›
+                </button>
+                <button type="button" className="ios-button intake-next" onClick={saveTab}>
+                  Save this tab
+                </button>
+              </div>
             </div>
           ) : (
             <>
+              {remaining.length > 0 && (
+                <div className="intake-remaining">
+                  <strong>Complete these tabs before submitting:</strong>
+                  <div>
+                    {remaining.map((t) => (
+                      <button key={t.id} type="button" className="intake-secondary" onClick={() => goTo(TABS.findIndex((x) => x.id === t.id))}>
+                        {t.tab} ›
+                      </button>
+                    ))}
+                  </div>
+                  <span className="join-hint">A tab is complete once its required answers are in and you click “Save this tab.”</span>
+                </div>
+              )}
               {submitError && <p className="join-error">{submitError}</p>}
               {preview && previewDone && <p className="join-ok">Everything required is filled in. (Preview only: nothing was sent.)</p>}
               <div className="intake-nav">
                 <button type="button" className="intake-back" onClick={() => goTo(tab - 1)}>
                   ‹ Back
                 </button>
-                <button type="button" className="ios-button intake-next" onClick={submit} disabled={submitting}>
-                  {submitting ? "Submitting…" : "Submit to Relay"}
-                </button>
+                <div className="intake-nav-right">
+                  <button type="button" className="intake-secondary" onClick={saveTab}>
+                    Save this tab
+                  </button>
+                  <button type="button" className="ios-button intake-next" onClick={submit} disabled={submitting || remaining.length > 0}>
+                    {submitting ? "Submitting…" : "Submit to Relay"}
+                  </button>
+                </div>
               </div>
               <p className="legal-small">After you submit, the form is locked. Email relay@stellomark.com to make changes.</p>
             </>
