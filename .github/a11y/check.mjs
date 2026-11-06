@@ -10,7 +10,8 @@ const browser = await chromium.launch();
 const report = { base: BASE, at: new Date().toISOString(), pages: [] };
 for (const path of PAGES) {
   for (const width of [1280, 390]) {
-    const page = await browser.newPage({ viewport: { width, height: 900 } });
+    const context = await browser.newContext({ viewport: { width, height: 900 } });
+    const page = await context.newPage();
     try {
       await page.goto(BASE + path, { waitUntil: "networkidle", timeout: 45000 });
       const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
@@ -28,7 +29,7 @@ for (const path of PAGES) {
     } catch (e) {
       report.pages.push({ path, width, error: String(e).slice(0, 300) });
     }
-    await page.close();
+    await context.close();
   }
 }
 await browser.close();

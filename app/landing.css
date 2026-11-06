@@ -509,7 +509,7 @@ i.rep { background: #1f9e89; }
 }
 
 /* inner pages (For Teachers, About Us): centered page header, numbered steps, two-column checklist */
-.lp-page-hero { max-width: 900px; margin: 0 auto; text-align: center; padding: clamp(40px, 6vw, 72px) clamp(16px, 4vw, 48px) var(--sec-half); }
+.lp-page-hero { max-width: 1120px; margin: 0 auto; text-align: center; padding: clamp(40px, 6vw, 72px) clamp(16px, 4vw, 48px) var(--sec-half); }
 .lp-page-hero h1 { max-width: none; font-size: clamp(32px, 3.8vw, 48px); line-height: 1.1; letter-spacing: -0.03em; }
 .lp-page-hero .lp-lede { margin: 20px auto 0; }
 .lp-eyebrow { font-size: 15px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--purple); margin: 0 0 12px; }
@@ -526,7 +526,7 @@ i.rep { background: #1f9e89; }
   .lp-steps { grid-template-columns: 1fr; }
   .lp-can-list { grid-template-columns: 1fr; }
 }
-.lp-about-why { max-width: 780px; margin: 0 auto; padding: var(--sec-half) clamp(16px, 4vw, 48px); }
+.lp-about-why { max-width: 1120px; margin: 0 auto; padding: var(--sec-half) clamp(16px, 4vw, 48px); }
 .lp-about-why h2 { text-align: center; }
 .lp-about-why p { margin-top: 18px; color: var(--ink-2); }
 .lp-about-why h2 + p { margin-top: 28px; }
@@ -562,7 +562,7 @@ i.rep { background: #1f9e89; }
 /* About Us: wider columns, closer to the width of the cards */
 .lp-about-main .lp-page-hero { max-width: 1120px; }
 .lp-about-main .lp-page-hero .lp-lede { max-width: 46em; }
-.lp-about-main .lp-about-why { max-width: 1040px; }
+.lp-about-main .lp-about-why { max-width: 1120px; }
 
 /* Admin view in the switching window: a real screenshot of the dashboard */
 .lp-dash-shot { display: block; width: 100%; height: auto; object-fit: cover; object-position: top center; background: #f2f2f7; }
@@ -611,7 +611,7 @@ i.rep { background: #1f9e89; }
 }
 
 /* About: Who We Are team grid */
-.lp-team-wrap { max-width: 1040px; margin: 0 auto; padding: var(--sec-half) clamp(16px, 4vw, 48px); text-align: center; }
+.lp-team-wrap { max-width: 1120px; margin: 0 auto; padding: var(--sec-half) clamp(16px, 4vw, 48px); text-align: center; }
 .lp-team { list-style: none; padding: 0; margin: 32px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 44px 24px; }
 .lp-team li { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .lp-team .team-avatar { width: 148px; height: 148px; border-radius: 50%; object-fit: cover; display: block; margin-bottom: 12px; box-shadow: 0 6px 18px rgba(36, 17, 51, 0.12); }

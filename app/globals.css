@@ -313,7 +313,7 @@ a { color: var(--tint); text-decoration: none; }
 .legal { min-height: 100vh; background: var(--bg); display: flex; flex-direction: column; }
 .legal-head { padding: calc(18px + var(--safe-t)) 20px 14px; border-bottom: 0.5px solid var(--separator); }
 .legal-head img { height: 32px; width: auto; display: block; margin: 0 auto; }
-.legal-body { width: 100%; max-width: 680px; margin: 0 auto; padding: 28px 20px 40px; flex: 1; font-size: 16px; line-height: 1.55; letter-spacing: -0.2px; }
+.legal-body { width: 100%; max-width: 1120px; margin: 0 auto; padding: 28px 20px 40px; flex: 1; font-size: 16px; line-height: 1.55; letter-spacing: -0.2px; }
 .legal-body h1 { font-size: 30px; line-height: 1.15; letter-spacing: -0.6px; margin: 0 0 6px; }
 .legal-body h2 { font-size: 19px; margin: 28px 0 8px; letter-spacing: -0.3px; }
 .legal-body p, .legal-body li { color: var(--label-2); }
@@ -333,7 +333,7 @@ a { color: var(--tint); text-decoration: none; }
   .legal-table td { display: block; width: auto !important; border: 0; padding: 2px 0; }
 }
 .legal-foot { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; padding: 18px 20px calc(18px + var(--safe-b)); border-top: 0.5px solid var(--separator); font-size: 14px; }
-.join-form { display: flex; flex-direction: column; gap: 16px; margin-top: 22px; }
+.join-form { display: flex; flex-direction: column; gap: 16px; margin-top: 22px; max-width: 640px; } /* page is wide; form fields stay a comfortable width */
 .join-form label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; color: var(--label); }
 .join-form input:not([type="checkbox"]), .join-form select {
   border: 1px solid #c6c6c8; border-radius: 10px; padding: 11px 12px; font-size: 17px; background: var(--bg); outline: none; width: 100%;
@@ -1102,7 +1102,7 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .intake-answers dd { margin: 2px 0 0; white-space: pre-wrap; }
 .intake-answers h3 { margin: 22px 0 4px; font-size: 17px; }
 .intake-preview { background: #fff6e0; color: #7a5200 !important; padding: 12px 14px; border-radius: 12px; }
-.legal-body.wide { max-width: 1040px; }
+.legal-body.wide { max-width: 1120px; }
 .intake-tabs { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin: 14px 0 4px; padding: 4px 0 8px; scroll-margin-top: 56px; }
 .intake-tab { position: relative; display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; padding: 6px 8px; border-radius: 6px; border: 1px solid #c6c6c8; background: var(--bg); color: var(--label); font-size: 14px; font-weight: 600; line-height: 1.2; text-align: left; cursor: pointer; }
 .intake-tab.on { background: var(--brand); border-color: var(--brand); color: #fff; }

@@ -2,7 +2,7 @@
 .tc .tc-updated { margin-top: 14px; font-size: 15px; color: var(--ink-2); }
 .tc-glance {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
-  max-width: 1040px; margin: 0 auto var(--about-gap, 64px); padding: 0 clamp(16px, 4vw, 48px);
+  max-width: 1120px; margin: 0 auto var(--about-gap, 64px); padding: 0 clamp(16px, 4vw, 48px);
 }
 .tc-card { background: var(--lilac, #f4ecfa); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
 .tc-card b { font-family: var(--lp-display), var(--lp-body), sans-serif; font-size: 20px; color: var(--purple); }
