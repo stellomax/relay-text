@@ -1088,6 +1088,7 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .schools-table tr.district-row .row-link { margin-left: 14px; }
 .schools-table tbody tr:not(.district-row) td:first-child { padding-left: 28px; }
 .pill-btn.outline-pill { background: #fff; color: var(--brand); box-shadow: inset 0 0 0 1.5px var(--brand); }
+.pill-btn.outline-pill svg { color: currentColor; }
 
 /* district onboarding intake form (/intake/<link>) */
 .intake .join-form { gap: 14px; }
