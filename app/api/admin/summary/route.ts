@@ -2,6 +2,8 @@ import { allRows, db, Staff } from "@/lib/db";
 import { json, withAdmin } from "@/lib/http";
 import { isSuperAdmin, NO_SCHOOL_ID, schoolLimit } from "@/lib/staff";
 import { TOPICS, toneOf, topicOf } from "@/lib/topics";
+import { segmentsOf } from "@/lib/segments";
+import { env } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -10,31 +12,43 @@ const DAY = 86400000;
 const WEEKS = 9;
 const DAYS = 60; // daily chart
 
-// Everything the admin dashboard shows, for one school (?school=<id>) or every school (?school=all).
-// Admins start on their own school; admins without a school start on all schools.
+// Everything the admin dashboard shows, for one school (?school=<id>) or every school in view (?school=all).
+// Admins oversee their school district: "all" means every school in their district, and they start there.
+// Super admins start on their own school (all schools if they have none) and can pick any school.
 export const GET = withAdmin(async (req, me) => {
   const supa = db();
   const asked = new URL(req.url).searchParams.get("school");
   const { data: schoolRows } = await supa.from("schools").select("id, name, district").order("name");
   const lim = schoolLimit(me);
-  // Admins (not super admins) only ever see their own school.
-  const schools = ((schoolRows || []) as { id: string; name: string; district?: string | null }[]).filter((s) => lim === undefined || s.id === lim);
-  const schoolId =
-    lim !== undefined ? lim || NO_SCHOOL_ID : asked === "all" ? null : asked && schools.some((s) => s.id === asked) ? asked : me.school_id || null;
+  // Admins (not super admins) only ever see the schools in their district.
+  const schools = ((schoolRows || []) as { id: string; name: string; district?: string | null }[]).filter((s) => lim === undefined || lim.includes(s.id));
+  const pickable = (id: string | null) => !!id && schools.some((s) => s.id === id);
+  // The schools shown: a list of ids, or null for every school (super admins only).
+  const scopeIds: string[] | null =
+    lim !== undefined
+      ? pickable(asked) ? [asked!] : lim.length ? lim : [NO_SCHOOL_ID]
+      : asked === "all" ? null : pickable(asked) ? [asked!] : me.school_id ? [me.school_id] : null;
+  const schoolId = scopeIds && scopeIds.length === 1 ? scopeIds[0] : null; // one school picked
 
   // Teachers in scope
-  let staffQ = supa.from("staff").select("id, name, school, school_id, role, status, last_seen_at, phone_placeholder");
-  if (schoolId) staffQ = staffQ.eq("school_id", schoolId);
+  let staffQ = supa.from("staff").select("id, name, school, school_id, role, status, last_seen_at, phone_number, phone_placeholder");
+  if (scopeIds) staffQ = staffQ.in("school_id", scopeIds);
   const { data: staffRows, error: staffErr } = await staffQ;
   if (staffErr) throw new Error(staffErr.message);
-  const staff = (staffRows || []) as Pick<Staff, "id" | "name" | "school" | "school_id" | "role" | "status" | "last_seen_at" | "phone_placeholder">[];
+  const staff = (staffRows || []) as Pick<Staff, "id" | "name" | "school" | "school_id" | "role" | "status" | "last_seen_at" | "phone_number" | "phone_placeholder">[];
   const staffIds = staff.map((s) => s.id);
+  const staffSet = new Set(staffIds);
+  // Limit a query to these teachers. With many teachers (a whole district) the id list would make the
+  // request too long, so those rows are fetched unfiltered and trimmed by inScope() afterwards.
+  const BIG = 150;
+  const byStaff = <Q extends { in: Function }>(q: Q): Q => (scopeIds && staffIds.length <= BIG ? q.in("staff_id", staffIds) : q);
+  const inScope = (staffId: string | null) => !scopeIds || (!!staffId && staffSet.has(staffId));
 
   // Parents in scope
   let parentErr = null as { message: string } | null;
   const parentRows = await allRows<{ id: string; language: string; opted_out: boolean; consent_at: string | null }>((a, b) => {
     let q = supa.from("parents").select("id, language, opted_out, consent_at").order("id").range(a, b);
-    if (schoolId) q = q.eq("school_id", schoolId);
+    if (scopeIds) q = q.in("school_id", scopeIds);
     return q;
   }).catch((e) => {
     parentErr = { message: String(e?.message || e) };
@@ -46,7 +60,7 @@ export const GET = withAdmin(async (req, me) => {
   const since = new Date(Date.now() - WEEKS * 7 * DAY);
   since.setHours(0, 0, 0, 0);
   let msgs: { staff_id: string | null; direction: string; created_at: string; contact_id: string }[] = [];
-  if (!schoolId || staffIds.length) {
+  if (!scopeIds || staffIds.length) {
     const data = await allRows<typeof msgs[number] & { sent_by: string | null }>((a, b) => {
       let q = supa
         .from("messages")
@@ -54,11 +68,11 @@ export const GET = withAdmin(async (req, me) => {
         .gte("created_at", since.toISOString())
         .order("id")
         .range(a, b);
-      if (schoolId) q = q.in("staff_id", staffIds);
+      q = byStaff(q);
       return q;
     });
     // The automatic sign-up confirmation isn't a message a teacher sent.
-    msgs = ((data || []) as (typeof msgs[number] & { sent_by: string | null })[]).filter((m) => m.sent_by !== "opt-in confirmation");
+    msgs = ((data || []) as (typeof msgs[number] & { sent_by: string | null })[]).filter((m) => m.sent_by !== "opt-in confirmation" && inScope(m.staff_id));
   }
 
   const unread = await supa
@@ -133,10 +147,11 @@ export const GET = withAdmin(async (req, me) => {
   if (staffIds.length) {
     const convos = await allRows<{ id: string; staff_id: string | null; parent_id: string | null }>((a, b) => {
       let q = supa.from("contacts").select("id, staff_id, parent_id").not("staff_id", "is", null).order("id").range(a, b);
-      if (schoolId) q = q.in("staff_id", staffIds);
+      q = byStaff(q);
       return q;
     });
     for (const c of convos) {
+      if (!inScope(c.staff_id)) continue;
       if (c.staff_id) convoCount.set(c.staff_id, (convoCount.get(c.staff_id) || 0) + 1);
       if (c.parent_id) parentOf.set(c.id, c.parent_id);
     }
@@ -174,19 +189,19 @@ export const GET = withAdmin(async (req, me) => {
   const topicCount = new Map<string, number>();
   let tagged = 0;
   const tone = { positive: 0, neutral: 0, concern: 0 };
-  if (!schoolId || staffIds.length) {
-    const rows = await allRows<{ contact_id: string; direction: string; body_en: string | null; sent_by: string | null }>((a, b) => {
+  if (!scopeIds || staffIds.length) {
+    const rows = await allRows<{ staff_id: string | null; contact_id: string; direction: string; body_en: string | null; sent_by: string | null }>((a, b) => {
       let q = supa
         .from("messages")
-        .select("id, contact_id, direction, body_en, sent_by")
+        .select("id, staff_id, contact_id, direction, body_en, sent_by")
         .gte("created_at", new Date(d30).toISOString())
         .order("id")
         .range(a, b);
-      if (schoolId) q = q.in("staff_id", staffIds);
+      q = byStaff(q);
       return q;
     });
     for (const m of rows) {
-      if (!m.body_en || m.sent_by === "opt-in confirmation") continue;
+      if (!m.body_en || m.sent_by === "opt-in confirmation" || !inScope(m.staff_id)) continue;
       const k = topicOf(m.body_en);
       if (k) {
         tagged++;
@@ -200,6 +215,46 @@ export const GET = withAdmin(async (req, me) => {
     list: TOPICS.map((t) => ({ key: t.key, label: t.label, count: topicCount.get(t.key) || 0 })).sort((a, b) => b.count - a.count),
     tone,
   };
+
+  // Texting status: real Twilio numbers in use, and segments sent this month and year (Mountain Time).
+  // Counts only texts that really went out through Twilio (not demo or simulated ones). Each segment is billed.
+  const startOf = (kind: "day" | "month" | "year") => {
+    const local = new Date(Date.now() + TZ);
+    const y = local.getUTCFullYear();
+    const m = kind === "year" ? 0 : local.getUTCMonth();
+    const d = kind === "day" ? local.getUTCDate() : 1;
+    return Date.UTC(y, m, d) - TZ;
+  };
+  const yearStart = startOf("year");
+  const monthStart = startOf("month");
+  const dayStart = startOf("day");
+  const seg = { today: 0, mtd: 0, ytd: 0, textsYtd: 0 };
+  if (!scopeIds || staffIds.length) {
+    const sentRows = await allRows<{ staff_id: string | null; created_at: string; body_en: string | null; body_translated: string | null }>((a, b) => {
+      let q = supa
+        .from("messages")
+        .select("id, staff_id, created_at, body_en, body_translated")
+        .eq("direction", "outbound")
+        .not("twilio_sid", "is", null)
+        .gte("created_at", new Date(yearStart).toISOString())
+        .order("id")
+        .range(a, b);
+      q = byStaff(q);
+      return q;
+    });
+    for (const m of sentRows) {
+      if (!inScope(m.staff_id)) continue;
+      const n = segmentsOf(m.body_translated || m.body_en);
+      const t = new Date(m.created_at).getTime();
+      seg.ytd += n;
+      seg.textsYtd++;
+      if (t >= monthStart) seg.mtd += n;
+      if (t >= dayStart) seg.today += n;
+    }
+  }
+  const realNumbers = staff.filter((s) => s.status !== "pending" && s.phone_number && !s.phone_placeholder).length;
+  const mainNumber = !scopeIds && !!env.twilioFrom; // the shared main number counts when every school is shown
+  const numbers = { teachers: realNumbers, main: mainNumber ? 1 : 0, inUse: realNumbers + (mainNumber ? 1 : 0), placeholders: staff.filter((s) => s.status === "active" && s.phone_placeholder).length };
 
   const active = staff.filter((s) => s.status === "active");
   const teachers = active
@@ -221,6 +276,8 @@ export const GET = withAdmin(async (req, me) => {
     school: schoolId ? schools.find((s) => s.id === schoolId) || null : null,
     schoolId: schoolId || "all",
     schools,
+    // The district an admin oversees (shown at the top right); null for super admins.
+    district: lim !== undefined ? { id: me.district_id || null, name: me.district_name || null } : null,
     unread: unread.count ?? 0,
     parentsReady: !parentErr,
     parents: {
@@ -238,6 +295,7 @@ export const GET = withAdmin(async (req, me) => {
       list: teachers,
     },
     messages: { sent30, replies30, weeks, days },
+    texting: { numbers, segments: seg },
     rates: { current: counts(cur), previous: prev.any ? counts(prev) : null },
     topics,
   });

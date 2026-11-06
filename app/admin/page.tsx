@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { type Me } from "@/components/MainMenu";
-import AdminHeader, { SchoolPicker, savedSchool, saveSchool } from "@/components/AdminHeader";
+import AdminHeader, { districtOf, SchoolPicker, savedSchool, saveSchool } from "@/components/AdminHeader";
 import { Book, ChevronRight, Compose, PersonAdd } from "@/components/icons";
 import { api } from "@/lib/client";
 import { languageName } from "@/lib/languages";
@@ -15,7 +15,12 @@ type Summary = {
   isSuper: boolean;
   school: { id: string; name: string } | null;
   schoolId: string;
-  schools: { id: string; name: string }[];
+  schools: { id: string; name: string; district?: string | null }[];
+  district: { id: string | null; name: string | null } | null;
+  texting?: {
+    numbers: { teachers: number; main: number; inUse: number; placeholders: number };
+    segments: { today: number; mtd: number; ytd: number; textsYtd: number };
+  };
   unread: number;
   parentsReady: boolean;
   parents: { total: number; canText: number; needsConsent: number; optedOut: number; reached30: number };
@@ -73,11 +78,12 @@ export default function AdminDashboard() {
         <div className="dash-head title-row">
           <div className="title-main">
             <h1 className="home-title">{first ? `Hi, ${first}` : "Welcome"}</h1>
-            <p className="home-sub">{s ? s.school?.name || "All schools" : " "}</p>
+            <p className="home-sub">{s ? s.school?.name || (s.district?.name || districtOf(s.schools) ? "All schools in the district" : "All schools") : " "}</p>
           </div>
           {s && (
             <SchoolPicker
               schools={s.schools}
+              district={s.district?.name}
               school={s.schoolId}
               onSchool={(id) => {
                 saveSchool(id);
@@ -182,6 +188,15 @@ export default function AdminDashboard() {
                 </div>
                 <TeacherList s={s} />
               </section>
+
+              {s.texting && (
+                <section className="panel wide">
+                  <div className="panel-head">
+                    <h2>Texting Status</h2>
+                  </div>
+                  <TextingStatus t={s.texting} />
+                </section>
+              )}
             </div>
           </>
         )}
@@ -576,6 +591,46 @@ function TeacherList({ s }: { s: Summary }) {
           {plural(s.teachers.pending, "teacher is", "teachers are")} waiting for approval →
         </a>
       )}
+    </>
+  );
+}
+
+// Phone numbers in use and text segments sent (each segment is billed; translated texts in
+// languages like Arabic or Chinese use more segments per text).
+function TextingStatus({ t }: { t: NonNullable<Summary["texting"]> }) {
+  const { numbers: n, segments: g } = t;
+  const now = new Date();
+  const month = now.toLocaleString("en-US", { month: "long" });
+  return (
+    <>
+      <div className="tstats">
+        <div className="tstat">
+          <span className="kpi-label">Numbers in use</span>
+          <span className="kpi-value">{fmt(n.inUse)}</span>
+          <span className="kpi-sub">
+            {n.main ? `${fmt(n.teachers)} teacher ${n.teachers === 1 ? "number" : "numbers"} + main number` : `${n.teachers === 1 ? "teacher number" : "teacher numbers"}`}
+            {n.placeholders > 0 && ` · ${fmt(n.placeholders)} still on the main number`}
+          </span>
+        </div>
+        <div className="tstat">
+          <span className="kpi-label">Segments sent, month to date</span>
+          <span className="kpi-value">{fmt(g.mtd)}</span>
+          <span className="kpi-sub">
+            {month} · {fmt(g.today)} today
+          </span>
+        </div>
+        <div className="tstat">
+          <span className="kpi-label">Segments sent, year to date</span>
+          <span className="kpi-value">{fmt(g.ytd)}</span>
+          <span className="kpi-sub">
+            {now.getFullYear()} · from {fmt(g.textsYtd)} {g.textsYtd === 1 ? "text" : "texts"}
+          </span>
+        </div>
+      </div>
+      <p className="panel-foot">
+        Real texts sent through Twilio only (demo and test texts aren&apos;t counted). A text is one segment up to 160 characters, or 70 in
+        languages that don&apos;t use the Latin alphabet; longer texts use more.
+      </p>
     </>
   );
 }

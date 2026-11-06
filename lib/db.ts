@@ -50,6 +50,10 @@ export type Staff = {
   mfa_secret?: string | null;
   mfa_enabled?: boolean;
   session_version?: number;
+  // Set on the signed-in admin by withAuth (not database columns): the district they oversee and its schools.
+  district_id?: string | null;
+  district_name?: string | null;
+  scope_school_ids?: string[];
 };
 
 export type Message = {

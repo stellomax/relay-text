@@ -28,7 +28,7 @@ export const GET = withAdmin(async (req, me) => {
     supa.from("schools").select("id, name, district, area_code, active").order("name"),
   ]);
   if (error) throw new Error(error.message);
-  // Admins only see and manage their own school; super admins see everyone.
+  // Admins only see and manage the schools in their district; super admins see everyone.
   const lim = schoolLimit(me);
   const mine = <T extends { school_id?: string | null }>(rows: T[] | null) => (rows || []).filter((r) => inMySchool(me, r.school_id));
   const families = new Map<string, number>();
@@ -41,7 +41,7 @@ export const GET = withAdmin(async (req, me) => {
     autoBuy: autoBuyEnabled(),
     unassignedFamilies: unassigned,
     signupUrl: `${base}/signup`,
-    schools: lim === undefined ? schools || [] : (schools || []).filter((x) => x.id === lim),
+    schools: lim === undefined ? schools || [] : (schools || []).filter((x) => lim.includes(x.id)),
     viewerIsSuper: isSuperAdmin(me.email),
     invites: mine(invites),
     staff: mine(staff as Staff[]).map(({ mfa_secret: _secret, ...s }) => ({
@@ -62,13 +62,13 @@ export const POST = withAdmin(withAudit(addStaff, (b, me) => ({
   action: b.mode === "direct" ? "staff.add" : "staff.invite",
   targetType: "staff",
   targetLabel: [b.name, b.email].filter(Boolean).join(" ") || null,
-  schoolId: schoolLimit(me) !== undefined ? me.school_id || null : b.school_id || null,
+  schoolId: schoolLimit(me) !== undefined && !inMySchool(me, b.school_id) ? me.school_id || null : b.school_id || null,
 })));
 
 async function addStaff(req: Request, me: Staff): Promise<Response> {
   const b = await req.json().catch(() => ({}));
-  // Admins add people to their own school only.
-  if (schoolLimit(me) !== undefined) b.school_id = schoolLimit(me);
+  // Admins add people to a school in their district only (their own school if none was picked).
+  if (schoolLimit(me) !== undefined && (!b.school_id || !inMySchool(me, String(b.school_id)))) b.school_id = me.school_id || null;
   if (b.mode === "direct") return addDirectly(req, b);
   const name = String(b.name || "").trim().slice(0, 100);
   const sch = await schoolById(b.school_id ? String(b.school_id) : null);
@@ -132,7 +132,8 @@ async function patchStaff(req: Request, me: Staff): Promise<Response> {
   const b = await req.json().catch(() => ({}));
   const s = b.id ? await staffById(String(b.id)) : null;
   if (!s || !inMySchool(me, s.school_id)) return json({ error: "Person not found." }, 404);
-  if (schoolLimit(me) !== undefined) delete b.school_id; // only super admins move people between schools
+  // Admins can move people between the schools in their district, not outside it.
+  if (b.school_id !== undefined && !inMySchool(me, b.school_id ? String(b.school_id) : null)) delete b.school_id;
   const supa = db();
   const base = baseUrlFromRequest(req);
 

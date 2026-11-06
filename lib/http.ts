@@ -1,6 +1,6 @@
 import { getSession, SESSION_COOKIE } from "./session";
 import type { Staff } from "./db";
-import { isSuperAdmin, staffByEmail } from "./staff";
+import { isSuperAdmin, loadDistrictScope, staffByEmail } from "./staff";
 
 export function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -31,6 +31,7 @@ export function withAuth(handler: (req: Request, me: Staff) => Promise<Response>
       }
       if (opts.admin && me.role !== "admin") return json({ error: "Admins only." }, 403);
       if (opts.superAdmin && (me.role !== "admin" || !isSuperAdmin(me.email))) return json({ error: "Super admins only." }, 403);
+      await loadDistrictScope(me);
       return await handler(req, me);
     } catch (e) {
       console.error(e);
