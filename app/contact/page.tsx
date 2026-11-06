@@ -29,7 +29,7 @@ export default function ContactPage() {
             <li>A 20-minute demo for you and your team</li>
             <li>Pilot pricing for one school or a whole district</li>
             <li>Help loading your parent list and inviting teachers</li>
-            <li>Up and running in days, with no IT project</li>
+            <li>Setup is seamless and in compliance with state and federal regulations</li>
           </ul>
           <p className="ct-alt">
             Prefer email? Write to <a href="mailto:relay@stellomark.com">relay@stellomark.com</a>.
