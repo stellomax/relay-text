@@ -1101,3 +1101,4 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .intake-answers dt { font-size: 13px; color: var(--label-3); margin-top: 10px; }
 .intake-answers dd { margin: 2px 0 0; white-space: pre-wrap; }
 .intake-answers h3 { margin: 22px 0 4px; font-size: 17px; }
+.intake-preview { background: #fff6e0; color: #7a5200 !important; padding: 12px 14px; border-radius: 12px; }
