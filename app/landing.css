@@ -9,7 +9,7 @@
   --lilac: #f5effa;
   --lilac-2: #ebe0f4;
   --bus: #f6b93b;
-  --sms-green: #34c759;
+  --sms-green: #1f8236; /* darker than iOS green so white text meets 4.5:1 (WCAG AA) */
   --gray-bubble: #e9e9eb;
   --line: #e7e0ee;
   font-family: var(--lp-body), -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -314,7 +314,7 @@
 }
 .lp-wl-row:not(.sel) + .lp-wl-row:not(.sel) { border-top: 1px solid #f1eff4; }
 .lp-wr-compose { padding: 10px 14px 12px; border-top: 1px solid var(--line); }
-.lp-wr-compose span { display: block; border: 1px solid #d8d4de; border-radius: 16px; padding: 6px 12px; font-size: 12px; color: #a3a0a8; }
+.lp-wr-compose span { display: block; border: 1px solid #d8d4de; border-radius: 16px; padding: 6px 12px; font-size: 12px; color: #6f6878; }
 
 /* hero headline: three short lines */
 .lp-hero h1 { max-width: none; font-size: clamp(32px, 3.8vw, 48px); line-height: 1.1; letter-spacing: -0.03em; }
