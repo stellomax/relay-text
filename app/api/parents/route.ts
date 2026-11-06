@@ -2,7 +2,7 @@ import { allRows, db, Staff } from "@/lib/db";
 import { json, withAdmin, withAuth } from "@/lib/http";
 import { withAudit } from "@/lib/audit";
 import { canSeeParent, cleanParent, findParentByPhone, parentsQuery, schoolKey, syncConversations, type Parent } from "@/lib/parents";
-import { schoolLimit } from "@/lib/staff";
+import { inMySchool, limitToMySchools, schoolLimit } from "@/lib/staff";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -28,14 +28,16 @@ export const GET = withAuth(async (req, me) => {
   if (me.role === "admin") {
     const { data: s } = await db().from("schools").select("id, name, district").order("name");
     const lim = schoolLimit(me);
-    schools = (s || []).filter((x) => lim === undefined || x.id === lim); // admins: just their own school
+    schools = (s || []).filter((x) => lim === undefined || lim.includes(x.id)); // admins: the schools in their district
   }
   return json({ parents: data || [], schools, mySchoolId: me.school_id || null, canManage: me.role === "admin" });
 });
 
 async function schoolFor(me: Staff, raw: unknown): Promise<string | null> {
-  if (raw === undefined || schoolLimit(me) !== undefined) return me.school_id || null; // admins: always their own school
+  if (raw === undefined) return me.school_id || null;
   const id = raw ? String(raw) : null;
+  // Admins: a school in their district (their own school if the one asked for isn't).
+  if (schoolLimit(me) !== undefined) return inMySchool(me, id) ? id : me.school_id || null;
   if (!id) return null;
   const { data } = await db().from("schools").select("id").eq("id", id).maybeSingle();
   if (!data) throw new Error("That school wasn't found.");
@@ -183,8 +185,7 @@ async function deleteParents(req: Request, me: Staff): Promise<Response> {
   let deleted = 0;
   for (let i = 0; i < ids.length; i += 200) {
     let q = db().from("parents").delete({ count: "exact" }).in("id", ids.slice(i, i + 200));
-    const lim = schoolLimit(me);
-    if (lim !== undefined) q = lim ? q.eq("school_id", lim) : q.is("school_id", null); // only their own school's parents
+    q = limitToMySchools(q, me); // admins: only their district's parents
     const { error, count } = await q;
     if (error) throw new Error(error.message);
     deleted += count || 0;

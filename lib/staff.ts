@@ -17,17 +17,53 @@ export function isSuperAdmin(email: string): boolean {
   return list.includes(email.trim().toLowerCase());
 }
 
-// Which school an admin may manage. Super admins see every school (undefined = no limit);
-// other admins (and teachers) are limited to their own school, or to "no school" if they have none.
+// Which schools someone may manage. Super admins see every school (undefined = no limit).
+// Admins oversee their school district: every school in the district of their own school
+// (worked out once per request by loadDistrictScope). Teachers are limited to their own school.
+// An empty list means "no school" (only rows without a school).
 export const NO_SCHOOL_ID = "00000000-0000-0000-0000-000000000000";
-export function schoolLimit(me: Staff): string | null | undefined {
-  return isSuperAdmin(me.email) ? undefined : me.school_id || null;
+export function schoolLimit(me: Staff): string[] | undefined {
+  if (isSuperAdmin(me.email)) return undefined;
+  if (me.role === "admin" && me.scope_school_ids) return me.scope_school_ids;
+  return me.school_id ? [me.school_id] : [];
 }
 export function inMySchool(me: Staff, schoolId: string | null | undefined): boolean {
   const lim = schoolLimit(me);
-  return lim === undefined || (schoolId || null) === lim;
+  if (lim === undefined) return true;
+  return lim.length ? !!schoolId && lim.includes(schoolId) : !schoolId;
 }
-// Is this teacher in the admin's school? (Always true for super admins.)
+// Limit a Supabase query on a table with a school_id column to the schools someone may see.
+export function limitToMySchools<T extends { in: Function; is: Function }>(q: T, me: Staff): T {
+  const lim = schoolLimit(me);
+  if (lim === undefined) return q;
+  return lim.length ? q.in("school_id", lim) : q.is("school_id", null);
+}
+
+// For a signed-in admin: find their school's district and every school in it.
+// Before the districts table exists (schema.sql not run), they keep just their own school.
+export async function loadDistrictScope(me: Staff): Promise<Staff> {
+  if (me.role !== "admin" || isSuperAdmin(me.email) || !me.school_id) return me;
+  const supa = db();
+  const { data: mine, error } = await supa.from("schools").select("id, district, district_id").eq("id", me.school_id).maybeSingle();
+  if (error || !mine) return me;
+  me.district_name = (mine.district || "").trim() || null;
+  if (!mine.district_id) {
+    me.scope_school_ids = [me.school_id];
+    return me;
+  }
+  me.district_id = mine.district_id;
+  const [{ data: list }, { data: d }] = await Promise.all([
+    supa.from("schools").select("id").eq("district_id", mine.district_id),
+    supa.from("districts").select("name").eq("id", mine.district_id).maybeSingle(),
+  ]);
+  const ids = (list || []).map((r: { id: string }) => r.id);
+  if (!ids.includes(me.school_id)) ids.push(me.school_id);
+  me.scope_school_ids = ids;
+  if (d?.name) me.district_name = d.name;
+  return me;
+}
+
+// Is this teacher in one of the admin's schools? (Always true for super admins.)
 export async function staffInMySchool(me: Staff, staffId: string | null): Promise<boolean> {
   if (!staffId) return isSuperAdmin(me.email); // the shared main number: super admins only (it mixes every school)
   if (schoolLimit(me) === undefined || staffId === me.id) return true;

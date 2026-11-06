@@ -1,6 +1,6 @@
 import { db, Contact, Staff } from "./db";
 import { toE164 } from "./phone";
-import { inMySchool, schoolLimit } from "./staff";
+import { inMySchool, limitToMySchools, schoolLimit } from "./staff";
 import { isLanguageCode } from "./languages";
 
 // One parent in the school's Parents list. Admins add, edit and delete them; everyone else chooses from the list.
@@ -20,11 +20,14 @@ export type Parent = {
 
 const NO_SCHOOL = "00000000-0000-0000-0000-000000000000";
 
-// Teachers and admins see their own school's parents. Super admins see every school (optionally filtered).
+// Teachers see their own school's parents. Admins see their district's schools, and super admins
+// every school; both can narrow it to one school (or "none" for parents without a school).
 export function parentsQuery(me: Staff, schoolFilter?: string | null) {
   let q = db().from("parents").select("*");
-  if (me.role !== "admin" || schoolLimit(me) !== undefined) {
+  if (me.role !== "admin") {
     q = me.school_id ? q.eq("school_id", me.school_id) : q.is("school_id", null);
+  } else if (schoolLimit(me) !== undefined) {
+    q = schoolFilter && schoolFilter !== "none" && inMySchool(me, schoolFilter) ? q.eq("school_id", schoolFilter) : limitToMySchools(q, me);
   } else if (schoolFilter === "none") {
     q = q.is("school_id", null);
   } else if (schoolFilter) {
