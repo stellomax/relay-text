@@ -23,10 +23,16 @@ export const GET = withAdmin(async (req, me) => {
   // Admins (not super admins) only ever see the schools in their district.
   const schools = ((schoolRows || []) as { id: string; name: string; district?: string | null }[]).filter((s) => lim === undefined || lim.includes(s.id));
   const pickable = (id: string | null) => !!id && schools.some((s) => s.id === id);
+  // Super admins can also pick a whole district (?school=d:<district name>).
+  const askedDistrict = lim === undefined && asked?.startsWith("d:") ? asked.slice(2) : null;
+  const districtIds = askedDistrict
+    ? schools.filter((s) => ((s.district || "").trim() || "No district") === askedDistrict).map((s) => s.id)
+    : null;
   // The schools shown: a list of ids, or null for every school (super admins only).
   const scopeIds: string[] | null =
     lim !== undefined
       ? pickable(asked) ? [asked!] : lim.length ? lim : [NO_SCHOOL_ID]
+      : districtIds ? (districtIds.length ? districtIds : [NO_SCHOOL_ID])
       : asked === "all" ? null : pickable(asked) ? [asked!] : me.school_id ? [me.school_id] : null;
   const schoolId = scopeIds && scopeIds.length === 1 ? scopeIds[0] : null; // one school picked
 
@@ -273,8 +279,8 @@ export const GET = withAdmin(async (req, me) => {
   return json({
     name: me.name,
     isSuper: isSuperAdmin(me.email),
-    school: schoolId ? schools.find((s) => s.id === schoolId) || null : null,
-    schoolId: schoolId || "all",
+    school: schoolId && !districtIds ? schools.find((s) => s.id === schoolId) || null : null,
+    schoolId: schoolId && !districtIds ? schoolId : askedDistrict ? `d:${askedDistrict}` : "all",
     schools,
     // The district an admin oversees (shown at the top right); null for super admins.
     district: lim !== undefined ? { id: me.district_id || null, name: me.district_name || null } : null,

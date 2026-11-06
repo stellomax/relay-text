@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { type Me } from "@/components/MainMenu";
-import AdminHeader, { districtOf, SchoolPicker, savedSchool, saveSchool } from "@/components/AdminHeader";
+import AdminHeader, { pickLabel, SchoolPicker, savedSchool, saveSchool } from "@/components/AdminHeader";
 import { Book, ChevronRight, Compose, PersonAdd } from "@/components/icons";
 import { api } from "@/lib/client";
 import { languageName } from "@/lib/languages";
@@ -78,12 +78,13 @@ export default function AdminDashboard() {
         <div className="dash-head title-row">
           <div className="title-main">
             <h1 className="home-title">{first ? `Hi, ${first}` : "Welcome"}</h1>
-            <p className="home-sub">{s ? s.school?.name || (s.district?.name || districtOf(s.schools) ? "All schools in the district" : "All schools") : " "}</p>
+            <p className="home-sub">{s ? s.school?.name || pickLabel(s.schoolId, s.schools) : " "}</p>
           </div>
           {s && (
             <SchoolPicker
               schools={s.schools}
               district={s.district?.name}
+              superAdmin={s.isSuper}
               school={s.schoolId}
               onSchool={(id) => {
                 saveSchool(id);

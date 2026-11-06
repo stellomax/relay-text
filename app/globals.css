@@ -949,6 +949,9 @@ a.kpi:hover { border-color: rgba(106, 2, 160, 0.35); }
 .title-picker { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
 .title-picker span { font-size: 12px; font-weight: 600; color: var(--label-3); text-transform: uppercase; letter-spacing: 0.4px; }
 .title-picker .admin-select { min-width: 240px; max-width: 320px; height: 42px; font-size: 16px; }
+.title-pickers { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.title-pickers .title-picker .admin-select { min-width: 220px; }
+@media (max-width: 560px) { .title-pickers { width: 100%; flex-direction: column; align-items: stretch; } }
 .title-picker .title-district { font-size: 18px; font-weight: 700; color: var(--label); line-height: 1.25; max-width: 320px; margin-bottom: 4px; }
 @media (max-width: 560px) {
   .title-picker { width: 100%; margin-top: 0; }

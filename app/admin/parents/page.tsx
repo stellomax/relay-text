@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Sheet from "@/components/Sheet";
 import LanguageSelect from "@/components/LanguageSelect";
 import { Check, ChevronRight, Plus, Upload } from "@/components/icons";
-import AdminHeader, { AdminTitle, SchoolPicker, useSavedSchool } from "@/components/AdminHeader";
+import AdminHeader, { AdminTitle, inPick, pickedSchoolId, pickLabel, SchoolPicker, useSavedSchool } from "@/components/AdminHeader";
 import { api } from "@/lib/client";
 import { languageName, rememberLanguages, type Language } from "@/lib/languages";
 import { formatPhoneInput, prettyPhone, toE164 } from "@/lib/phone";
@@ -32,7 +32,8 @@ export default function ParentsPage() {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [pickedSchool, setPickedSchool] = useSavedSchool(() => null);
-  const schoolFilter = !pickedSchool || pickedSchool === "all" ? "" : pickedSchool;
+  const schoolFilter = pickedSchoolId(pickedSchool); // one school picked ("" for a whole district or all schools)
+  const [viewerIsSuper, setViewerIsSuper] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState<Parent | Partial<Parent> | null>(null);
   const [importing, setImporting] = useState(false);
@@ -42,13 +43,14 @@ export default function ParentsPage() {
 
   const load = useCallback(async () => {
     try {
-      const d = await api<{ parents: Parent[]; schools?: School[]; mySchoolId: string | null; canManage: boolean }>("/api/parents");
+      const d = await api<{ parents: Parent[]; schools?: School[]; mySchoolId: string | null; canManage: boolean; viewerIsSuper?: boolean }>("/api/parents");
       if (!d.canManage) {
         window.location.href = "/inbox";
         return;
       }
       setParents(d.parents);
       setSchools(d.schools || []);
+      setViewerIsSuper(!!d.viewerIsSuper);
       setMySchool(d.mySchoolId);
       setError("");
       return d.parents;
@@ -101,7 +103,7 @@ export default function ParentsPage() {
       }
     };
     return parents
-      .filter((p) => !schoolFilter || (schoolFilter === "none" ? !p.school_id : p.school_id === schoolFilter))
+      .filter((p) => inPick(p.school_id, pickedSchool, schools))
       .filter((p) => !statusFilter || status(p) === statusFilter)
       .filter(
         (p) =>
@@ -113,7 +115,7 @@ export default function ParentsPage() {
       )
       .sort((a, b) => val(a).localeCompare(val(b), undefined, { numeric: true }) * sort.dir);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parents, schoolFilter, statusFilter, q, digits, sort, schools]);
+  }, [parents, pickedSchool, statusFilter, q, digits, sort, schools]);
 
   const allOn = rows.length > 0 && rows.every((p) => selected.has(p.id));
   const toggleAll = () => {
@@ -161,8 +163,8 @@ export default function ParentsPage() {
       <div className="settings-body admin-wide">
         <AdminTitle
           title="Manage Parents"
-          picker={loaded ? <SchoolPicker schools={schools} school={pickedSchool} onSchool={setPickedSchool} /> : undefined}
-          sub={loaded ? `${schools.find((x) => x.id === schoolFilter)?.name || "All schools"} · ${rows.length.toLocaleString()} ${rows.length === 1 ? "parent" : "parents"}` : undefined}
+          picker={loaded ? <SchoolPicker schools={schools} school={pickedSchool} onSchool={setPickedSchool} superAdmin={viewerIsSuper} /> : undefined}
+          sub={loaded ? `${pickLabel(pickedSchool, schools)} · ${rows.length.toLocaleString()} ${rows.length === 1 ? "parent" : "parents"}` : undefined}
         />
         {error && <p className="sheet-error">{error}</p>}
         {!loaded && <p className="ios-footnote top">Loading…</p>}

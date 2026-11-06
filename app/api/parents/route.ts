@@ -30,7 +30,7 @@ export const GET = withAuth(async (req, me) => {
     const lim = schoolLimit(me);
     schools = (s || []).filter((x) => lim === undefined || lim.includes(x.id)); // admins: the schools in their district
   }
-  return json({ parents: data || [], schools, mySchoolId: me.school_id || null, canManage: me.role === "admin" });
+  return json({ parents: data || [], schools, mySchoolId: me.school_id || null, canManage: me.role === "admin", viewerIsSuper: me.role === "admin" && schoolLimit(me) === undefined });
 });
 
 async function schoolFor(me: Staff, raw: unknown): Promise<string | null> {

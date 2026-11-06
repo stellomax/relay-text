@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Avatar from "@/components/Avatar";
 import Sheet from "@/components/Sheet";
 import { ChevronRight, Plus } from "@/components/icons";
-import AdminHeader, { AdminTitle, SchoolPicker, useSavedSchool } from "@/components/AdminHeader";
+import AdminHeader, { AdminTitle, inPick, pickedSchoolId, pickLabel, SchoolPicker, useSavedSchool } from "@/components/AdminHeader";
 import { api } from "@/lib/client";
 import { prettyPhone } from "@/lib/phone";
 import { listTime } from "@/lib/format";
@@ -101,7 +101,7 @@ export default function AdminPage() {
   const [busy, setBusy] = useState("");
   const [notice, setNotice] = useState<Notice>(null);
   const [pickedSchool, setPickedSchool] = useSavedSchool(() => null);
-  const schoolFilter = !pickedSchool || pickedSchool === "all" ? "" : pickedSchool;
+  const schoolFilter = pickedSchoolId(pickedSchool); // one school picked ("" for a whole district or all schools)
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: "name", dir: 1 });
 
@@ -216,7 +216,7 @@ export default function AdminPage() {
   const pending = data?.staff.filter((s) => s.status === "pending") || [];
   const q = search.trim().toLowerCase();
   const people = (data?.staff.filter((s) => s.status !== "pending") || [])
-    .filter((s) => !schoolFilter || (schoolFilter === "none" ? !s.school_id : s.school_id === schoolFilter))
+    .filter((s) => inPick(s.school_id, pickedSchool, data?.schools || []))
     .filter((s) => !q || [s.name, s.email, s.school || "", s.phone_number || ""].join(" ").toLowerCase().includes(q))
     .sort((a, b) => {
       const va = sortValue(a, sort.key);
@@ -233,8 +233,8 @@ export default function AdminPage() {
       <div className="settings-body admin-wide">
         <AdminTitle
           title="Manage Teachers"
-          picker={data ? <SchoolPicker schools={data.schools} school={pickedSchool} onSchool={setPickedSchool} /> : undefined}
-          sub={data ? `${data.schools.find((x) => x.id === schoolFilter)?.name || "All schools"} · ${people.length} ${people.length === 1 ? "person" : "people"}` : undefined}
+          picker={data ? <SchoolPicker schools={data.schools} school={pickedSchool} onSchool={setPickedSchool} superAdmin={data.viewerIsSuper} /> : undefined}
+          sub={data ? `${pickLabel(pickedSchool, data.schools)} · ${people.length} ${people.length === 1 ? "person" : "people"}` : undefined}
         />
         {error && <p className="sheet-error">{error}</p>}
         {!data && !error && <p className="ios-footnote top">Loading…</p>}
@@ -403,7 +403,7 @@ export default function AdminPage() {
                   ))}
                   {people.length === 0 && (
                     <tr className="empty-row">
-                      <td colSpan={COLUMNS.length + 1}>{q || schoolFilter ? "No teachers match." : "No teachers yet. Use Add Teacher to invite one."}</td>
+                      <td colSpan={COLUMNS.length + 1}>{q || (pickedSchool && pickedSchool !== "all") ? "No teachers match." : "No teachers yet. Use Add Teacher to invite one."}</td>
                     </tr>
                   )}
                 </tbody>
