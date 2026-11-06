@@ -253,7 +253,7 @@ export default function StudentData() {
       <h2>Contact</h2>
       <p>
         {COMPANY}, operator of {BRAND}. Questions, contract requests, or a data privacy agreement for your district:{" "}
-        <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. See also our <a href="/privacy">Privacy Policy</a>.
+        <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. See also our <a href="/privacy">Privacy Policy</a> and <a href="/trust">Trust Center</a>.
       </p>
     </LegalPage>
   );

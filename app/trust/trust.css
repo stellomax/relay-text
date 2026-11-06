@@ -1,0 +1,29 @@
+/* Trust Center (/trust). Uses the landing-page colors from landing.css. */
+.tc .tc-updated { margin-top: 14px; font-size: 15px; color: var(--ink-2); }
+.tc-glance {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  max-width: 1040px; margin: 0 auto var(--about-gap, 64px); padding: 0 clamp(16px, 4vw, 48px);
+}
+.tc-card { background: var(--lilac, #f4ecfa); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+.tc-card b { font-family: var(--lp-display), var(--lp-body), sans-serif; font-size: 20px; color: var(--purple); }
+.tc-card span { font-size: 16px; line-height: 1.5; color: var(--ink-2); }
+.tc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 28px; margin-top: 20px; }
+.tc-item { display: flex; flex-direction: column; gap: 4px; padding: 14px 0; border-top: 1px solid rgba(36, 17, 51, 0.12); }
+.tc-item b { font-size: 18px; color: var(--plum); }
+.tc-item span { font-size: 17px; line-height: 1.5; color: var(--ink-2); }
+.tc-list { margin: 18px 0 0; padding-left: 22px; display: flex; flex-direction: column; gap: 10px; font-size: 18px; line-height: 1.55; color: var(--ink-2); }
+.tc-list strong { color: var(--plum); }
+.tc .legal-table { font-size: 16px; margin-top: 18px; }
+.tc .legal-table td { color: var(--ink-2); }
+.tc .legal-table td strong { color: var(--plum); }
+.tc-table td:first-child { width: 24%; }
+.tc a:not(.lp-btn) { color: var(--purple); }
+.tc-links { margin-top: 22px; font-size: 17px; }
+.tc-note { margin-top: 16px; font-size: 15px; color: var(--ink-2); }
+@media (max-width: 900px) {
+  .tc-glance { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .tc-glance, .tc-grid { grid-template-columns: 1fr; }
+  .tc-list { font-size: 17px; }
+}

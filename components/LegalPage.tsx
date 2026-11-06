@@ -16,6 +16,7 @@ export default function LegalPage({ title, children, updated = true, wide = fals
       </main>
       <footer className="legal-foot">
         <a href="/join">Sign up for texts</a>
+        <a href="/trust">Trust Center</a>
         <a href="/privacy">Privacy Policy</a>
         <a href="/student-data">Student Data</a>
         <a href="/terms">Terms &amp; Conditions</a>
