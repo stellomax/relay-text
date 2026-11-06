@@ -24,9 +24,9 @@ export const GET = withAuth(async (req, me) => {
     }
     throw new Error(error.message);
   }
-  let schools: { id: string; name: string }[] | undefined;
+  let schools: { id: string; name: string; district?: string | null }[] | undefined;
   if (me.role === "admin") {
-    const { data: s } = await db().from("schools").select("id, name").order("name");
+    const { data: s } = await db().from("schools").select("id, name, district").order("name");
     const lim = schoolLimit(me);
     schools = (s || []).filter((x) => lim === undefined || x.id === lim); // admins: just their own school
   }

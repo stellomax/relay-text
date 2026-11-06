@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import MainMenu, { type Me } from "./MainMenu";
 import { api } from "@/lib/client";
+import SchoolOptions from "@/components/SchoolOptions";
 
 const KEY = "relay.dashSchool";
 
@@ -64,7 +65,7 @@ export function SchoolPicker({
   school,
   onSchool,
 }: {
-  schools?: { id: string; name: string }[];
+  schools?: { id: string; name: string; district?: string | null }[];
   school?: string | null;
   onSchool: (id: string) => void;
 }) {
@@ -74,11 +75,7 @@ export function SchoolPicker({
       <span>School</span>
       <select className="admin-select" value={school || "all"} onChange={(e) => onSchool(e.target.value)}>
         <option value="all">All schools</option>
-        {schools.map((x) => (
-          <option key={x.id} value={x.id}>
-            {x.name}
-          </option>
-        ))}
+        <SchoolOptions schools={schools} />
       </select>
     </label>
   );

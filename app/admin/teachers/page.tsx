@@ -8,6 +8,7 @@ import AdminHeader, { AdminTitle, SchoolPicker, useSavedSchool } from "@/compone
 import { api } from "@/lib/client";
 import { prettyPhone } from "@/lib/phone";
 import { listTime } from "@/lib/format";
+import SchoolOptions from "@/components/SchoolOptions";
 
 type Person = {
   id: string;
@@ -486,12 +487,7 @@ export default function AdminPage() {
               <span className="ios-row-label">school</span>
               <select value={adding.school_id} onChange={(e) => setAdding({ ...adding, school_id: e.target.value })}>
                 <option value="">No school</option>
-                {(data?.schools || []).map((sc) => (
-                  <option key={sc.id} value={sc.id}>
-                    {sc.name}
-                    {sc.district ? ` · ${sc.district}` : ""}
-                  </option>
-                ))}
+                <SchoolOptions schools={data?.schools || []} />
               </select>
             </label>
             )}
@@ -642,11 +638,7 @@ function PersonSheet({
           <span className="ios-row-label">school</span>
           <select value={f.school_id} onChange={(e) => setF({ ...f, school_id: e.target.value })}>
             <option value="">{p.school && !p.school_id ? `${p.school} (not linked)` : "No school"}</option>
-            {schools.map((sc) => (
-              <option key={sc.id} value={sc.id}>
-                {sc.name}
-              </option>
-            ))}
+            <SchoolOptions schools={schools} />
           </select>
         </label>
         )}

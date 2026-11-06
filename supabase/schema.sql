@@ -285,3 +285,27 @@ alter table public.staff add column if not exists session_version integer not nu
 -- 0 = keep until the contract ends. A daily job deletes older messages. Safe to run again.
 -- ============================================================================
 alter table public.schools add column if not exists retention_months integer not null default 24;
+
+-- ============================================================================
+-- School districts (Nov 2026). Hierarchy: district → school → teachers and parents.
+-- Each school belongs to one district (schools.district_id). schools.district keeps a copy of the
+-- district's name for the places that only need the name (e.g. the parent consent line on /join).
+-- The first run puts every existing school (all sample schools today) in Douglas County School District.
+-- Later runs only touch schools that have no district yet. Safe to run again.
+-- ============================================================================
+create table if not exists public.districts (
+  id          uuid primary key default gen_random_uuid(),
+  name        text not null unique,
+  created_at  timestamptz not null default now()
+);
+alter table public.districts enable row level security;
+alter table public.schools add column if not exists district_id uuid references public.districts(id) on delete restrict;
+create index if not exists schools_district_idx on public.schools (district_id);
+
+insert into public.districts (name) values ('Douglas County School District') on conflict (name) do nothing;
+update public.schools s set district_id = d.id
+  from public.districts d
+  where s.district_id is null and d.name = 'Douglas County School District';
+update public.schools s set district = d.name
+  from public.districts d
+  where s.district_id = d.id and s.district is distinct from d.name;
