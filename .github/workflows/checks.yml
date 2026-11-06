@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      job:
+        description: "What to run"
+        type: choice
+        options: [lockfile, a11y]
+        default: lockfile
 
 permissions:
   contents: read
@@ -32,7 +38,7 @@ jobs:
 
   # Run by hand (Actions → Checks → Run workflow) to create or refresh package-lock.json on a branch.
   lockfile:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && inputs.job == 'lockfile'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -48,3 +54,30 @@ jobs:
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
           git add package-lock.json
           git diff --cached --quiet || (git commit -m "Update package-lock.json" && git push)
+
+  # Run by hand (job: a11y): automated WCAG 2.1 AA check of the live public pages; the report is pushed to the a11y-report branch.
+  a11y:
+    if: github.event_name == 'workflow_dispatch' && inputs.job == 'a11y'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install checker
+        run: |
+          mkdir -p /tmp/a11y && cp .github/a11y/check.mjs /tmp/a11y/
+          cd /tmp/a11y && npm init -y >/dev/null && npm install --no-audit --no-fund playwright@1 @axe-core/playwright@4
+          npx playwright install --with-deps chromium
+      - name: Check pages
+        run: cd /tmp/a11y && node check.mjs
+      - name: Publish report
+        run: |
+          cd /tmp/a11y
+          git init -q report && cp a11y-report.json report/ && cd report
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git checkout -q -b a11y-report && git add a11y-report.json && git commit -q -m "Accessibility report"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" a11y-report

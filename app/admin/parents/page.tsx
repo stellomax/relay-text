@@ -194,6 +194,16 @@ export default function ParentsPage() {
                 aria-label="Search parents"
               />
               <span className="toolbar-actions">
+                {(schoolFilter && schoolFilter !== "none" ? schoolFilter : mySchool) && (
+                  <a
+                    className="pill-btn ghost add-pill"
+                    href={`/api/admin/export?school=${schoolFilter && schoolFilter !== "none" ? schoolFilter : mySchool}`}
+                    download
+                    title="Download every message from this school's teachers as a spreadsheet (CSV), for a records request or review"
+                  >
+                    Export Messages
+                  </a>
+                )}
                 <button className="pill-btn ghost add-pill" onClick={() => setImporting(true)}>
                   <Upload size={16} /> Upload CSV
                 </button>

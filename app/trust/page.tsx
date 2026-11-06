@@ -54,14 +54,15 @@ const LAWS = [
   {
     law: "Open records and retention (CORA, district schedules)",
     asks: "Texts about school business may be public records, kept for the district's retention period.",
-    relay: "Each school sets how long messages are kept (2 years by default, or the contract's period). We provide a school's message history on request for a records request.",
+    relay: "Each school sets how long messages are kept (2 years by default, or the contract's period). Admins can export a conversation or a school's full message history as a spreadsheet at any time.",
   },
   {
     law: "Accessibility (ADA Title II)",
     asks: "District websites and apps meet WCAG 2.1 Level AA.",
     relay: (
       <>
-        We're reviewing the parent sign-up page and the teacher app against WCAG 2.1 AA. If anything is hard to use, email{" "}
+        We test the parent sign-up page and the public pages against WCAG 2.1 AA with automated checks, and fix what they
+        find. If anything is hard to use, email{" "}
         <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> and we'll help right away.
       </>
     ),
@@ -95,7 +96,7 @@ const DOCS = [
   { t: "Data privacy agreement", d: "We'll sign your district's agreement or the national model agreement with your state's terms." },
   { t: "Security questionnaire", d: "Send us your district's vetting questionnaire; we answer quickly." },
   { t: "Incident response summary", d: "How we detect, contain and report a security incident." },
-  { t: "Message history export", d: "A school's or a family's messages, for a records request or a district review." },
+  { t: "Message history export", d: "Admins can download a conversation or a school's messages themselves; we can also send one for a records request or district review." },
   { t: "Written deletion confirmation", d: "When a school or district asks, or its contract ends, we delete its data within 30 days and confirm in writing." },
 ];
 
