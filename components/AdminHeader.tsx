@@ -89,7 +89,8 @@ export function SchoolPicker({
   ) : (
     <span>School</span>
   );
-  if (schools.length <= 1) return name ? <div className="title-picker">{head}</div> : null;
+  // A district always gets its dropdown, even with one school; without a district, one school needs no picker.
+  if (schools.length <= 1 && !name) return null;
   return (
     <label className="title-picker">
       {head}
