@@ -3,7 +3,7 @@ import { SESSION_COOKIE, verifySessionToken } from "./lib/session";
 
 // The home page is public (signed-in admins go to the teacher list, teachers to their inbox).
 // Everything else requires a staff login except sign-in, teacher sign-up, the public parent sign-up,
-// Privacy Policy and Terms pages, and Twilio's webhooks.
+// Privacy Policy and Terms pages, the district intake form (/intake/<link>), and Twilio's webhooks.
 export async function middleware(req: NextRequest) {
   const session = await verifySessionToken(req.cookies.get(SESSION_COOKIE)?.value);
   const path = req.nextUrl.pathname;
@@ -28,6 +28,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/|favicon|icon-|icon\\.svg|apple-touch-icon|relay-text-logo|hero-teacher|testimonial-|team-|manifest|login|signup|forgot|reset-password|contact|demo|teachers|about|why-it-works|join|privacy|terms|student-data|landing/|api/auth/|api/sms/|api/cron/|api/optin|api/contact|api/signup|api/join-info|api/languages).*)",
+    "/((?!_next/|favicon|icon-|icon\\.svg|apple-touch-icon|relay-text-logo|hero-teacher|testimonial-|team-|manifest|login|signup|forgot|reset-password|contact|demo|teachers|about|why-it-works|join|privacy|terms|student-data|intake/|landing/|api/auth/|api/sms/|api/cron/|api/optin|api/contact|api/signup|api/join-info|api/languages|api/intake/).*)",
   ],
 };

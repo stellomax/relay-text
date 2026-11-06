@@ -144,6 +144,11 @@ export default function MainMenu({
                   School Requests <Inbox />
                 </a>
               )}
+              {me?.is_super && (
+                <a role="menuitem" href="/admin/intakes">
+                  District Onboarding <Book />
+                </a>
+              )}
             </div>
           )}
 
