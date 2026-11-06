@@ -1,3 +1,4 @@
+import { DEFAULT_DISTRICT } from "./brand";
 import { db } from "./db";
 
 export type School = {
@@ -40,4 +41,10 @@ export async function newFreeCode(exceptSchoolId?: string): Promise<string> {
     if (await codeIsFree(code, exceptSchoolId)) return code;
   }
   throw new Error("Couldn't find a free code. Try again.");
+}
+
+// The district a parent is agreeing to hear from (consent on /join), for the school a staff member belongs to.
+export async function districtForSchool(schoolId: string | null | undefined): Promise<string> {
+  const s = await schoolById(schoolId).catch(() => null);
+  return (s?.district || "").trim() || DEFAULT_DISTRICT;
 }

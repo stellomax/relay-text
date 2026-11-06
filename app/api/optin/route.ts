@@ -9,6 +9,7 @@ import type { Staff } from "@/lib/db";
 import { senderNumber } from "@/lib/numbers";
 import { findParentByPhone } from "@/lib/parents";
 import { prettyPhone } from "@/lib/phone";
+import { districtForSchool } from "@/lib/schools";
 import { clientIp, limited, record, TOO_MANY } from "@/lib/ratelimit";
 
 export const dynamic = "force-dynamic";
@@ -76,7 +77,9 @@ export async function POST(req: Request) {
         409,
       );
     }
-    const source = teacher ? `web form: /join?t=${code}` : "web form: /join";
+    // Record exactly who the parent agreed to hear from (their school district), as evidence of consent.
+    const district = await districtForSchool(teacher.school_id);
+    const source = `web form: /join?t=${code} (agreed to texts from ${district})`;
     consent.consent_source = source;
 
     // Parents who sign up through a teacher's link join that school's Parents list (or update their entry).

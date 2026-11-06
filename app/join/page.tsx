@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import LegalPage from "@/components/LegalPage";
 import LanguageSelect from "@/components/LanguageSelect";
-import { BRAND, COMPANY_DISPLAY } from "@/lib/brand";
+import { BRAND, DEFAULT_DISTRICT } from "@/lib/brand";
 import { formatPhoneInput } from "@/lib/phone";
 
 // Public sign-up page: how parents and guardians opt in to school text messages.
@@ -14,7 +14,7 @@ export default function Join() {
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
   const [code, setCode] = useState("");
-  const [teacher, setTeacher] = useState<{ name: string; school: string | null } | null>(null);
+  const [teacher, setTeacher] = useState<{ name: string; school: string | null; district?: string } | null>(null);
   const [fromLink, setFromLink] = useState(false);
   const [checked, setChecked] = useState(false);
 
@@ -60,6 +60,8 @@ export default function Join() {
     else setError(data.error || "Something went wrong. Please try again.");
     setBusy(false);
   }
+
+  const district = teacher?.district || DEFAULT_DISTRICT;
 
   if (done) {
     return (
@@ -133,8 +135,9 @@ export default function Join() {
         <label className="consent">
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
           <span>
-            I agree to receive text messages from {BRAND} ({COMPANY_DISPLAY}) on behalf of my child’s school about my child and school
-            matters, such as attendance, events, reminders and replies to my questions. Message frequency varies. Message
+            I agree to receive text messages from <strong>{district}</strong> and my child’s school and teachers about my child and
+            school matters, such as attendance, events, reminders and replies to my questions. Texts are sent using {BRAND}, the
+            district’s texting service. Message frequency varies. Message
             and data rates may apply. Reply HELP for help. Reply STOP to opt out at any time. Consent is not a condition of
             enrollment. See our <a href="/terms">Terms &amp; Conditions</a> and <a href="/privacy">Privacy Policy</a>.
           </span>
