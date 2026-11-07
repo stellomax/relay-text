@@ -13,6 +13,7 @@ export default function Join() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+  const [pending, setPending] = useState(false); // already on the school's list: an admin confirms
   const [code, setCode] = useState("");
   const [teacher, setTeacher] = useState<{ name: string; school: string | null; district?: string } | null>(null);
   const [fromLink, setFromLink] = useState(false);
@@ -106,7 +107,10 @@ export default function Join() {
       body: JSON.stringify({ ...form, consent, t: code, captcha }),
     });
     const data = await res.json().catch(() => ({}));
-    if (res.ok) setDone(true);
+    if (res.ok) {
+      setPending(!!data.pending);
+      setDone(true);
+    }
     else {
       setError(data.error || "Something went wrong. Please try again.");
       resetCaptcha();
@@ -115,6 +119,17 @@ export default function Join() {
   }
 
   const district = teacher?.district || DEFAULT_DISTRICT;
+
+  if (done && pending) {
+    return (
+      <LegalPage title="Thank you" updated={false}>
+        <p>
+          Your child’s school already has your number. A school administrator will confirm your sign-up, and then you’ll
+          start getting texts from the school in your language.
+        </p>
+      </LegalPage>
+    );
+  }
 
   if (done) {
     return (
