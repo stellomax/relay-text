@@ -5,6 +5,7 @@ import { translate, toEnglish, sameLang } from "./translate";
 import { errorMessage } from "./http";
 import { senderNumber } from "./numbers";
 import { conversationFor, findParentByPhone } from "./parents";
+import { fitSegments } from "./segments";
 
 const STOP_WORDS = ["STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT", "REVOKE", "OPTOUT"];
 const START_WORDS = ["START", "UNSTOP", "YES", "OPTIN"];
@@ -101,6 +102,9 @@ export async function sendToContacts(
         translated = `${translated}\n\n${await d}`;
         row.body_en = `${textEn}\n\n${disclosureEn(staff)}`;
       }
+      // Drop Spanish accents (and curly quotes etc.) only when that makes the text use fewer segments.
+      // What's stored is exactly what the parent receives.
+      translated = fitSegments(translated);
       row.body_translated = translated;
 
       if (live) {
