@@ -339,6 +339,7 @@ a { color: var(--tint); text-decoration: none; }
   border: 1px solid #c6c6c8; border-radius: 10px; padding: 11px 12px; font-size: 17px; background: var(--bg); outline: none; width: 100%;
 }
 .join-form input:focus, .join-form select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(106, 2, 160, 0.15); }
+.join-form .join-captcha { min-height: 65px; } /* Turnstile check; keeps its space so the button doesn't jump */
 .join-form .consent { flex-direction: row; align-items: flex-start; gap: 12px; font-weight: 400; font-size: 14px; line-height: 1.45; color: var(--label-2); background: var(--grouped-bg); padding: 14px; border-radius: 12px; }
 .join-form .consent input { width: 22px; height: 22px; flex: 0 0 22px; margin: 1px 0 0; accent-color: var(--brand); }
 .join-error { color: var(--red); font-size: 15px; margin: 0; }

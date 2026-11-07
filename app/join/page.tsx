@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import LegalPage from "@/components/LegalPage";
 import LanguageSelect from "@/components/LanguageSelect";
 import { BRAND, DEFAULT_DISTRICT } from "@/lib/brand";
@@ -17,6 +17,11 @@ export default function Join() {
   const [teacher, setTeacher] = useState<{ name: string; school: string | null; district?: string } | null>(null);
   const [fromLink, setFromLink] = useState(false);
   const [checked, setChecked] = useState(false);
+  // Bot check (Cloudflare Turnstile). Only shown when the site key is set in Vercel.
+  const [siteKey, setSiteKey] = useState<string | null>(null);
+  const [captcha, setCaptcha] = useState("");
+  const captchaBox = useRef<HTMLDivElement>(null);
+  const widgetId = useRef<string | null>(null);
 
   // A teacher's personal link (relaytext.io/join?t=CODE) signs the family up with that teacher.
   useEffect(() => {
@@ -24,6 +29,51 @@ export default function Join() {
     setCode(t);
     setFromLink(!!t);
   }, []);
+
+  useEffect(() => {
+    fetch("/api/join-info")
+      .then((r) => r.json())
+      .then((d) => setSiteKey(d.captchaSiteKey || null))
+      .catch(() => {});
+  }, []);
+
+  // Load Turnstile and draw the check once the site key is known.
+  useEffect(() => {
+    if (!siteKey || done) return;
+    let cancelled = false;
+    const draw = () => {
+      const ts = (window as unknown as { turnstile?: Turnstile }).turnstile;
+      if (cancelled || !ts || !captchaBox.current || widgetId.current) return;
+      widgetId.current = ts.render(captchaBox.current, {
+        sitekey: siteKey,
+        language: "auto",
+        callback: (t: string) => setCaptcha(t),
+        "expired-callback": () => setCaptcha(""),
+        "error-callback": () => setCaptcha(""),
+      });
+    };
+    const src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+    let tag = document.querySelector<HTMLScriptElement>(`script[src="${src}"]`);
+    if (!tag) {
+      tag = document.createElement("script");
+      tag.src = src;
+      tag.async = true;
+      document.head.appendChild(tag);
+    }
+    if ((window as unknown as { turnstile?: Turnstile }).turnstile) draw();
+    else tag.addEventListener("load", draw);
+    return () => {
+      cancelled = true;
+      tag?.removeEventListener("load", draw);
+    };
+  }, [siteKey, done]);
+
+  // A token works once: after a failed sign-up, get a fresh one.
+  function resetCaptcha() {
+    const ts = (window as unknown as { turnstile?: Turnstile }).turnstile;
+    if (ts && widgetId.current) ts.reset(widgetId.current);
+    setCaptcha("");
+  }
 
   // Look up whose code this is (from the link, or typed in by the parent).
   useEffect(() => {
@@ -53,11 +103,14 @@ export default function Join() {
     const res = await fetch("/api/optin", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ...form, consent, t: code }),
+      body: JSON.stringify({ ...form, consent, t: code, captcha }),
     });
     const data = await res.json().catch(() => ({}));
     if (res.ok) setDone(true);
-    else setError(data.error || "Something went wrong. Please try again.");
+    else {
+      setError(data.error || "Something went wrong. Please try again.");
+      resetCaptcha();
+    }
     setBusy(false);
   }
 
@@ -143,11 +196,18 @@ export default function Join() {
           </span>
         </label>
 
+        {siteKey && <div ref={captchaBox} className="join-captcha" />}
+
         {error && <p className="join-error">{error}</p>}
-        <button className="ios-button" disabled={busy || !consent || !teacher}>
+        <button className="ios-button" disabled={busy || !consent || !teacher || (!!siteKey && !captcha)}>
           {busy ? "Signing up…" : "Sign up for texts"}
         </button>
       </form>
     </LegalPage>
   );
 }
+
+type Turnstile = {
+  render: (el: HTMLElement, opts: Record<string, unknown>) => string;
+  reset: (id: string) => void;
+};

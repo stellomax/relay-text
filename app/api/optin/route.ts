@@ -11,6 +11,7 @@ import { findParentByPhone } from "@/lib/parents";
 import { prettyPhone } from "@/lib/phone";
 import { districtForSchool } from "@/lib/schools";
 import { clientIp, limited, record, TOO_MANY } from "@/lib/ratelimit";
+import { verifyCaptcha } from "@/lib/captcha";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,11 @@ export async function POST(req: Request) {
   if (body.consent !== true) return json({ error: "Please check the box to agree to receive text messages." }, 400);
   if (!parent_name) return json({ error: "Please enter your name." }, 400);
   if (!phone) return json({ error: "Please enter a valid mobile number, like (303) 555-1234." }, 400);
+
+  // Bot check (Cloudflare Turnstile) before anything is counted or texted.
+  if (!(await verifyCaptcha(body.captcha, clientIp(req)))) {
+    return json({ error: "Please complete the check above the Sign up button, then try again.", captcha: true }, 400);
+  }
 
   const ip = `ip:${clientIp(req)}`;
   if (
