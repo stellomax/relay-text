@@ -12,14 +12,21 @@ import { prettyPhone } from "@/lib/phone";
 import { districtForSchool } from "@/lib/schools";
 import { clientIp, limited, record, TOO_MANY } from "@/lib/ratelimit";
 import { verifyCaptcha } from "@/lib/captcha";
+import { logAudit } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
+// Most confirmation texts the form may send in an hour, across every school. Real sign-ups come in a few at a
+// time (a teacher shares the link); a bot can't use the form to burn through the daily texting limit.
+const HOURLY_CAP = 30;
+
 // Public: a parent signs up for texts at /join (or a teacher's link, /join?t=CODE).
 // Records consent, then sends one confirmation text from that teacher's number.
-// Abuse limits: per IP and per phone number, plus an hourly cap on confirmation texts. A number that replied STOP
-// is never turned back on from this form (only a START reply does that), and an existing parent's name and language
-// on the Parents list are never overwritten from here (admins edit those).
+// Abuse limits: a bot check, per IP and per phone number, plus an hourly cap on confirmation texts. A number that
+// replied STOP is never turned back on from this form (only a START reply does that), and an existing parent's name and
+// language on the Parents list are never overwritten from here (admins edit those). A parent already on the list who
+// shows "Needs consent" isn't changed from here either: the request goes to the Activity Log for an admin to confirm,
+// so nobody can turn on texts to a listed parent just by typing their number into the form.
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const parent_name = String(body.parent_name || "").trim().slice(0, 120);
@@ -55,7 +62,7 @@ export async function POST(req: Request) {
       .select("id", { count: "exact", head: true })
       .eq("sent_by", "opt-in confirmation")
       .gte("created_at", new Date(Date.now() - 3600_000).toISOString());
-    if ((lastHour ?? 0) >= 200) {
+    if ((lastHour ?? 0) >= HOURLY_CAP) {
       console.warn("Opt-in hourly cap reached");
       return json({ error: "Sign-up is very busy right now. Please try again in an hour." }, 429);
     }
@@ -83,6 +90,24 @@ export async function POST(req: Request) {
         409,
       );
     }
+    // Already on the Parents list but without consent on record: don't turn texts on from a public form.
+    // Log it so the school's admins can confirm it (Manage Parents → Edit), and tell the parent it's pending.
+    if (listedFirst && !listedFirst.consent_at) {
+      await logAudit(
+        { id: null as unknown as string, email: "parent sign-up form (/join)", school_id: teacher.school_id || null },
+        {
+          action: "parent.consent_request",
+          targetType: "parent",
+          targetId: listedFirst.id,
+          targetLabel: listedFirst.parent_name,
+          schoolId: teacher.school_id || null,
+          detail: { name_entered: parent_name, teacher: teacher.name, phone_last4: phone.slice(-4) },
+        },
+        { dedupeMinutes: 24 * 60 },
+      );
+      return json({ ok: true, pending: true });
+    }
+
     // Record exactly who the parent agreed to hear from (their school district), as evidence of consent.
     const district = await districtForSchool(teacher.school_id);
     const source = `web form: /join?t=${code} (agreed to texts from ${district})`;

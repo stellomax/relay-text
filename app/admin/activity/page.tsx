@@ -18,6 +18,7 @@ type Entry = {
 // Plain-English verbs for each action.
 const WHAT: Record<string, string> = {
   "inbox.view": "viewed the inbox of",
+  "parent.consent_request": "asked to get texts (an admin needs to confirm consent in Manage Parents) for",
   "conversation.move": "moved the conversation with",
   "conversation.delete": "deleted the conversation with",
   "parents.add": "added parent",
@@ -50,6 +51,7 @@ function details(e: Entry): string {
   if (e.action === "staff.transfer_number" && d.to) parts.push(`to ${d.to}`);
   if (e.action === "conversation.delete" && d.messages !== undefined) parts.push(`${d.messages} messages`);
   if (e.action === "conversation.move") parts.push(`from ${d.from} to ${d.to}`);
+  if (e.action === "parent.consent_request") parts.push(`name entered "${d.name_entered}", via ${d.teacher}'s link, phone ending ${d.phone_last4}`);
   if (e.action === "parents.import") parts.push(`${d.added ?? 0} added, ${d.updated ?? 0} updated`);
   if (e.action === "parents.delete") parts.push(`${d.deleted ?? d.requested ?? 0} removed`);
   if (e.action === "school.delete_all_data") parts.push(`${d.parents ?? 0} parents, ${d.conversations ?? 0} conversations, ${d.teachers ?? 0} teachers`);
